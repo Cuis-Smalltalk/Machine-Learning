@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 10:07:39 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:13:25 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 1!
+!provides: 'TensorFlow' 1 4!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -56,7 +56,7 @@ TF_Status class
 setUp
 	library _ TensorFlowCAPI current! !
 
-!TensorFlowCAPITest methodsFor: 'testing' stamp: 'gera 12/21/2016 09:56:55'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 09:56:55'!
 testCopyToExternalMemory
 	| original copy |
 	original _ 'hola manola'.
@@ -66,7 +66,7 @@ testCopyToExternalMemory
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing' stamp: 'gera 12/21/2016 02:58:13'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 02:58:13'!
 testNewSessionOptions
 	| options |
 	options _ TF_SessionOptions create.
@@ -75,7 +75,7 @@ testNewSessionOptions
 	options delete.
 	self assert: options getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing' stamp: 'gera 12/21/2016 02:58:04'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 02:58:04'!
 testNewStatus
 	| status |
 	status _ TF_Status create.
@@ -84,7 +84,7 @@ testNewStatus
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing' stamp: 'gera 12/21/2016 02:49:10'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 02:49:10'!
 testSessionOptionsSetTarget
 	| options |
 	options _ library newSessionOptions.
@@ -94,7 +94,40 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing' stamp: 'gera 12/21/2016 09:57:36'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
+testStatusCodes
+	| status  |
+	status _ TF_Status create.
+	
+	status code: 0 message: ''.
+	self assert: status isOk.
+	self assert: status codeText = 'OK'.
+	self shouldnt: [status check] raise: Error.
+	
+	status code: 1 message: 'You cancelled it!!'.
+	self assert: status codeText = 'CANCELLED'.
+	self should: [status check] raise: Error.
+
+	status delete.
+	self assert: status getHandle isNil.! !
+
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 10:18:08'!
+testStatusGetMessage
+	| status message |
+	status _ TF_Status create.
+	
+	status code: 0 message: 'All is good'.
+	message _ status message.
+	self assert: message = 'All is good'.
+
+	status code: 7 message: 'Something is very seven'.
+	message _ status message.
+	self assert: message = 'Something is very seven'.
+
+	status delete.
+	self assert: status getHandle isNil.! !
+
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 09:57:36'!
 testStatusSetGetCode
 	| status code |
 	status _ TF_Status create.
@@ -131,6 +164,11 @@ externalizeString: aString
 !TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:59:30'!
 getCode: aTF_Status
 	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 10:14:23'!
+message: aTF_Status
+	<cdecl: char* 'TF_Message' (TF_Status*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/18/2016 21:35'!
@@ -207,6 +245,11 @@ target: aString config: anotherString
 		target: aString;
 		config: aString! !
 
+!TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 11:05:49'!
+check
+	self isOk ifFalse: [
+		Error signal: (self codeText, ': ', self message)]! !
+
 !TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 09:59:56'!
 code
 	^self library getCode: self! !
@@ -218,10 +261,45 @@ code: aTF_Code message: aString
 	^ self library setStatus: self code: aTF_Code message: externalized
 ! !
 
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 11:03:40'!
+codeText
+	^ self codeTexts at: self code + 1! !
+
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 11:02:44'!
+codeTexts
+	"self new codeTexts"
+	^ #(  
+  'OK' "0"
+  'CANCELLED' "1"
+  'UNKNOWN' "2"
+  'INVALID_ARGUMENT' "3"
+  'DEADLINE_EXCEEDED' "4"
+  'NOT_FOUND' "5"
+  'ALREADY_EXISTS' "6"
+  'PERMISSION_DENIED' "7"
+  'RESOURCE_EXHAUSTED' "8"
+  'FAILED_PRECONDITION' "9"
+  'ABORTED' "10"
+  'OUT_OF_RANGE' "11"
+  'UNIMPLEMENTED' "12"
+  'INTERNALt' "13"
+  'UNAVAILABLE' "14"
+  'DATA_LOSS' "15"
+  'UNAUTHENTICATED' "16"
+)! !
+
 !TF_Status methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 02:59:15'!
 delete
 	self library deleteStatus: self.
 	handle := nil! !
+
+!TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 10:48:36'!
+isOk
+	^self code == 0! !
+
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 10:14:14'!
+message
+	^ self library message: self! !
 
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:55:36'!
 create
