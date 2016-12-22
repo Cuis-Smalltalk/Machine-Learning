@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:47:56 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:50:36 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 9!
+!provides: 'TensorFlow' 1 10!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -402,9 +402,9 @@ delete
 isOk
 	^self code == 0! !
 
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:31:33'!
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:50:21'!
 message
-	self library message: self! !
+	^ self library message: self! !
 
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:55:36'!
 create
