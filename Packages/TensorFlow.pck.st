@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 10:40:45 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:28:42 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 5!
+!provides: 'TensorFlow' 1 7!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -41,6 +41,16 @@ TF_Structure subclass: #TF_Graph
 TF_Graph class
 	instanceVariableNames: ''!
 
+!classDefinition: #TF_Session category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_Session
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_Session class' category: #'TensorFlow-Kernel'!
+TF_Session class
+	instanceVariableNames: ''!
+
 !classDefinition: #TF_SessionOptions category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_SessionOptions
 	instanceVariableNames: ''
@@ -66,6 +76,17 @@ TF_Status class
 setUp
 	library _ TensorFlowCAPI current! !
 
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/21/2016 23:26:08'!
+testCloseSession
+	| graph session |
+	graph _ TF_Graph create.
+	session _ TF_Session onGraph: graph.
+	self deny: session getHandle isNil.
+	self deny: session getHandle = 0.
+	self shouldnt: [session close] raise: Error.
+	self shouldnt: [session delete] raise: Error.
+	self assert: session getHandle isNil.! !
+
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 09:56:55'!
 testCopyToExternalMemory
 	| original copy |
@@ -84,6 +105,16 @@ testNewGraph
 	self deny: graph getHandle = 0.
 	graph delete.
 	self assert: graph getHandle isNil.! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/21/2016 23:06:41'!
+testNewSession
+	| graph session |
+	graph _ TF_Graph create.
+	session _ TF_Session onGraph: graph.
+	self deny: session getHandle isNil.
+	self deny: session getHandle = 0.
+	session delete.
+	self assert: session getHandle isNil.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 02:58:13'!
 testNewSessionOptions
@@ -161,9 +192,19 @@ testStatusSetGetCode
 	status delete.
 	self assert: status getHandle isNil.! !
 
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:26:55'!
+closeSession: aTF_Session status: aTF_Status
+	<cdecl: void 'TF_CloseSession' (TF_Session* TF_Status*)>
+	^self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/21/2016 22:32:51'!
 deleteGraph: aTF_Graph
 	<cdecl: void 'TF_DeleteGraph' (TF_Graph*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:23:33'!
+deleteSession: aTF_Session status: aTF_Status
+	<cdecl: void 'TF_DeleteSession' (TF_Session* TF_Status*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/18/2016 21:41'!
@@ -198,6 +239,11 @@ message: aTF_Status
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/21/2016 22:36:38'!
 newGraph
 	<cdecl: TF_Graph* 'TF_NewGraph' (void)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:21:09'!
+newSessionGraph: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
+	<cdecl: TF_Session* 'TF_NewSession' (TF_Graph* TF_SessionOptions* TF_Status*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/18/2016 21:35'!
@@ -257,6 +303,31 @@ delete
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
 	^ TensorFlowCAPI current newGraph! !
+
+!TF_Session methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 23:28:28'!
+close
+	| status |
+	status _ TF_Status create.
+	self library closeSession: self status: status.
+	[status check] ensure: [status delete].! !
+
+!TF_Session methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 23:23:02'!
+delete
+	| status |
+	status _ TF_Status create.
+	self library deleteSession: self status: status.
+	[status check] ensure: [status delete].
+	handle := nil! !
+
+!TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
+onGraph: aTF_Graph
+	| options status answer |
+	options _ TF_SessionOptions create.
+	status _ TF_Status create.
+	answer _ TensorFlowCAPI current newSessionGraph: aTF_Graph options: options status: status.
+	options delete.
+	[status check] ensure: [status delete].
+	^ answer! !
 
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 09:56:48'!
 config: aString
