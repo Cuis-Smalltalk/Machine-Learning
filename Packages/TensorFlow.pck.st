@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:28:42 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:32:18 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 7!
+!provides: 'TensorFlow' 1 8!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -329,9 +329,9 @@ onGraph: aTF_Graph
 	[status check] ensure: [status delete].
 	^ answer! !
 
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 09:56:48'!
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:31:48'!
 config: aString
-	^ self library sessionOptions: self setConfig: (self library externalizeString: aString).
+	self library sessionOptions: self setConfig: (self library externalizeString: aString).
 ! !
 
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 02:20:57'!
@@ -339,9 +339,9 @@ delete
 	self library deleteSessionOptions: self.
 	handle := nil! !
 
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 09:56:51'!
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:31:55'!
 target: aString
-	^ self library sessionOptions: self setTarget: (self library externalizeString: aString).
+	self library sessionOptions: self setTarget: (self library externalizeString: aString).
 ! !
 
 !TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:50:29'!
@@ -363,11 +363,11 @@ check
 code
 	^self library getCode: self! !
 
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 09:57:53'!
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:30:59'!
 code: aTF_Code message: aString
 	| externalized |
 	externalized _ self library externalizeString: aString.
-	^ self library setStatus: self code: aTF_Code message: externalized
+	self library setStatus: self code: aTF_Code message: externalized
 ! !
 
 !TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 11:03:40'!
@@ -406,9 +406,9 @@ delete
 isOk
 	^self code == 0! !
 
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 10:14:14'!
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:31:33'!
 message
-	^ self library message: self! !
+	self library message: self! !
 
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:55:36'!
 create
