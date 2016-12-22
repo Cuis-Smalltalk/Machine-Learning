@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 1:11:00 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 1:19:00 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 15!
+!provides: 'TensorFlow' 1 16!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -49,6 +49,16 @@ TF_Structure subclass: #TF_Graph
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_Graph class' category: #'TensorFlow-Kernel'!
 TF_Graph class
+	instanceVariableNames: ''!
+
+!classDefinition: #TF_ImportGraphDefOptions category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_ImportGraphDefOptions
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_ImportGraphDefOptions class' category: #'TensorFlow-Kernel'!
+TF_ImportGraphDefOptions class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Session category: #'TensorFlow-Kernel'!
@@ -152,6 +162,15 @@ testNewGraph
 	graph delete.
 	self assert: graph getHandle isNil.! !
 
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/22/2016 01:18:12'!
+testNewImportGraphDefOptions
+	| options |
+	options _ TF_ImportGraphDefOptions create.
+	self deny: options getHandle isNil.
+	self deny: options getHandle = 0.
+	options delete.
+	self assert: options getHandle isNil.! !
+
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/21/2016 23:06:41'!
 testNewSession
 	| graph session |
@@ -253,12 +272,17 @@ deleteGraph: aTF_Graph
 	<cdecl: void 'TF_DeleteGraph' (TF_Graph*)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:16:37'!
+deleteImportGraphDefOptions: aTF_ImportGraphDefOptions
+	<cdecl: void 'TF_DeleteImportGraphDefOptions' (TF_ImportGraphDefOptions*)>
+	^self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:23:33'!
 deleteSession: aTF_Session status: aTF_Status
 	<cdecl: void 'TF_DeleteSession' (TF_Session* TF_Status*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/18/2016 21:41'!
+!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:41'!
 deleteSessionOptions: aTF_SessionOptions
 	<cdecl: void 'TF_DeleteSessionOptions' (TF_SessionOptions*)>
 	^self externalCallFailed! !
@@ -297,12 +321,17 @@ newGraph
 	<cdecl: TF_Graph* 'TF_NewGraph' (void)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:17:45'!
+newImportGraphDefOptions
+	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
+	^self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:21:09'!
 newSessionGraph: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
 	<cdecl: TF_Session* 'TF_NewSession' (TF_Graph* TF_SessionOptions* TF_Status*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/18/2016 21:35'!
+!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:35'!
 newSessionOptions
 	<cdecl: TF_SessionOptions* 'TF_NewSessionOptions' (void)>
 	^self externalCallFailed! !
@@ -312,13 +341,13 @@ newStatus
 	<cdecl: TF_Status* 'TF_NewStatus' (void)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session options' stamp: 'gera 12/21/2016 23:47:01'!
+!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/21/2016 23:47:01'!
 sessionOptions: aTF_SessionOptions setConfig: aString configSize: anInteger status: aTF_Status
 	" not sure how to use this. Best information found in http://devdocs.io/tensorflow~python/contrib.learn#RunConfig"
 	<cdecl: void 'TF_SetConfig' (TF_SessionOptions* void* ulong TF_Status*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/19/2016 10:58'!
+!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/19/2016 10:58'!
 sessionOptions: aTF_SessionOptions setTarget: aString
 	<cdecl: void 'TF_SetTarget' (TF_SessionOptions* char*)>
 	^self externalCallFailed! !
@@ -423,6 +452,15 @@ delete
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
 	^ TensorFlowCAPI current newGraph! !
+
+!TF_ImportGraphDefOptions methodsFor: 'release' stamp: 'gera 12/22/2016 01:14:43'!
+delete
+	self library deleteImportGraphDefOptions: self.
+	handle _ nil! !
+
+!TF_ImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
+create
+	^ TensorFlowCAPI current newImportGraphDefOptions! !
 
 !TF_Session methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 23:28:28'!
 close
