@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 1:54:02 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 2:20:46 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 17!
+!provides: 'TensorFlow' 1 18!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -92,14 +92,9 @@ TF_Status class
 	instanceVariableNames: ''!
 
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:51:42'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:20:25'!
 emptyGraph
-	| buffer graph |
-	graph _ TF_Graph create.
-	buffer _ TF_Buffer fromString: self emptyGraphDef.
-	graph import: buffer.
-	buffer delete.
-	^ graph
+	^ TF_Graph fromString: self emptyGraphDef.
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:51:30'!
@@ -144,10 +139,10 @@ testImportBad
 	graph delete.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:53:41'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:19:54'!
 testImportEmpty
 	| graph |
-	
+
 	self shouldnt: [
 		graph _ self emptyGraph.
 		graph delete] raise: Error.
@@ -518,6 +513,14 @@ importString: aString
 create
 	^ TensorFlowCAPI current newGraph! !
 
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:26'!
+fromFileNamed: aString
+	^ self create importFileNamed: aString! !
+
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:33'!
+fromString: aString
+	^ self create importString: aString! !
+
 !TF_ImportGraphDefOptions methodsFor: 'release' stamp: 'gera 12/22/2016 01:14:43'!
 delete
 	self library deleteImportGraphDefOptions: self.
@@ -527,14 +530,14 @@ delete
 create
 	^ TensorFlowCAPI current newImportGraphDefOptions! !
 
-!TF_Session methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 23:28:28'!
+!TF_Session methodsFor: 'release' stamp: 'gera 12/21/2016 23:28:28'!
 close
 	| status |
 	status _ TF_Status create.
 	self library closeSession: self status: status.
 	[status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'as yet unclassified' stamp: 'gera 12/22/2016 00:41:59'!
+!TF_Session methodsFor: 'release' stamp: 'gera 12/22/2016 00:41:59'!
 delete
 	| status |
 	status _ TF_Status create.
