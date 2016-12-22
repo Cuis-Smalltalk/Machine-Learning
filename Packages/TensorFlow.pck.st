@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 12:56:01 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 1:11:00 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 14!
+!provides: 'TensorFlow' 1 15!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -97,8 +97,8 @@ testCloseSession
 	self shouldnt: [session delete] raise: Error.
 	self assert: session getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 09:56:55'!
-testCopyToExternalMemory
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/22/2016 00:58:57'!
+testExternalizeString
 	| original copy |
 	original _ 'hola manola'.
 	copy _ library externalizeString: original.
