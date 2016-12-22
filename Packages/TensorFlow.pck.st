@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:32:18 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:47:56 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 8!
+!provides: 'TensorFlow' 1 9!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -256,9 +256,10 @@ newStatus
 	<cdecl: TF_Status* 'TF_NewStatus' (void)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/19/2016 12:51'!
-sessionOptions: aTF_SessionOptions setConfig: aString status: aTF_Status
-	<cdecl: void 'TF_SetConfig' (TF_SessionOptions* char*)>
+!TensorFlowCAPI methodsFor: 'session options' stamp: 'gera 12/21/2016 23:47:01'!
+sessionOptions: aTF_SessionOptions setConfig: aString configSize: anInteger status: aTF_Status
+	" not sure how to use this. Best information found in http://devdocs.io/tensorflow~python/contrib.learn#RunConfig"
+	<cdecl: void 'TF_SetConfig' (TF_SessionOptions* void* ulong TF_Status*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'session options' stamp: 'GerardoRicharte 12/19/2016 10:58'!
@@ -329,18 +330,15 @@ onGraph: aTF_Graph
 	[status check] ensure: [status delete].
 	^ answer! !
 
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:31:48'!
-config: aString
-	self library sessionOptions: self setConfig: (self library externalizeString: aString).
-! !
-
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 02:20:57'!
 delete
 	self library deleteSessionOptions: self.
 	handle := nil! !
 
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:31:55'!
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:37:00'!
 target: aString
+	" 'local' 'google.com:1234' '192.168.1.1:1234' 'local,example.com:1234' etc.
+	are all valid target strings"
 	self library sessionOptions: self setTarget: (self library externalizeString: aString).
 ! !
 
@@ -348,11 +346,9 @@ target: aString
 create
 	^ TensorFlowCAPI current newSessionOptions! !
 
-!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'GerardoRicharte 12/19/2016 11:01'!
-target: aString config: anotherString
-	^ self create
-		target: aString;
-		config: aString! !
+!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:47:47'!
+onTarget: aString
+	^ self create target: aString! !
 
 !TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 11:05:49'!
 check
