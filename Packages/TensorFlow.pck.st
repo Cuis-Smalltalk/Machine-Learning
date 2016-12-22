@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 2:54:49 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 4:00:06 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 20!
+!provides: 'TensorFlow' 1 21!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -61,6 +61,16 @@ TF_Structure subclass: #TF_ImportGraphDefOptions
 TF_ImportGraphDefOptions class
 	instanceVariableNames: ''!
 
+!classDefinition: #TF_Operation category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_Operation
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_Operation class' category: #'TensorFlow-Kernel'!
+TF_Operation class
+	instanceVariableNames: ''!
+
 !classDefinition: #TF_Session category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Session
 	instanceVariableNames: ''
@@ -91,6 +101,24 @@ TF_Structure subclass: #TF_Status
 TF_Status class
 	instanceVariableNames: ''!
 
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:49:27'!
+constantGraph
+	^ TF_Graph fromString: self constantGraphDef! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:49:10'!
+constantGraphDef
+	" This GraphDef corresponds to simple Graph, defined as
+	
+		tf.constant(0.42, name='a')
+		
+	 saved as ProtoBuf "
+	^ #[
+ 16r0A 16r2E 16r0A 16r01 16r61 16r12 16r05 16r43 16r6F 16r6E 16r73 16r74 16r2A 16r15 16r0A 16r05
+ 16r76 16r61 16r6C 16r75 16r65 16r12 16r0C 16r42 16r0A 16r08 16r01 16r12 16r00 16r2A 16r04 16r3D
+ 16r0A 16rD7 16r3E 16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70 16r65 16r12 16r02 16r30 16r01
+ 16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
+ 16r08 16r0F] asString! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:20:25'!
 emptyGraph
@@ -127,6 +155,22 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:59:51'!
+testGetOperationOnConstantGraph
+	| graph op |
+	graph _ self constantGraph.
+	self shouldnt: [op _ graph operationNamed: 'a'] raise: Error.
+	self assert: op name = 'a'.
+	self assert: op type = 'Const'.
+	self assert: op InputsCount = 0.
+	self assert: op outputsCount = 1.! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:44:19'!
+testGetOperationOnEmptyGraph
+	| graph |
+	graph _ self emptyGraph.
+	self should: [graph operationNamed: 'something'] raise: Error! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
 testImportBad
 	| graph buffer |
@@ -137,6 +181,15 @@ testImportBad
 	
 	buffer delete.
 	graph delete.
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:49:55'!
+testImportConstantGraph
+	| graph |
+
+	self shouldnt: [
+		graph _ self constantGraph.
+		graph delete] raise: Error.
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:19:54'!
@@ -343,6 +396,11 @@ getCode: aTF_Status
 	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 03:36:16'!
+graph: aTF_Graph getOperationNamed: aString
+	<cdecl: TF_Operation* 'TF_GraphOperationByName' (TF_Graph* char*)>
+	^ self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
 importGraphDefInto: aTF_Graph from: aTF_Buffer options: aTF_ImportGraphDefOptions status: aTF_Status
 	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TF_Buffer* TF_ImportGraphDefOptions* TF_Status*)>
@@ -382,6 +440,31 @@ newSessionOptions
 newStatus
 	<cdecl: TF_Status* 'TF_NewStatus' (void)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:54:06'!
+operationDevice: aTF_Operation
+	<cdecl: char* 'TF_OperationDevice' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:53:36'!
+operationName: aTF_Operation
+	<cdecl: char* 'TF_OperationName' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:55:39'!
+operationNumInputs: aTF_Operation
+	<cdecl: long 'TF_OperationNumInputs' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:54:41'!
+operationNumOutputs: aTF_Operation
+	<cdecl: long 'TF_OperationNumOutputs' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:53:56'!
+operationOpType: aTF_Operation
+	<cdecl: char* 'TF_OperationOpType' (TF_Operation*)>
+	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/22/2016 02:54:46'!
 runSession: aTF_Session
@@ -540,6 +623,16 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:44:06'!
+operationNamed: aString
+	| externalized answer |
+	externalized _ self library externalizeString: aString.
+	answer _ self library graph: self getOperationNamed: externalized.
+	externalized free.
+	answer isNull ifTrue: [self error: 'Operation not found'].
+	^ answer
+! !
+
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
 	^ TensorFlowCAPI current newGraph! !
@@ -560,6 +653,26 @@ delete
 !TF_ImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
 create
 	^ TensorFlowCAPI current newImportGraphDefOptions! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
+InputsCount
+	^ self library operationNumInputs: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
+device
+	^ self library operationDevice: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
+name
+	^ self library operationName: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:48'!
+outputsCount
+	^ self library operationNumOutputs: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
+type
+	^ self library operationOpType: self! !
 
 !TF_Session methodsFor: 'release' stamp: 'gera 12/21/2016 23:28:28'!
 close
