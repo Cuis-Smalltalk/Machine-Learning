@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 21 December 2016 at 11:50:36 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 12:42:48 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 10!
+!provides: 'TensorFlow' 1 13!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -285,10 +285,9 @@ moduleName
 library
 	^ TensorFlowCAPI current! !
 
-!TF_Structure class methodsFor: 'field definition' stamp: 'gera 12/21/2016 02:53:51'!
+!TF_Structure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:24:05'!
 fields
 	"self initialize"
-	"typedef void* TF_SessionOptions"
 	^#()! !
 
 !TF_Structure class methodsFor: 'class initialization' stamp: 'gera 12/21/2016 02:54:06'!
@@ -299,7 +298,7 @@ initialize
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 22:35:57'!
 delete
 	self library deleteGraph: self.
-	handle := nil! !
+	handle _ nil! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
@@ -312,13 +311,13 @@ close
 	self library closeSession: self status: status.
 	[status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 23:23:02'!
+!TF_Session methodsFor: 'as yet unclassified' stamp: 'gera 12/22/2016 00:41:59'!
 delete
 	| status |
 	status _ TF_Status create.
 	self library deleteSession: self status: status.
 	[status check] ensure: [status delete].
-	handle := nil! !
+	handle _ nil! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
 onGraph: aTF_Graph
@@ -330,10 +329,10 @@ onGraph: aTF_Graph
 	[status check] ensure: [status delete].
 	^ answer! !
 
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 02:20:57'!
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:42:04'!
 delete
 	self library deleteSessionOptions: self.
-	handle := nil! !
+	handle _ nil! !
 
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:37:00'!
 target: aString
@@ -393,10 +392,10 @@ codeTexts
   'UNAUTHENTICATED' "16"
 )! !
 
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 02:59:15'!
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:42:12'!
 delete
 	self library deleteStatus: self.
-	handle := nil! !
+	handle _ nil! !
 
 !TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 10:48:36'!
 isOk
