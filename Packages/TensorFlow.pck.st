@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 2:20:46 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 2:54:49 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 18!
+!provides: 'TensorFlow' 1 20!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -230,6 +230,12 @@ testNewStatus
 	status delete.
 	self assert: status getHandle isNil.! !
 
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/22/2016 02:22:41'!
+testSessionOnEmptyGraph
+	| session |
+	session _ TF_Session onGraph: self emptyGraph.
+	session run.! !
+
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 02:49:10'!
 testSessionOptionsSetTarget
 	| options |
@@ -376,6 +382,31 @@ newSessionOptions
 newStatus
 	<cdecl: TF_Status* 'TF_NewStatus' (void)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/22/2016 02:54:46'!
+runSession: aTF_Session
+	options: opsTF_Buffer
+	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
+	outputs: outTF_OutputArray values: outTF_TensorArrayPtr count: outCount
+	targets: aTF_OperationArray count: targetCount
+	metadata: metaTF_Buffer
+	status: aTF_Status
+	
+	<cdecl: void 'TF_SessionRun' (
+		TF_Session*
+		TF_Buffer*	"RunOptions, may be nil"
+		void*"TF_Output*"	"inputs"
+		void*"TF_Tensor*"	"inputs' values"
+		long			"inputs count"
+		void*"TF_Output*"		"outputs"
+		void*"TF_Tensor**"	"outputs values (results)"
+		long				"outputs count"
+		void*"TF_Operation**"	"target operations array, may be nil"
+		long				"taret operations count"
+		TF_Buffer*		"RunMetadata"
+		TF_Status*)>
+	^ self externalCallFailed
+! !
 
 !TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/21/2016 23:47:01'!
 sessionOptions: aTF_SessionOptions setConfig: aString configSize: anInteger status: aTF_Status
@@ -544,6 +575,16 @@ delete
 	self library deleteSession: self status: status.
 	[status check] ensure: [status delete].
 	handle _ nil! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 12/22/2016 02:29:18'!
+run
+	| status |
+	status _ TF_Status create.
+	
+	self library
+		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: nil count: 0 metadata: nil status: status.
+	
+	[status check] ensure: [status delete].! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
 onGraph: aTF_Graph
