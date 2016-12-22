@@ -107,7 +107,28 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/22/2016 00:54:30'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/22/2016 01:10:48'!
+testNewBufferFromFileNamed
+	| buffer string data temporaryFile |
+	string _ ' hola manola'.
+	temporaryFile _ 'temporaryFile.txt'.
+	temporaryFile asFileEntry writeStream nextPutAll: string; close.
+
+	buffer _ TF_Buffer fromFileNamed: temporaryFile.
+	temporaryFile asFileEntry delete.
+	
+	self deny: buffer getHandle isNil.
+	self deny: buffer getHandle = 0.
+	self assert: buffer length == string size.
+	
+	data _ buffer data fromCString first: string size.
+	self assert: string = data.
+	
+	buffer delete.
+	self assert: buffer getHandle isNil.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/22/2016 01:01:59'!
 testNewBufferFromString
 	| buffer string data |
 	string _ ' hola manola'.
@@ -380,11 +401,19 @@ fields
 		(deallocator 'void*'))
 	! !
 
-!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 00:40:04'!
+!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:05:44'!
+fromFileNamed: aString
+	| fileContents |
+	fileContents _ aString asFileEntry readStream contents.
+	^ self fromString: fileContents! !
+
+!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:02:39'!
 fromString: aString
-	| externalized |
+	| externalized answer |
 	externalized _ TensorFlowCAPI current externalizeString: aString.
-	^ TensorFlowCAPI current newBufferFromString: externalized size: aString size! !
+	answer _ TensorFlowCAPI current newBufferFromString: externalized size: aString size.
+	externalized free.
+	^ answer! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:41:55'!
 delete
