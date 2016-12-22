@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 1:19:00 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 1:54:02 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 16!
+!provides: 'TensorFlow' 1 17!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -92,6 +92,21 @@ TF_Status class
 	instanceVariableNames: ''!
 
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:51:42'!
+emptyGraph
+	| buffer graph |
+	graph _ TF_Graph create.
+	buffer _ TF_Buffer fromString: self emptyGraphDef.
+	graph import: buffer.
+	buffer delete.
+	^ graph
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:51:30'!
+emptyGraphDef
+	" This GraphDef corresponds to an Empty Graph (no operations), saved as ProtoBuf "
+	^ #[16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
+
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 12/21/2016 02:11:17'!
 setUp
 	library _ TensorFlowCAPI current! !
@@ -116,6 +131,27 @@ testExternalizeString
 		self assert: each asciiValue = (copy byteAt: index)].
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
+testImportBad
+	| graph buffer |
+	graph _ TF_Graph create.
+	buffer _ TF_Buffer fromString: 'ouch'.
+	
+	self should: [graph import: buffer] raise: Error.
+	
+	buffer delete.
+	graph delete.
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:53:41'!
+testImportEmpty
+	| graph |
+	
+	self shouldnt: [
+		graph _ self emptyGraph.
+		graph delete] raise: Error.
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/22/2016 01:10:48'!
 testNewBufferFromFileNamed
@@ -306,6 +342,11 @@ getCode: aTF_Status
 	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
+importGraphDefInto: aTF_Graph from: aTF_Buffer options: aTF_ImportGraphDefOptions status: aTF_Status
+	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TF_Buffer* TF_ImportGraphDefOptions* TF_Status*)>
+	^self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 10:14:23'!
 message: aTF_Status
 	<cdecl: char* 'TF_Message' (TF_Status*)>
@@ -448,6 +489,30 @@ fromString: aString
 delete
 	self library deleteGraph: self.
 	handle _ nil! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:25:56'!
+import: aTF_Buffer
+	| options status |
+	
+	status _ TF_Status create.
+	options _ TF_ImportGraphDefOptions create.
+	
+	self library importGraphDefInto: self from: aTF_Buffer options: options status: status.
+	
+	options delete.
+	[status check] ensure: [status delete].! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:27:24'!
+importFileNamed: aString
+	| buffer |
+	buffer _ TF_Buffer fromFileNamed: aString.
+	[self import: buffer] ensure: [buffer delete].! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:26:59'!
+importString: aString
+	| buffer |
+	buffer _ TF_Buffer fromString: aString.
+	[self import: buffer] ensure: [buffer delete].! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
