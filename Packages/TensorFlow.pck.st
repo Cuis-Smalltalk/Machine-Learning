@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 22 December 2016 at 4:00:06 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 12:15:49 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 21!
+!provides: 'TensorFlow' 1 22!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -29,6 +29,16 @@ ExternalStructure subclass: #TF_Structure
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_Structure class' category: #'TensorFlow-Kernel'!
 TF_Structure class
+	instanceVariableNames: ''!
+
+!classDefinition: #PointerArray category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #PointerArray
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'PointerArray class' category: #'TensorFlow-Kernel'!
+PointerArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
@@ -299,6 +309,14 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options getHandle isNil.! !
 
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 00:10:17'!
+testSessionRunTarget
+	| graph operation session |
+	graph _ self constantGraph.
+	session _ TF_Session onGraph: graph.
+	operation _ graph operationNamed: 'a'.
+	session runOperation: operation halt.! !
+
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
 testStatusCodes
 	| status  |
@@ -466,7 +484,7 @@ operationOpType: aTF_Operation
 	<cdecl: char* 'TF_OperationOpType' (TF_Operation*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/22/2016 02:54:46'!
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/23/2016 00:12:01'!
 runSession: aTF_Session
 	options: opsTF_Buffer
 	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
@@ -484,7 +502,7 @@ runSession: aTF_Session
 		void*"TF_Output*"		"outputs"
 		void*"TF_Tensor**"	"outputs values (results)"
 		long				"outputs count"
-		void*"TF_Operation**"	"target operations array, may be nil"
+		PointerArray*		"TF_Operation**"		"target operations array, may be nil"
 		long				"taret operations count"
 		TF_Buffer*		"RunMetadata"
 		TF_Status*)>
@@ -535,6 +553,39 @@ pointerSize
 	" Fixed for 64 bit platforms. TensorFlow is only available in 64 bit platforms "
 	self assert: 8 == Smalltalk wordSize.
 	^ Smalltalk wordSize! !
+
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/22/2016 20:37:16'!
+at: index
+	"This method was automatically generated. See PointerArray class>>fields."
+	^ self elementAtOffset: index * self class byteSize
+	! !
+
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/22/2016 20:37:44'!
+elementAtOffset: offset
+	^TF_Operation fromHandle: (handle longPointerAt: offset)
+	! !
+
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 00:04:23'!
+elementAtOffset: offset put: anExternalStructure
+	handle longPointerAt: 1 put: anExternalStructure getHandle.! !
+
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/22/2016 20:38:06'!
+first
+	^ self elementAtOffset: 1! !
+
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 00:04:49'!
+first: anExternalStructure
+	self elementAtOffset: 1 put: anExternalStructure
+! !
+
+!PointerArray class methodsFor: 'field definition' stamp: 'gera 12/22/2016 20:31:39'!
+fields
+	"self initialize"
+	^#((first 'TF_Operation*'))! !
+
+!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
+new: count
+	^self fromHandle: (ByteArray new: self byteSize * count)! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
@@ -697,6 +748,19 @@ run
 	self library
 		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: nil count: 0 metadata: nil status: status.
 	
+	[status check] ensure: [status delete].! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 12/23/2016 00:08:03'!
+runOperation: aTF_Operation
+	| status operations |
+	status _ TF_Status create.
+	operations _ PointerArray new: 1.
+	operations first: aTF_Operation.
+	
+	self library
+		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: operations count: 1 metadata: nil status: status.
+	
+	operations free.
 	[status check] ensure: [status delete].! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
