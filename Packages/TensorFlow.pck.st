@@ -42,6 +42,26 @@ TF_Structure subclass: #PointerArray
 PointerArray class
 	instanceVariableNames: ''!
 
+!classDefinition: #TF_OperationArray category: #'TensorFlow-Kernel'!
+PointerArray subclass: #TF_OperationArray
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_OperationArray class' category: #'TensorFlow-Kernel'!
+TF_OperationArray class
+	instanceVariableNames: ''!
+
+!classDefinition: #TF_OutputArray category: #'TensorFlow-Kernel'!
+PointerArray subclass: #TF_OutputArray
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_OutputArray class' category: #'TensorFlow-Kernel'!
+TF_OutputArray class
+	instanceVariableNames: ''!
+
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Buffer
 	instanceVariableNames: ''
@@ -599,28 +619,60 @@ at: index
 	^ self elementAtOffset: index * self class byteSize
 	! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/22/2016 20:37:44'!
-elementAtOffset: offset
-	^TF_Operation fromHandle: (handle longPointerAt: offset)
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:21'!
+at: index put: anExternalStructure
+	"This method was automatically generated. See PointerArray class>>fields."
+	^ self elementAtOffset: index * self class byteSize put: anExternalStructure
 	! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 00:04:23'!
+!PointerArray methodsFor: 'private' stamp: 'gera 12/23/2016 11:11:53'!
+elementAtOffset: offset
+	^self elementClass fromHandle: (handle longPointerAt: offset)
+	! !
+
+!PointerArray methodsFor: 'private' stamp: 'gera 12/23/2016 00:04:23'!
 elementAtOffset: offset put: anExternalStructure
 	handle longPointerAt: 1 put: anExternalStructure getHandle.! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/22/2016 20:38:06'!
-first
-	^ self elementAtOffset: 1! !
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:46'!
+elementClass
+	^TF_Operation! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 00:04:49'!
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
+first
+	^ self at: 1! !
+
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:29'!
 first: anExternalStructure
-	self elementAtOffset: 1 put: anExternalStructure
+	self at: 1 put: anExternalStructure
 ! !
 
-!PointerArray class methodsFor: 'field definition' stamp: 'gera 12/22/2016 20:31:39'!
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+template
+	"This method was automatically generated. See PointerArray class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
+
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+template: anObject
+	"This method was automatically generated. See PointerArray class>>fields."
+	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
+externalNew
+	^ self shouldNotImplement! !
+
+!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:10'!
+externalNew: count
+	^self fromHandle: (ExternalAddress allocate: self byteSize * count)! !
+
+!PointerArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
 fields
-	"self initialize"
-	^#((first 'TF_Operation*'))! !
+	"self initialize."
+	^#((template 'void*'))! !
+
+!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:45'!
+new
+	^ self shouldNotImplement! !
 
 !PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
 new: count
@@ -827,17 +879,23 @@ run
 	
 	[status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/23/2016 00:08:03'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/23/2016 11:19:53'!
 runOperation: aTF_Operation
-	| status operations |
+	| operations |
+	operations _ TF_OperationArray new: 1.
+	operations first: aTF_Operation.	
+	self runOperations: operations.
+	operations free.
+! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 12/23/2016 11:19:30'!
+runOperations: aTF_OperationArray
+	| status |
 	status _ TF_Status create.
-	operations _ PointerArray new: 1.
-	operations first: aTF_Operation.
 	
 	self library
-		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: operations count: 1 metadata: nil status: status.
+		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: aTF_OperationArray count: 1 metadata: nil status: status.
 	
-	operations free.
 	[status check] ensure: [status delete].! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
