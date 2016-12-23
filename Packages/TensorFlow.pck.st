@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 10:57:57 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 11:23:08 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 23!
+!provides: 'TensorFlow' 1 24!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
@@ -186,7 +186,7 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:59:51'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/22/2016 03:59:51'!
 testGetOperationOnConstantGraph
 	| graph op |
 	graph _ self constantGraph.
@@ -196,7 +196,7 @@ testGetOperationOnConstantGraph
 	self assert: op InputsCount = 0.
 	self assert: op outputsCount = 1.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:44:19'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/22/2016 03:44:19'!
 testGetOperationOnEmptyGraph
 	| graph |
 	graph _ self emptyGraph.
@@ -314,7 +314,7 @@ testNewStatus
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 10:46:22'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/23/2016 10:46:22'!
 testOperationOutputType
 	| graph operation output |
 	graph _ self constantGraph.
@@ -323,11 +323,13 @@ testOperationOutputType
 	self assert: output type == 1.	"TF_FLOAT"
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/22/2016 02:22:41'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 11:22:27'!
 testSessionOnEmptyGraph
 	| session |
 	session _ TF_Session onGraph: self emptyGraph.
-	session run.! !
+	self should: [session run] raise: Error.
+	session close.
+	session delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/21/2016 02:49:10'!
 testSessionOptionsSetTarget
@@ -339,13 +341,15 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 10:31:40'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 11:22:21'!
 testSessionRunTarget
 	| graph operation session |
 	graph _ self constantGraph.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
-	self shouldnt: [session runOperation: operation] raise: Error! !
+	self shouldnt: [session runOperation: operation] raise: Error.
+	session close.
+	session delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
 testStatusCodes
