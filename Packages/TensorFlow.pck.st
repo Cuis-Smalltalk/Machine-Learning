@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 12:15:49 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 10:47:39 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 22!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
@@ -309,13 +309,13 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 00:10:17'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 10:31:40'!
 testSessionRunTarget
 	| graph operation session |
 	graph _ self constantGraph.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
-	session runOperation: operation halt.! !
+	self shouldnt: [session runOperation: operation] raise: Error! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
 testStatusCodes
@@ -459,27 +459,27 @@ newStatus
 	<cdecl: TF_Status* 'TF_NewStatus' (void)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:54:06'!
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:06'!
 operationDevice: aTF_Operation
 	<cdecl: char* 'TF_OperationDevice' (TF_Operation*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:53:36'!
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:53:36'!
 operationName: aTF_Operation
 	<cdecl: char* 'TF_OperationName' (TF_Operation*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:55:39'!
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:55:39'!
 operationNumInputs: aTF_Operation
 	<cdecl: long 'TF_OperationNumInputs' (TF_Operation*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:54:41'!
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:41'!
 operationNumOutputs: aTF_Operation
 	<cdecl: long 'TF_OperationNumOutputs' (TF_Operation*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operations' stamp: 'gera 12/22/2016 03:53:56'!
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:53:56'!
 operationOpType: aTF_Operation
 	<cdecl: char* 'TF_OperationOpType' (TF_Operation*)>
 	^ self externalCallFailed! !
