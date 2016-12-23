@@ -81,6 +81,26 @@ TF_Structure subclass: #TF_Operation
 TF_Operation class
 	instanceVariableNames: ''!
 
+!classDefinition: #TF_Output category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_Output
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_Output class' category: #'TensorFlow-Kernel'!
+TF_Output class
+	instanceVariableNames: ''!
+
+!classDefinition: #TF_Input category: #'TensorFlow-Kernel'!
+TF_Output subclass: #TF_Input
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_Input class' category: #'TensorFlow-Kernel'!
+TF_Input class
+	instanceVariableNames: ''!
+
 !classDefinition: #TF_Session category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Session
 	instanceVariableNames: ''
@@ -293,6 +313,15 @@ testNewStatus
 	status delete.
 	self assert: status getHandle isNil.! !
 
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 10:46:22'!
+testOperationOutputType
+	| graph operation output |
+	graph _ self constantGraph.
+	operation _ graph operationNamed: 'a'.
+	output _ TF_Output onOperation: operation index: 0.
+	self assert: output type == 1.	"TF_FLOAT"
+	output free.! !
+
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/22/2016 02:22:41'!
 testSessionOnEmptyGraph
 	| session |
@@ -482,6 +511,11 @@ operationNumOutputs: aTF_Operation
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:53:56'!
 operationOpType: aTF_Operation
 	<cdecl: char* 'TF_OperationOpType' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/23/2016 10:45:09'!
+operationOutputType: aTF_Output
+	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/23/2016 00:12:01'!
@@ -724,6 +758,44 @@ outputsCount
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
 	^ self library operationOpType: self! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+index
+	"This method was automatically generated. See TF_Output class>>fields."
+	^handle unsignedLongLongAt: 9! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+index: anObject
+	"This method was automatically generated. See TF_Output class>>fields."
+	handle unsignedLongLongAt: 9 put: anObject! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+operation
+	"This method was automatically generated. See TF_Output class>>fields."
+	^TF_Operation fromHandle: (handle longPointerAt: 1)! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+operation: anObject
+	"This method was automatically generated. See TF_Output class>>fields."
+	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:26:22'!
+type
+	^ self library operationOutputType: self! !
+
+!TF_Output class methodsFor: 'field definition' stamp: 'gera 12/23/2016 10:17:51'!
+fields
+	"self initialize"
+	^#(
+		(operation 'TF_Operation*')
+		(index 'ulonglong'))
+	! !
+
+!TF_Output class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 10:40:36'!
+onOperation: aTF_Operation index: anInteger
+	^ self externalNew
+		operation: aTF_Operation;
+		index: anInteger! !
 
 !TF_Session methodsFor: 'release' stamp: 'gera 12/21/2016 23:28:28'!
 close
