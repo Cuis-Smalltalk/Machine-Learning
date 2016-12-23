@@ -1,6 +1,7 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 10:47:39 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 10:57:57 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 22!
+!provides: 'TensorFlow' 1 23!
+!requires: 'FFI' 1 18 nil!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
