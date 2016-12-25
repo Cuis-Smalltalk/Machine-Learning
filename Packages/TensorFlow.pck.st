@@ -172,6 +172,17 @@ TF_Structure subclass: #TF_Status
 TF_Status class
 	instanceVariableNames: ''!
 
+!classDefinition: #TF_Tensor category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_Tensor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_Tensor class' category: #'TensorFlow-Kernel'!
+TF_Tensor class
+	instanceVariableNames: ''!
+
+
 !ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:05:51'!
 testArray: anExternalArraySubclass sampleElement: anObject
 	| array size  |
@@ -518,6 +529,11 @@ testStatusSetGetCode
 	status delete.
 	self assert: status getHandle isNil.! !
 
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:55:14'!
+allocateTensorType: anInteger dimenssions: aLonnLongArray dimenssionsCount: dimCount length: len
+	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong ulonglong* ulonglong ulonglong)>
+	^ self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:26:55'!
 closeSession: aTF_Session status: aTF_Status
 	<cdecl: void 'TF_CloseSession' (TF_Session* TF_Status*)>
@@ -552,6 +568,11 @@ deleteSessionOptions: aTF_SessionOptions
 deleteStatus: aTF_Status
 	<cdecl: void 'TF_DeleteStatus' (TF_Status*)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:17'!
+deleteTensor: aTF_Tensor
+	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
+	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
 externalizeString: aString
@@ -682,6 +703,11 @@ sessionOptions: aTF_SessionOptions setTarget: aString
 setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:40'!
+tensorType: aTF_Tensor
+	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
+	^ self externalCallFailed! !
 
 !TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 01:56:21'!
 current
@@ -1107,4 +1133,13 @@ message
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:55:36'!
 create
 	^ TensorFlowCAPI current newStatus! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/24/2016 02:50:05'!
+type: anInteger dimenssions: aLongLongArray length: len
+	^ TensorFlowCAPI current
+		allocateTensorType: anInteger
+		dimenssions: aLongLongArray
+		dimenssionsCount: aLongLongArray size
+		length: len
+! !
 TF_Structure initialize!
