@@ -1,15 +1,15 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 6:11:25 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 6:16:48 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 27!
+!provides: 'TensorFlow' 1 28!
 !requires: 'FFI' 1 18 nil!
-!classDefinition: #ExternalArrayTest category: #'TensorFlow-Kernel'!
-TestCase subclass: #ExternalArrayTest
+!classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
+TestCase subclass: #ExternalWordArrayTest
 	instanceVariableNames: 'library'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
-!classDefinition: 'ExternalArrayTest class' category: #'TensorFlow-Kernel'!
-ExternalArrayTest class
+!classDefinition: 'ExternalWordArrayTest class' category: #'TensorFlow-Kernel'!
+ExternalWordArrayTest class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
@@ -42,18 +42,18 @@ ExternalStructure subclass: #TF_Structure
 TF_Structure class
 	instanceVariableNames: ''!
 
-!classDefinition: #ExternalArray category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #ExternalArray
+!classDefinition: #ExternalWordArray category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #ExternalWordArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
-!classDefinition: 'ExternalArray class' category: #'TensorFlow-Kernel'!
-ExternalArray class
+!classDefinition: 'ExternalWordArray class' category: #'TensorFlow-Kernel'!
+ExternalWordArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OperationArray category: #'TensorFlow-Kernel'!
-ExternalArray subclass: #TF_OperationArray
+ExternalWordArray subclass: #TF_OperationArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -63,7 +63,7 @@ TF_OperationArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OutputArray category: #'TensorFlow-Kernel'!
-ExternalArray subclass: #TF_OutputArray
+ExternalWordArray subclass: #TF_OutputArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -73,7 +73,7 @@ TF_OutputArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #UInt64Array category: #'TensorFlow-Kernel'!
-ExternalArray subclass: #UInt64Array
+ExternalWordArray subclass: #UInt64Array
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -172,8 +172,7 @@ TF_Structure subclass: #TF_Status
 TF_Status class
 	instanceVariableNames: ''!
 
-
-!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:20'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:20'!
 testArray: anExternalArraySubclass elementsAre: elementsClass
 	| array size  |
 	size _ 4.
@@ -184,7 +183,7 @@ testArray: anExternalArraySubclass elementsAre: elementsClass
 		self assert: (array at: index) class = elementsClass].
 ! !
 
-!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:23'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:23'!
 testArrayAtPutFor: anExternalArraySubclass elements: elementsClass
 	| array size one another  |
 	size _ 4.
@@ -208,22 +207,22 @@ testArrayAtPutFor: anExternalArraySubclass elements: elementsClass
 	] ensure: [another free].
 	! !
 
-!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:06:48'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:06:48'!
 testOperationArrayAtPut
 	^ self testArrayAtPutFor: TF_OperationArray elements: TF_Operation
 ! !
 
-!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:56'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:56'!
 testOperationArrayElementsOfRightClass
 	^ self testArray: TF_OperationArray elementsAre: TF_Operation.
 ! !
 
-!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:35'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:35'!
 testOutputArrayAtPut
 	^ self testArrayAtPutFor: TF_OutputArray elements: TF_Output
 ! !
 
-!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:11:21'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:11:21'!
 testOutputArrayElementsOfRightClass
 	^ self testArray: TF_OutputArray elementsAre: TF_Output.! !
 
@@ -700,68 +699,68 @@ pointerSize
 	self assert: 8 == Smalltalk wordSize.
 	^ Smalltalk wordSize! !
 
-!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:45:27'!
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:45:27'!
 at: index
 	"This method was automatically generated. See PointerArray class>>fields."
 	^ self elementAtOffset: index  - 1 * self class byteSize + 1
 	! !
 
-!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 14:10:50'!
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 14:10:50'!
 at: index put: anExternalStructure
 	"This method was automatically generated. See PointerArray class>>fields."
 	^ self elementAtOffset: index  - 1 * self class byteSize + 1 put: anExternalStructure
 	! !
 
-!ExternalArray methodsFor: 'private' stamp: 'gera 12/25/2016 13:44:02'!
+!ExternalWordArray methodsFor: 'private' stamp: 'gera 12/25/2016 13:44:02'!
 elementAtOffset: byteOffset
 	^self elementClass fromHandle: (handle longPointerAt: byteOffset)
 	! !
 
-!ExternalArray methodsFor: 'private' stamp: 'gera 12/25/2016 14:14:46'!
+!ExternalWordArray methodsFor: 'private' stamp: 'gera 12/25/2016 14:14:46'!
 elementAtOffset: byteOffset put: anExternalStructure
 	handle longPointerAt: byteOffset put: anExternalStructure getHandle.! !
 
-!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:09:17'!
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:09:17'!
 elementClass
 	^self subclassResponsibility! !
 
-!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
 first
 	^ self at: 1! !
 
-!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:29'!
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:29'!
 first: anExternalStructure
 	self at: 1 put: anExternalStructure
 ! !
 
-!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
 template
 	"This method was automatically generated. See PointerArray class>>fields."
 	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
 
-!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
 template: anObject
 	"This method was automatically generated. See PointerArray class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
 
-!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
 externalNew
 	^ self shouldNotImplement! !
 
-!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:10'!
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:10'!
 externalNew: count
 	^self fromHandle: (ExternalAddress allocate: self byteSize * count)! !
 
-!ExternalArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
+!ExternalWordArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
 fields
 	"self initialize."
 	^#((template 'void*'))! !
 
-!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:45'!
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:45'!
 new
 	^ self shouldNotImplement! !
 
-!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
 new: count
 	^self fromHandle: (ByteArray new: self byteSize * count)! !
 
