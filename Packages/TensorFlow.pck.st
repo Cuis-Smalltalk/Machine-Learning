@@ -62,6 +62,16 @@ PointerArray subclass: #TF_OutputArray
 TF_OutputArray class
 	instanceVariableNames: ''!
 
+!classDefinition: #UInt64Array category: #'TensorFlow-Kernel'!
+PointerArray subclass: #UInt64Array
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'UInt64Array class' category: #'TensorFlow-Kernel'!
+UInt64Array class
+	instanceVariableNames: ''!
+
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Buffer
 	instanceVariableNames: ''
@@ -698,6 +708,15 @@ elementClass
 !TF_OutputArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:48'!
 elementClass
 	^TF_Output! !
+
+!UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:47:24'!
+elementAtOffset: offset
+	^handle unsignedLongLongAt: offset
+	! !
+
+!UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:48:18'!
+elementAtOffset: offset put: anInteger
+	handle unsignedLongLongAt: 1 put: anInteger! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
