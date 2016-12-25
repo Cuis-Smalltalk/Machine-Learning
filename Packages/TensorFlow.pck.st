@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 23 December 2016 at 11:23:08 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 1:05:39 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 24!
+!provides: 'TensorFlow' 1 25!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
@@ -343,6 +343,19 @@ testOperationOutputType
 	self assert: output type == 1.	"TF_FLOAT"
 	output free.! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/23/2016 11:22:10'!
+testRunOperationArray
+	| graph operation session operations |
+	graph _ self constantGraph.
+	session _ TF_Session onGraph: graph.
+	operation _ graph operationNamed: 'a'.
+	operations _ TF_OperationArray externalNew: 1.
+	operations first: operation.
+	self shouldnt: [session runOperations: operations] raise: Error.
+	operations free.
+	session close.
+	session delete.! !
+
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 11:22:27'!
 testSessionOnEmptyGraph
 	| session |
@@ -634,9 +647,9 @@ elementAtOffset: offset
 elementAtOffset: offset put: anExternalStructure
 	handle longPointerAt: 1 put: anExternalStructure getHandle.! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:46'!
+!PointerArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:49:52'!
 elementClass
-	^TF_Operation! !
+	^TF_Structure! !
 
 !PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
 first
@@ -677,6 +690,14 @@ new
 !PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
 new: count
 	^self fromHandle: (ByteArray new: self byteSize * count)! !
+
+!TF_OperationArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:55'!
+elementClass
+	^TF_Operation! !
+
+!TF_OutputArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:48'!
+elementClass
+	^TF_Output! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
@@ -879,10 +900,10 @@ run
 	
 	[status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/23/2016 11:19:53'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/25/2016 03:51:33'!
 runOperation: aTF_Operation
 	| operations |
-	operations _ TF_OperationArray new: 1.
+	operations _ TF_OperationArray externalNew: 1.
 	operations first: aTF_Operation.	
 	self runOperations: operations.
 	operations free.
