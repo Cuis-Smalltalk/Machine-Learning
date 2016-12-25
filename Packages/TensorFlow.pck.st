@@ -1,7 +1,17 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 1:05:39 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 6:11:25 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 25!
+!provides: 'TensorFlow' 1 27!
 !requires: 'FFI' 1 18 nil!
+!classDefinition: #ExternalArrayTest category: #'TensorFlow-Kernel'!
+TestCase subclass: #ExternalArrayTest
+	instanceVariableNames: 'library'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'ExternalArrayTest class' category: #'TensorFlow-Kernel'!
+ExternalArrayTest class
+	instanceVariableNames: ''!
+
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -32,18 +42,18 @@ ExternalStructure subclass: #TF_Structure
 TF_Structure class
 	instanceVariableNames: ''!
 
-!classDefinition: #PointerArray category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #PointerArray
+!classDefinition: #ExternalArray category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #ExternalArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
-!classDefinition: 'PointerArray class' category: #'TensorFlow-Kernel'!
-PointerArray class
+!classDefinition: 'ExternalArray class' category: #'TensorFlow-Kernel'!
+ExternalArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OperationArray category: #'TensorFlow-Kernel'!
-PointerArray subclass: #TF_OperationArray
+ExternalArray subclass: #TF_OperationArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -53,7 +63,7 @@ TF_OperationArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OutputArray category: #'TensorFlow-Kernel'!
-PointerArray subclass: #TF_OutputArray
+ExternalArray subclass: #TF_OutputArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -63,7 +73,7 @@ TF_OutputArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #UInt64Array category: #'TensorFlow-Kernel'!
-PointerArray subclass: #UInt64Array
+ExternalArray subclass: #UInt64Array
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -162,6 +172,60 @@ TF_Structure subclass: #TF_Status
 TF_Status class
 	instanceVariableNames: ''!
 
+
+!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:20'!
+testArray: anExternalArraySubclass elementsAre: elementsClass
+	| array size  |
+	size _ 4.
+	array _ anExternalArraySubclass new: 4.
+	self assert: size * Smalltalk wordSize = array getHandle size.
+	self assert: array first class = elementsClass.
+	1 to: size do: [:index |
+		self assert: (array at: index) class = elementsClass].
+! !
+
+!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:23'!
+testArrayAtPutFor: anExternalArraySubclass elements: elementsClass
+	| array size one another  |
+	size _ 4.
+	array _ anExternalArraySubclass new: 4.
+	one _ array first.
+	another _ elementsClass externalNew.
+	
+	[	array first: another.
+		self assert: array first getHandle = another getHandle.
+		self assert: array first class == elementsClass.
+		array first: one.
+		self assert: array first getHandle = one getHandle.
+		
+		1 to: size do: [:index |
+			array at: index put: another.
+			self assert: (array at: index) getHandle = another getHandle.
+			self assert: (array at: index) class == another class.
+			array at: index put: one.
+			self assert: (array at: index) getHandle = one getHandle.
+			]
+	] ensure: [another free].
+	! !
+
+!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:06:48'!
+testOperationArrayAtPut
+	^ self testArrayAtPutFor: TF_OperationArray elements: TF_Operation
+! !
+
+!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:56'!
+testOperationArrayElementsOfRightClass
+	^ self testArray: TF_OperationArray elementsAre: TF_Operation.
+! !
+
+!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:35'!
+testOutputArrayAtPut
+	^ self testArrayAtPutFor: TF_OutputArray elements: TF_Output
+! !
+
+!ExternalArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:11:21'!
+testOutputArrayElementsOfRightClass
+	^ self testArray: TF_OutputArray elementsAre: TF_Output.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:49:27'!
 constantGraph
@@ -636,68 +700,68 @@ pointerSize
 	self assert: 8 == Smalltalk wordSize.
 	^ Smalltalk wordSize! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/22/2016 20:37:16'!
+!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:45:27'!
 at: index
 	"This method was automatically generated. See PointerArray class>>fields."
-	^ self elementAtOffset: index * self class byteSize
+	^ self elementAtOffset: index  - 1 * self class byteSize + 1
 	! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:21'!
+!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 14:10:50'!
 at: index put: anExternalStructure
 	"This method was automatically generated. See PointerArray class>>fields."
-	^ self elementAtOffset: index * self class byteSize put: anExternalStructure
+	^ self elementAtOffset: index  - 1 * self class byteSize + 1 put: anExternalStructure
 	! !
 
-!PointerArray methodsFor: 'private' stamp: 'gera 12/23/2016 11:11:53'!
-elementAtOffset: offset
-	^self elementClass fromHandle: (handle longPointerAt: offset)
+!ExternalArray methodsFor: 'private' stamp: 'gera 12/25/2016 13:44:02'!
+elementAtOffset: byteOffset
+	^self elementClass fromHandle: (handle longPointerAt: byteOffset)
 	! !
 
-!PointerArray methodsFor: 'private' stamp: 'gera 12/23/2016 00:04:23'!
-elementAtOffset: offset put: anExternalStructure
-	handle longPointerAt: 1 put: anExternalStructure getHandle.! !
+!ExternalArray methodsFor: 'private' stamp: 'gera 12/25/2016 14:14:46'!
+elementAtOffset: byteOffset put: anExternalStructure
+	handle longPointerAt: byteOffset put: anExternalStructure getHandle.! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:49:52'!
+!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:09:17'!
 elementClass
-	^TF_Structure! !
+	^self subclassResponsibility! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
+!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
 first
 	^ self at: 1! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:29'!
+!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:29'!
 first: anExternalStructure
 	self at: 1 put: anExternalStructure
 ! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
 template
 	"This method was automatically generated. See PointerArray class>>fields."
 	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
 
-!PointerArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+!ExternalArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
 template: anObject
 	"This method was automatically generated. See PointerArray class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
 
-!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
+!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
 externalNew
 	^ self shouldNotImplement! !
 
-!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:10'!
+!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:10'!
 externalNew: count
 	^self fromHandle: (ExternalAddress allocate: self byteSize * count)! !
 
-!PointerArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
+!ExternalArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
 fields
 	"self initialize."
 	^#((template 'void*'))! !
 
-!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:45'!
+!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:45'!
 new
 	^ self shouldNotImplement! !
 
-!PointerArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
+!ExternalArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
 new: count
 	^self fromHandle: (ByteArray new: self byteSize * count)! !
 
