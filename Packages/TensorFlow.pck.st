@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 6:16:48 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 7:17:22 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 28!
+!provides: 'TensorFlow' 1 29!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -172,59 +172,72 @@ TF_Structure subclass: #TF_Status
 TF_Status class
 	instanceVariableNames: ''!
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:20'!
-testArray: anExternalArraySubclass elementsAre: elementsClass
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:05:51'!
+testArray: anExternalArraySubclass sampleElement: anObject
 	| array size  |
 	size _ 4.
 	array _ anExternalArraySubclass new: 4.
 	self assert: size * Smalltalk wordSize = array getHandle size.
-	self assert: array first class = elementsClass.
+	self assert: (array first isKindOf: anObject class).
 	1 to: size do: [:index |
-		self assert: (array at: index) class = elementsClass].
+		self assert: ((array at: index) isKindOf: anObject class)].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:23'!
-testArrayAtPutFor: anExternalArraySubclass elements: elementsClass
-	| array size one another  |
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:14:38'!
+testArrayAtPutFor: anExternalArraySubclass elementSample: anObject
+	| array size one  |
 	size _ 4.
 	array _ anExternalArraySubclass new: 4.
 	one _ array first.
-	another _ elementsClass externalNew.
 	
-	[	array first: another.
-		self assert: array first getHandle = another getHandle.
-		self assert: array first class == elementsClass.
-		array first: one.
-		self assert: array first getHandle = one getHandle.
+	array first: anObject.
+	self assert: array first = anObject.
+	self assert: (array first isKindOf: anObject class).
+	array first: one.
+	self assert: array first = one.
 		
-		1 to: size do: [:index |
-			array at: index put: another.
-			self assert: (array at: index) getHandle = another getHandle.
-			self assert: (array at: index) class == another class.
-			array at: index put: one.
-			self assert: (array at: index) getHandle = one getHandle.
-			]
-	] ensure: [another free].
+	1 to: size do: [:index |
+		array at: index put: anObject.
+		self assert: (array at: index) = anObject.
+		self assert: ((array at: index) isKindOf: anObject class).
+		array at: index put: one.
+		self assert: (array at: index) = one.
+	]
 	! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:06:48'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:12:06'!
 testOperationArrayAtPut
-	^ self testArrayAtPutFor: TF_OperationArray elements: TF_Operation
-! !
+	| sample |
+	sample _ TF_Operation externalNew.
+	
+	[self testArrayAtPutFor: TF_OperationArray elementSample: sample]
+		ensure: [sample free]! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:10:56'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:06:54'!
 testOperationArrayElementsOfRightClass
-	^ self testArray: TF_OperationArray elementsAre: TF_Operation.
+	^ self testArray: TF_OperationArray sampleElement: TF_Operation new.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:09:35'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:12:29'!
 testOutputArrayAtPut
-	^ self testArrayAtPutFor: TF_OutputArray elements: TF_Output
-! !
+	| sample |
+	sample _ TF_Output externalNew.
+	
+	[self testArrayAtPutFor: TF_OutputArray elementSample: sample]
+		ensure: [sample free]! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 18:11:21'!
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:06:44'!
 testOutputArrayElementsOfRightClass
-	^ self testArray: TF_OutputArray elementsAre: TF_Output.! !
+	^ self testArray: TF_OutputArray sampleElement: TF_Output new.! !
+
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:13:07'!
+testUInt64ArrayAtPut
+	self testArrayAtPutFor: UInt64Array elementSample: 12345.
+	! !
+
+!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:06:39'!
+testUInt64ArrayElementsOfRightClass
+	^ self testArray: UInt64Array sampleElement: 1234.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 03:49:27'!
 constantGraph
@@ -679,6 +692,10 @@ current
 moduleName
 	^ 'libtensorflow'! !
 
+!TF_Structure methodsFor: 'testing' stamp: 'gera 12/25/2016 19:14:16'!
+= aTF_Structure
+	^ handle = self getHandle! !
+
 !TF_Structure methodsFor: 'private' stamp: 'gera 12/21/2016 02:52:42'!
 library
 	^ TensorFlowCAPI current! !
@@ -777,9 +794,9 @@ elementAtOffset: offset
 	^handle unsignedLongLongAt: offset
 	! !
 
-!UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:48:18'!
+!UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 19:17:14'!
 elementAtOffset: offset put: anInteger
-	handle unsignedLongLongAt: 1 put: anInteger! !
+	handle unsignedLongLongAt: offset put: anInteger! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
