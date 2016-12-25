@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 7:17:22 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 8:58:28 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 29!
+!provides: 'TensorFlow' 1 30!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -172,7 +172,18 @@ TF_Structure subclass: #TF_Status
 TF_Status class
 	instanceVariableNames: ''!
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:05:51'!
+!classDefinition: #TF_Tensor category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_Tensor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_Tensor class' category: #'TensorFlow-Kernel'!
+TF_Tensor class
+	instanceVariableNames: ''!
+
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:05:51'!
 testArray: anExternalArraySubclass sampleElement: anObject
 	| array size  |
 	size _ 4.
@@ -183,7 +194,7 @@ testArray: anExternalArraySubclass sampleElement: anObject
 		self assert: ((array at: index) isKindOf: anObject class)].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:14:38'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:14:38'!
 testArrayAtPutFor: anExternalArraySubclass elementSample: anObject
 	| array size one  |
 	size _ 4.
@@ -205,7 +216,7 @@ testArrayAtPutFor: anExternalArraySubclass elementSample: anObject
 	]
 	! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:12:06'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:12:06'!
 testOperationArrayAtPut
 	| sample |
 	sample _ TF_Operation externalNew.
@@ -213,12 +224,12 @@ testOperationArrayAtPut
 	[self testArrayAtPutFor: TF_OperationArray elementSample: sample]
 		ensure: [sample free]! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:06:54'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:54'!
 testOperationArrayElementsOfRightClass
 	^ self testArray: TF_OperationArray sampleElement: TF_Operation new.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:12:29'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:12:29'!
 testOutputArrayAtPut
 	| sample |
 	sample _ TF_Output externalNew.
@@ -226,16 +237,34 @@ testOutputArrayAtPut
 	[self testArrayAtPutFor: TF_OutputArray elementSample: sample]
 		ensure: [sample free]! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:06:44'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:44'!
 testOutputArrayElementsOfRightClass
 	^ self testArray: TF_OutputArray sampleElement: TF_Output new.! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:13:07'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 20:54:13'!
+testUIn64ArrayfromArray
+	self testUIn64ArrayfromArray: #(1).
+	self testUIn64ArrayfromArray: #(16r12345678 2 16r76543210 4 16rDEADBEAF 6 16rFFFFFFFF).
+! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 20:57:25'!
+testUIn64ArrayfromArray: template
+	| array |
+	array _ UInt64Array fromArray: template.
+	
+	template withIndexDo: [:each :index |
+		self assert: ((template at: index) = (array at: index))
+	].
+
+	array free.! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 20:58:00'!
 testUInt64ArrayAtPut
 	self testArrayAtPutFor: UInt64Array elementSample: 12345.
-	! !
+	self testArrayAtPutFor: UInt64Array elementSample: 16rFE00FE00.
+! !
 
-!ExternalWordArrayTest methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 19:06:39'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:39'!
 testUInt64ArrayElementsOfRightClass
 	^ self testArray: UInt64Array sampleElement: 1234.! !
 
@@ -518,6 +547,11 @@ testStatusSetGetCode
 	status delete.
 	self assert: status getHandle isNil.! !
 
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:55:14'!
+allocateTensorType: anInteger dimenssions: aLonnLongArray dimenssionsCount: dimCount length: len
+	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong ulonglong* ulonglong ulonglong)>
+	^ self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:26:55'!
 closeSession: aTF_Session status: aTF_Status
 	<cdecl: void 'TF_CloseSession' (TF_Session* TF_Status*)>
@@ -552,6 +586,11 @@ deleteSessionOptions: aTF_SessionOptions
 deleteStatus: aTF_Status
 	<cdecl: void 'TF_DeleteStatus' (TF_Status*)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:17'!
+deleteTensor: aTF_Tensor
+	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
+	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
 externalizeString: aString
@@ -683,6 +722,11 @@ setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:40'!
+tensorType: aTF_Tensor
+	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
 !TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 01:56:21'!
 current
 	^ current ifNil: [current _ self new].
@@ -797,6 +841,14 @@ elementAtOffset: offset
 !UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 19:17:14'!
 elementAtOffset: offset put: anInteger
 	handle unsignedLongLongAt: offset put: anInteger! !
+
+!UInt64Array class methodsFor: 'instance creation' stamp: 'gera 12/25/2016 20:51:45'!
+fromArray: anIntegerArray
+	| answer |
+	answer _ self externalNew: anIntegerArray size.
+	anIntegerArray withIndexDo: [:each :index |
+		answer at: index put: each].
+	^ answer! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
@@ -1107,4 +1159,17 @@ message
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:55:36'!
 create
 	^ TensorFlowCAPI current newStatus! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/25/2016 19:32:18'!
+type: anInteger dimenssions: anIntegerArray length: len
+	| externalized answer |
+	externalized _ UInt64Array fromArray: anIntegerArray.
+	
+	[answer _ TensorFlowCAPI current
+		allocateTensorType: anInteger
+		dimenssions: externalized
+		dimenssionsCount: anIntegerArray size
+		length: len] ensure: [externalized free].
+	^ answer
+! !
 TF_Structure initialize!
