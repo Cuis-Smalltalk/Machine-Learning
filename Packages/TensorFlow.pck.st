@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:13:36 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:43:20 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 32!
+!provides: 'TensorFlow' 1 33!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -449,13 +449,13 @@ testNewStatus
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/23/2016 10:46:22'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 09:43:09'!
 testOperationOutputType
 	| graph operation output |
 	graph _ self constantGraph.
 	operation _ graph operationNamed: 'a'.
 	output _ TF_Output onOperation: operation index: 0.
-	self assert: output type == 1.	"TF_FLOAT"
+	self assert: output type == TF_Tensor typeFloat.
 	output free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/23/2016 11:22:10'!
@@ -1179,4 +1179,12 @@ type: anInteger dimenssions: anIntegerArray bytes: len
 		length: len] ensure: [externalized free].
 	^ answer
 ! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:41:58'!
+typeFloat
+	^1! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:42:07'!
+typeInt64
+	^9! !
 TF_Structure initialize!
