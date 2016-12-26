@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 25 December 2016 at 8:58:28 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:11:04 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 30!
+!provides: 'TensorFlow' 1 31!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -247,10 +247,10 @@ testUIn64ArrayfromArray
 	self testUIn64ArrayfromArray: #(16r12345678 2 16r76543210 4 16rDEADBEAF 6 16rFFFFFFFF).
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 20:57:25'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/26/2016 09:10:59'!
 testUIn64ArrayfromArray: template
 	| array |
-	array _ UInt64Array fromArray: template.
+	array _ UInt64Array externalFromArray: template.
 	
 	template withIndexDo: [:each :index |
 		self assert: ((template at: index) = (array at: index))
@@ -842,8 +842,8 @@ elementAtOffset: offset
 elementAtOffset: offset put: anInteger
 	handle unsignedLongLongAt: offset put: anInteger! !
 
-!UInt64Array class methodsFor: 'instance creation' stamp: 'gera 12/25/2016 20:51:45'!
-fromArray: anIntegerArray
+!UInt64Array class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:31'!
+externalFromArray: anIntegerArray
 	| answer |
 	answer _ self externalNew: anIntegerArray size.
 	anIntegerArray withIndexDo: [:each :index |
@@ -1160,10 +1160,10 @@ message
 create
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/25/2016 19:32:18'!
-type: anInteger dimenssions: anIntegerArray length: len
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:53'!
+type: anInteger dimenssions: anIntegerArray bytes: len
 	| externalized answer |
-	externalized _ UInt64Array fromArray: anIntegerArray.
+	externalized _ UInt64Array externalFromArray: anIntegerArray.
 	
 	[answer _ TensorFlowCAPI current
 		allocateTensorType: anInteger
