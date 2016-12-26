@@ -560,6 +560,21 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/26/2016 12:40:19'!
+testSessionRunTargetOutput
+	| graph operation session outputs output |
+	graph _ self constantFloatGraph.
+	session _ TF_Session onGraph: graph.
+	operation _ graph operationNamed: 'a'.
+	output _ TF_Output onOperation: operation index: 1.
+	outputs _ TF_OutputArray externalNew: 1.
+	outputs first: output.
+	self shouldnt: [session runOperation: operation outputs: outputs] raise: Error.
+	session close.
+	session delete.
+	outputs free.
+	output free.! !
+
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
 testStatusCodes
 	| status  |
