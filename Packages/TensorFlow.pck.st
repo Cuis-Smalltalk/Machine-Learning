@@ -1155,13 +1155,17 @@ runOperation: aTF_Operation
 	operations free.
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/23/2016 11:19:30'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/26/2016 12:42:53'!
 runOperations: aTF_OperationArray
 	| status |
 	status _ TF_Status create.
 	
 	self library
-		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: aTF_OperationArray count: 1 metadata: nil status: status.
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: nil values: nil count: 0
+		targets: aTF_OperationArray count: 1
+		metadata: nil status: status.
 	
 	[status check] ensure: [status delete].! !
 
