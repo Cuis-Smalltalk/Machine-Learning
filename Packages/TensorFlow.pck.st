@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 11:57:42 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 12:24:11 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 36!
+!provides: 'TensorFlow' 1 37!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -303,6 +303,24 @@ constantInt32GraphDef
  16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70 16r65 16r12 16r02 16r30 16r03 16r0A 16r0C 16r0A
  16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 12:23:16'!
+constantInt64Graph
+	^ TF_Graph fromString: self constantInt64GraphDef! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 12:23:03'!
+constantInt64GraphDef
+	" This GraphDef corresponds to simple Graph, defined as
+	
+		tf.constant(0.42, name='a')
+		
+	 saved as ProtoBuf "
+	^ #[
+ 16r0A 16r33 16r0A 16r01 16r61 16r12 16r05 16r43 16r6F 16r6E 16r73 16r74 16r2A 16r1A 16r0A 16r05
+ 16r76 16r61 16r6C 16r75 16r65 16r12 16r11 16r42 16r0F 16r08 16r09 16r12 16r00 16r52 16r09 16rC2
+ 16r84 16r89 16r92 16rA4 16rC8 16r90 16rA1 16r42 16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70
+ 16r65 16r12 16r02 16r30 16r09 16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E
+ 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:20:25'!
 emptyGraph
 	^ TF_Graph fromString: self emptyGraphDef.
@@ -374,7 +392,7 @@ testImportBad
 	graph delete.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:45'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 12:23:48'!
 testImportConstantGraph
 	| graph |
 
@@ -382,7 +400,10 @@ testImportConstantGraph
 		graph _ self constantFloatGraph.
 		graph delete.
 		graph _ self constantInt32Graph.
-		graph delete] raise: Error.
+		graph delete.
+		graph _ self constantInt64Graph.
+		graph delete.
+		] raise: Error.
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:19:54'!
@@ -483,6 +504,10 @@ testOperationOutputTypeFloat
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:13:10'!
 testOperationOutputTypeInt32
 	^self testGraph: self constantInt32Graph outputType: TF_Tensor typeInt32! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 12:24:05'!
+testOperationOutputTypeInt64
+	^self testGraph: self constantInt64Graph outputType: TF_Tensor typeInt64! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 10:59:53'!
 testRunOperationArray

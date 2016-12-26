@@ -1,0 +1,28 @@
+node {
+  name: "a"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT64
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT64
+        tensor_shape {
+        }
+        int64_val: 4774451407313060418
+      }
+    }
+  }
+}
+node {
+  name: "init"
+  op: "NoOp"
+}
+versions {
+  producer: 15
+}

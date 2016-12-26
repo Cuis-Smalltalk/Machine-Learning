@@ -20,6 +20,9 @@ writeg('empty.pb')
 a = tf.constant(42, name='a')
 writeg('a=42.pb')
 
+a = tf.constant(0x4242424242424242, name='a')
+writeg('a=4242424242424242.pb')
+
 a = tf.constant(0.42, name='a')
 writeg('a=0.42.pb')
 
