@@ -17,12 +17,20 @@ def writeg(name):
 
 writeg('empty.pb')
 
+a = tf.constant(42, name='a')
+writeg('a=42.pb')
+
 a = tf.constant(0.42, name='a')
 writeg('a=0.42.pb')
 
 a = tf.Variable(6.0, name='a')
 b = tf.Variable(7.0, name='b')
 c = tf.mul(a, b, name="c")
-writeg('c=a+b.pb')
+writeg('c=(a=6.0)+(b=7.0).pb')
+
+a = tf.Variable(6, name='a')
+b = tf.Variable(7, name='b')
+c = tf.mul(a, b, name="c")
+writeg('c=(a=6)+(b=7).pb')
 
 
