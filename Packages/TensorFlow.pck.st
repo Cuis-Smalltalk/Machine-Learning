@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:11:04 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:13:36 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 31!
+!provides: 'TensorFlow' 1 32!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1160,8 +1160,15 @@ message
 create
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:53'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:13:33'!
 type: anInteger dimenssions: anIntegerArray bytes: len
+	" I understand dimenssions are:
+		#(0)		-> Scalar
+		#(7)		-> Unidimensional array of 7 elements
+		#(7 4)		-> 7x4 elements matrix
+		#(2 5 9)	-> 2x5x9 elements cube
+	"
+		
 	| externalized answer |
 	externalized _ UInt64Array externalFromArray: anIntegerArray.
 	
