@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 10:50:38 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:50:14 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 34!
+!provides: 'TensorFlow' 1 35!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -859,9 +859,13 @@ elementAtOffset: offset
 	^handle unsignedLongLongAt: offset
 	! !
 
-!UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 19:17:14'!
+!UInt64Array methodsFor: 'accessing' stamp: 'jb 12/26/2016 09:46:16'!
 elementAtOffset: offset put: anInteger
 	handle unsignedLongLongAt: offset put: anInteger! !
+
+!UInt64Array class methodsFor: 'instance creation' stamp: 'jb 12/26/2016 09:43:53'!
+byteSize
+	^ 8! !
 
 !UInt64Array class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:31'!
 externalFromArray: anIntegerArray
