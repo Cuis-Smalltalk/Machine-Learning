@@ -580,7 +580,6 @@ testStatusCodes
 	| status  |
 	status _ TF_Status create.
 	
-	status code: 0 message: ''.
 	self assert: status isOk.
 	self assert: status codeText = 'OK'.
 	self shouldnt: [status check] raise: Error.
@@ -592,14 +591,14 @@ testStatusCodes
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 10:18:08'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:25:46'!
 testStatusGetMessage
 	| status message |
 	status _ TF_Status create.
 	
-	status code: 0 message: 'All is good'.
+	status code: 1 message: 'All is one'.
 	message _ status message.
-	self assert: message = 'All is good'.
+	self assert: message = 'All is one'.
 
 	status code: 7 message: 'Something is very seven'.
 	message _ status message.
@@ -608,7 +607,7 @@ testStatusGetMessage
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 09:57:36'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:26:17'!
 testStatusSetGetCode
 	| status code |
 	status _ TF_Status create.
@@ -616,12 +615,23 @@ testStatusSetGetCode
 	code _ status code.
 	self assert: code = 1.
 
-	status code: 0 message: ''.
+	status code: 2 message: ''.
 	code _ status code.
-	self assert: code = 0.
+	self assert: code = 2.
 
 	status delete.
 	self assert: status getHandle isNil.! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'jb 12/26/2016 12:17:08'!
+testTensorDimensions
+	| tensor |
+	tensor _ TF_Tensor
+		type: TF_Tensor typeInt64
+		dimenssions: #(1 4 ).
+	self
+		assert: tensor numberOfDimensions = 2;
+		assert: (tensor sizeOn: 1) = 4.
+	tensor delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 10:46:51'!
 testTensorNewScalar
@@ -643,6 +653,12 @@ testTensorType
 	self assert: tensor type == tensor class typeFloat.
 	tensor delete.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'jb 12/26/2016 11:46:26'!
+testVersion
+	| version |
+	version _ TensorFlowCAPI current version.
+	self assert: version =  '0.12.0'! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/26/2016 10:46:00'!
 allocateTensorType: anInteger dimenssions: aLonnLongArray dimenssionsCount: dimCount length: len
@@ -824,14 +840,29 @@ setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
+tensor: aTF_Tensor sizeOn: dimension
+	<cdecl: longlong 'TF_Dim' (TF_Tensor* ulonglong)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:04:40'!
+tensorNumDimensions: aTF_Tensor
+	<cdecl: longlong 'TF_NumDims' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:40'!
 tensorType: aTF_Tensor
 	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 01:56:21'!
+!TensorFlowCAPI methodsFor: 'utils' stamp: 'jb 12/26/2016 11:48:09'!
+version
+	<cdecl: char* 'TF_Version' (void)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'jb 12/26/2016 10:19:17'!
 current
-	^ current ifNil: [current _ self new].
+	^ current ifNil: [current _ self new forceLoading].
 ! !
 
 !TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'GerardoRicharte 12/18/2016 12:18'!
@@ -943,6 +974,10 @@ elementAtOffset: offset
 !UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 19:17:14'!
 elementAtOffset: offset put: anInteger
 	handle unsignedLongLongAt: offset put: anInteger! !
+
+!UInt64Array class methodsFor: 'instance creation' stamp: 'jb 12/26/2016 09:43:53'!
+byteSize
+	^ 8! !
 
 !UInt64Array class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:31'!
 externalFromArray: anIntegerArray
@@ -1151,38 +1186,36 @@ delete
 	[status check] ensure: [status delete].
 	handle _ nil! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/22/2016 02:29:18'!
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:16'!
 run
 	| status |
 	status _ TF_Status create.
 	
-	self library
+	[self library
 		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: nil count: 0 metadata: nil status: status.
 	
-	[status check] ensure: [status delete].! !
+	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/25/2016 03:51:33'!
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:38:43'!
 runOperation: aTF_Operation
 	| operations |
 	operations _ TF_OperationArray externalNew: 1.
 	operations first: aTF_Operation.	
-	self runOperations: operations.
-	operations free.
-! !
+	[self runOperations: operations] ensure:[operations free]! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/26/2016 12:42:53'!
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:02'!
 runOperations: aTF_OperationArray
 	| status |
 	status _ TF_Status create.
 	
-	self library
+	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
 		outputs: nil values: nil count: 0
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
 	
-	[status check] ensure: [status delete].! !
+	status check] ensure: [status delete].! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
 onGraph: aTF_Graph
@@ -1223,9 +1256,10 @@ check
 code
 	^self library getCode: self! !
 
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:30:59'!
+!TF_Status methodsFor: 'accessing' stamp: 'jb 12/26/2016 10:29:57'!
 code: aTF_Code message: aString
 	| externalized |
+	self assert: aTF_Code ~= 0.
 	externalized _ self library externalizeString: aString.
 	self library setStatus: self code: aTF_Code message: externalized
 ! !
@@ -1278,6 +1312,14 @@ create
 delete
 	self library deleteTensor: self.
 	handle _ nil! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:09:58'!
+numberOfDimensions
+	^self library tensorNumDimensions: self.! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:10:24'!
+sizeOn: dimension
+	^self library tensor: self sizeOn: dimension.! !
 
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:50:33'!
 type
