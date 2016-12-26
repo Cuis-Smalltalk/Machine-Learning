@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:43:20 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 10:50:38 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 33!
+!provides: 'TensorFlow' 1 34!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -547,9 +547,30 @@ testStatusSetGetCode
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:55:14'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 10:46:51'!
+testTensorNewScalar
+	| tensor |
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #(0).
+	self deny: tensor getHandle isNil.
+	self deny: tensor getHandle = 0.
+	tensor delete.
+	self assert: tensor getHandle isNil.! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 10:47:44'!
+testTensorType
+	| tensor |
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #(0).
+	self assert: tensor type == tensor class typeInt64.
+	tensor delete.
+
+	tensor _ TF_Tensor type: TF_Tensor typeFloat dimenssions: #(0).
+	self assert: tensor type == tensor class typeFloat.
+	tensor delete.
+! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/26/2016 10:46:00'!
 allocateTensorType: anInteger dimenssions: aLonnLongArray dimenssionsCount: dimCount length: len
-	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong ulonglong* ulonglong ulonglong)>
+	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:26:55'!
@@ -1160,8 +1181,23 @@ message
 create
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:13:33'!
-type: anInteger dimenssions: anIntegerArray bytes: len
+!TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:44:32'!
+delete
+	self library deleteTensor: self.
+	handle _ nil! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:50:33'!
+type
+	^self library tensorType: self.! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:48:44'!
+sizeForType: anInteger
+	anInteger = self typeFloat ifTrue: [^8].
+	anInteger = self typeInt64 ifTrue: [^8].
+	^ self shouldBeImplemented.! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 10:45:02'!
+type: anInteger dimenssions: anIntegerArray
 	" I understand dimenssions are:
 		#(0)		-> Scalar
 		#(7)		-> Unidimensional array of 7 elements
@@ -1169,14 +1205,17 @@ type: anInteger dimenssions: anIntegerArray bytes: len
 		#(2 5 9)	-> 2x5x9 elements cube
 	"
 		
-	| externalized answer |
+	| externalized answer byteSize |
 	externalized _ UInt64Array externalFromArray: anIntegerArray.
+	byteSize _ anIntegerArray inject: 1 into: [:prev :each | prev * each].
+	byteSize = 0 ifTrue: [byteSize _ 1].
+	byteSize _ byteSize * (self sizeForType: anInteger).
 	
 	[answer _ TensorFlowCAPI current
 		allocateTensorType: anInteger
 		dimenssions: externalized
 		dimenssionsCount: anIntegerArray size
-		length: len] ensure: [externalized free].
+		length: byteSize] ensure: [externalized free].
 	^ answer
 ! !
 
