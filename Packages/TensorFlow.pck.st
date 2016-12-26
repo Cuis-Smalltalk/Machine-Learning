@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 10:19:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 10:30:34 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 36!
+!provides: 'TensorFlow' 1 38!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -499,12 +499,11 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:24:46'!
 testStatusCodes
 	| status  |
 	status _ TF_Status create.
 	
-	status code: 0 message: ''.
 	self assert: status isOk.
 	self assert: status codeText = 'OK'.
 	self shouldnt: [status check] raise: Error.
@@ -516,14 +515,14 @@ testStatusCodes
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 10:18:08'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:25:46'!
 testStatusGetMessage
 	| status message |
 	status _ TF_Status create.
 	
-	status code: 0 message: 'All is good'.
+	status code: 1 message: 'All is one'.
 	message _ status message.
-	self assert: message = 'All is good'.
+	self assert: message = 'All is one'.
 
 	status code: 7 message: 'Something is very seven'.
 	message _ status message.
@@ -532,7 +531,7 @@ testStatusGetMessage
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 09:57:36'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:26:17'!
 testStatusSetGetCode
 	| status code |
 	status _ TF_Status create.
@@ -540,9 +539,9 @@ testStatusSetGetCode
 	code _ status code.
 	self assert: code = 1.
 
-	status code: 0 message: ''.
+	status code: 2 message: ''.
 	code _ status code.
-	self assert: code = 0.
+	self assert: code = 2.
 
 	status delete.
 	self assert: status getHandle isNil.! !
@@ -1134,9 +1133,10 @@ check
 code
 	^self library getCode: self! !
 
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:30:59'!
+!TF_Status methodsFor: 'accessing' stamp: 'jb 12/26/2016 10:29:57'!
 code: aTF_Code message: aString
 	| externalized |
+	self assert: aTF_Code ~= 0.
 	externalized _ self library externalizeString: aString.
 	self library setStatus: self code: aTF_Code message: externalized
 ! !
