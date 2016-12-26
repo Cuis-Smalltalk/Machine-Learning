@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 11:00:04 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 11:57:42 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 35!
+!provides: 'TensorFlow' 1 36!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -286,6 +286,23 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:24'!
+constantInt32Graph
+	^ TF_Graph fromString: self constantInt32GraphDef! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:29'!
+constantInt32GraphDef
+	" This GraphDef corresponds to simple Graph, defined as
+	
+		tf.constant(0.42, name='a')
+		
+	 saved as ProtoBuf "
+	^ #[
+ 16r0A 16r2B 16r0A 16r01 16r61 16r12 16r05 16r43 16r6F 16r6E 16r73 16r74 16r2A 16r12 16r0A 16r05
+ 16r76 16r61 16r6C 16r75 16r65 16r12 16r09 16r42 16r07 16r08 16r03 16r12 16r00 16r3A 16r01 16r2A
+ 16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70 16r65 16r12 16r02 16r30 16r03 16r0A 16r0C 16r0A
+ 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:20:25'!
 emptyGraph
 	^ TF_Graph fromString: self emptyGraphDef.
@@ -337,6 +354,14 @@ testGetOperationOnEmptyGraph
 	graph _ self emptyGraph.
 	self should: [graph operationNamed: 'something'] raise: Error! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:10:00'!
+testGraph: aTF_Graph outputType: anInteger
+	| operation output |
+	operation _ aTF_Graph operationNamed: 'a'.
+	output _ TF_Output onOperation: operation index: 0.
+	self assert: output type == anInteger.
+	output free.! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
 testImportBad
 	| graph buffer |
@@ -349,12 +374,14 @@ testImportBad
 	graph delete.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 10:59:43'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:45'!
 testImportConstantGraph
 	| graph |
 
 	self shouldnt: [
 		graph _ self constantFloatGraph.
+		graph delete.
+		graph _ self constantInt32Graph.
 		graph delete] raise: Error.
 	! !
 
@@ -449,14 +476,13 @@ testNewStatus
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 10:59:49'!
-testOperationOutputType
-	| graph operation output |
-	graph _ self constantFloatGraph.
-	operation _ graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 0.
-	self assert: output type == TF_Tensor typeFloat.
-	output free.! !
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:10:55'!
+testOperationOutputTypeFloat
+	^self testGraph: self constantFloatGraph outputType: TF_Tensor typeFloat! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:13:10'!
+testOperationOutputTypeInt32
+	^self testGraph: self constantInt32Graph outputType: TF_Tensor typeInt32! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 10:59:53'!
 testRunOperationArray
@@ -1190,10 +1216,11 @@ delete
 type
 	^self library tensorType: self.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:48:44'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 11:14:21'!
 sizeForType: anInteger
 	anInteger = self typeFloat ifTrue: [^8].
 	anInteger = self typeInt64 ifTrue: [^8].
+	anInteger = self typeInt32 ifTrue: [^4].
 	^ self shouldBeImplemented.! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 10:45:02'!
@@ -1222,6 +1249,10 @@ type: anInteger dimenssions: anIntegerArray
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:41:58'!
 typeFloat
 	^1! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 11:14:05'!
+typeInt32
+	^3! !
 
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:42:07'!
 typeInt64
