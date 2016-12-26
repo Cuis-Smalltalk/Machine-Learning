@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 2:26:46 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 2:48:23 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 38!
+!provides: 'TensorFlow' 1 40!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -622,34 +622,50 @@ testStatusSetGetCode
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'jb 12/26/2016 12:17:08'!
-testTensorDimensions
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:54'!
+testTensorDimensions0D
+	^ self testTensorDimensions: #()! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:45:28'!
+testTensorDimensions10D
+	^ self testTensorDimensions: #(1 2 3 4 5 6 7 8 9 10)! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:50'!
+testTensorDimensions1D
+	^ self testTensorDimensions: #(7)! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:40'!
+testTensorDimensions2D
+	^ self testTensorDimensions: #(1 4)! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:30'!
+testTensorDimensions: anArray
 	| tensor |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
-		dimenssions: #(1 4 ).
-	self
-		assert: tensor numberOfDimensions = 2;
-		assert: (tensor sizeOn: 1) = 4.
+		dimenssions: anArray.
+	self assert: tensor numberOfDimensions = anArray size.
+	anArray withIndexDo: [:each :index |
+		self assert: (tensor sizeOn: index - 1) = (anArray at: index)].
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 10:46:51'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:47:04'!
 testTensorNewScalar
 	| tensor |
-	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #(0).
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #().
 	self deny: tensor getHandle isNil.
 	self deny: tensor getHandle = 0.
 	tensor delete.
 	self assert: tensor getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 10:47:44'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:47:25'!
 testTensorType
 	| tensor |
-	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #(0).
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #().
 	self assert: tensor type == tensor class typeInt64.
 	tensor delete.
 
-	tensor _ TF_Tensor type: TF_Tensor typeFloat dimenssions: #(0).
+	tensor _ TF_Tensor type: TF_Tensor typeFloat dimenssions: #().
 	self assert: tensor type == tensor class typeFloat.
 	tensor delete.
 ! !
@@ -1332,21 +1348,21 @@ sizeForType: anInteger
 	anInteger = self typeInt32 ifTrue: [^4].
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 10:45:02'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 14:48:20'!
 type: anInteger dimenssions: anIntegerArray
 	" I understand dimenssions are:
-		#(0)		-> Scalar
+		#()		-> Scalar
 		#(7)		-> Unidimensional array of 7 elements
 		#(7 4)		-> 7x4 elements matrix
 		#(2 5 9)	-> 2x5x9 elements cube
 	"
 		
-	| externalized answer byteSize |
+	| externalized answer byteSize elementSize |
 	externalized _ UInt64Array externalFromArray: anIntegerArray.
-	byteSize _ anIntegerArray inject: 1 into: [:prev :each | prev * each].
-	byteSize = 0 ifTrue: [byteSize _ 1].
-	byteSize _ byteSize * (self sizeForType: anInteger).
-	
+	elementSize _ self sizeForType: anInteger.
+	byteSize _ anIntegerArray inject: elementSize into: [:prev :each | prev * each].
+	self assert: byteSize ~= 0.
+		
 	[answer _ TensorFlowCAPI current
 		allocateTensorType: anInteger
 		dimenssions: externalized
