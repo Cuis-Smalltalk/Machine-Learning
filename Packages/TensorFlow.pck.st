@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 9:50:14 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 10:19:41 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 35!
+!provides: 'TensorFlow' 1 36!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -748,9 +748,9 @@ tensorType: aTF_Tensor
 	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'gera 12/21/2016 01:56:21'!
+!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'jb 12/26/2016 10:19:17'!
 current
-	^ current ifNil: [current _ self new].
+	^ current ifNil: [current _ self new forceLoading].
 ! !
 
 !TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'GerardoRicharte 12/18/2016 12:18'!
