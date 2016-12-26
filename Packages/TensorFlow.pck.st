@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 12:24:11 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 2:26:46 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 37!
+!provides: 'TensorFlow' 1 38!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -509,6 +509,16 @@ testOperationOutputTypeInt32
 testOperationOutputTypeInt64
 	^self testGraph: self constantInt64Graph outputType: TF_Tensor typeInt64! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 14:26:05'!
+testOutputDims
+	| graph operation output |
+	graph _ self constantInt64Graph.
+	operation _ graph operationNamed: 'a'.
+	output _ TF_Output onOperation: operation index: 0.
+	self assert: (graph outputDimenssionsCount: output) = 0.
+	graph delete.
+	output free.! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 10:59:53'!
 testRunOperationArray
 	| graph operation session operations |
@@ -672,6 +682,11 @@ externalizeString: aString
 	aString withIndexDo: [:char :index |
 		answer byteAt:  index put: char asciiValue].
 	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/26/2016 13:13:55'!
+forGraph: aTF_Graph outputDims: aTF_Output status: aTF_Status
+	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
+	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:59:30'!
 getCode: aTF_Status
@@ -1018,6 +1033,14 @@ operationNamed: aString
 	answer isNull ifTrue: [self error: 'Operation not found'].
 	^ answer
 ! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 12/26/2016 12:55:11'!
+outputDimenssionsCount: aTF_Output
+	| status answer |
+	status _ TF_Status create.
+	answer _ self library forGraph: self outputDims: aTF_Output status: status.
+	[status check] ensure: [status delete].
+	^answer! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
