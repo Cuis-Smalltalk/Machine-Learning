@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 11:49:12 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 12:17:33 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 39!
+!provides: 'TensorFlow' 1 40!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -546,6 +546,17 @@ testStatusSetGetCode
 	status delete.
 	self assert: status getHandle isNil.! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'jb 12/26/2016 12:17:08'!
+testTensorDimensions
+	| tensor |
+	tensor _ TF_Tensor
+		type: TF_Tensor typeInt64
+		dimenssions: #(1 4 ).
+	self
+		assert: tensor numberOfDimensions = 2;
+		assert: (tensor sizeOn: 1) = 4.
+	tensor delete.! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 10:46:51'!
 testTensorNewScalar
 	| tensor |
@@ -567,7 +578,7 @@ testTensorType
 	tensor delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'jb 12/26/2016 11:46:26'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'jb 12/26/2016 11:46:26'!
 testVersion
 	| version |
 	version _ TensorFlowCAPI current version.
@@ -748,12 +759,22 @@ setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
+tensor: aTF_Tensor sizeOn: dimension
+	<cdecl: longlong 'TF_Dim' (TF_Tensor* ulonglong)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:04:40'!
+tensorNumDimensions: aTF_Tensor
+	<cdecl: longlong 'TF_NumDims' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:40'!
 tensorType: aTF_Tensor
 	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 11:48:09'!
+!TensorFlowCAPI methodsFor: 'utils' stamp: 'jb 12/26/2016 11:48:09'!
 version
 	<cdecl: char* 'TF_Version' (void)>
 	^ self externalCallFailed.! !
@@ -1198,6 +1219,14 @@ create
 delete
 	self library deleteTensor: self.
 	handle _ nil! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:09:58'!
+numberOfDimensions
+	^self library tensorNumDimensions: self.! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:10:24'!
+sizeOn: dimension
+	^self library tensor: self sizeOn: dimension.! !
 
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:50:33'!
 type
