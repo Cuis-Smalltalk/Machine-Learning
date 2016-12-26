@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 10:30:34 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 11:49:12 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 38!
+!provides: 'TensorFlow' 1 39!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -567,6 +567,12 @@ testTensorType
 	tensor delete.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'jb 12/26/2016 11:46:26'!
+testVersion
+	| version |
+	version _ TensorFlowCAPI current version.
+	self assert: version =  '0.12.0'! !
+
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/26/2016 10:46:00'!
 allocateTensorType: anInteger dimenssions: aLonnLongArray dimenssionsCount: dimCount length: len
 	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
@@ -746,6 +752,11 @@ setStatus: aTF_Status code: anInteger message: anExternalString
 tensorType: aTF_Tensor
 	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
 	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 11:48:09'!
+version
+	<cdecl: char* 'TF_Version' (void)>
+	^ self externalCallFailed.! !
 
 !TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'jb 12/26/2016 10:19:17'!
 current
@@ -1065,34 +1076,32 @@ delete
 	[status check] ensure: [status delete].
 	handle _ nil! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/22/2016 02:29:18'!
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:16'!
 run
 	| status |
 	status _ TF_Status create.
 	
-	self library
+	[self library
 		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: nil count: 0 metadata: nil status: status.
 	
-	[status check] ensure: [status delete].! !
+	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/25/2016 03:51:33'!
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:38:43'!
 runOperation: aTF_Operation
 	| operations |
 	operations _ TF_OperationArray externalNew: 1.
 	operations first: aTF_Operation.	
-	self runOperations: operations.
-	operations free.
-! !
+	[self runOperations: operations] ensure:[operations free]! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/23/2016 11:19:30'!
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:02'!
 runOperations: aTF_OperationArray
 	| status |
 	status _ TF_Status create.
 	
-	self library
+	[self library
 		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: aTF_OperationArray count: 1 metadata: nil status: status.
 	
-	[status check] ensure: [status delete].! !
+	status check] ensure: [status delete].! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
 onGraph: aTF_Graph
