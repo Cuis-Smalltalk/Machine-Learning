@@ -582,19 +582,22 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/26/2016 12:40:19'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 09:43:31'!
 testSessionRunTargetOutput
-	| graph operation session outputs output |
-	graph _ self constantFloatGraph.
+	| graph operation session output tensor |
+	graph _ self constantInt64Graph.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 1.
-	outputs _ TF_OutputArray externalNew: 1.
-	outputs first: output.
-	self shouldnt: [session runOperation: operation outputs: outputs] raise: Error.
+	output _ TF_Output onOperation: operation index: 0.
+	self shouldnt: [
+		tensor _ session runOperation: operation output: output] raise: Error.
+	self deny: tensor getHandle isNil.
+	self deny: tensor getHandle = 0.
+	self deny: tensor data getHandle isNil.
+	self deny: tensor data getHandle = 0.
+	self assert: (tensor data getHandle signedLongLongAt: 1) = 16r4242424242424242.
 	session close.
 	session delete.
-	outputs free.
 	output free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
@@ -852,16 +855,16 @@ runSession: aTF_Session
 	
 	<cdecl: void 'TF_SessionRun' (
 		TF_Session*
-		TF_Buffer*	"RunOptions, may be nil"
-		void*"TF_Output*"	"inputs"
-		void*"TF_Tensor*"	"inputs' values"
-		long			"inputs count"
-		void*"TF_Output*"		"outputs"
-		void*"TF_Tensor**"	"outputs values (results)"
-		long				"outputs count"
-		PointerArray*		"TF_Operation**"		"target operations array, may be nil"
-		long				"taret operations count"
-		TF_Buffer*		"RunMetadata"
+		TF_Buffer*				"RunOptions, may be nil"
+		TF_Output*				"inputs"
+		TF_TensorArray*			"inputs' values"
+		long						"inputs count"
+		TF_Output*				"outputs"
+		TF_TensorArray*			"outputs values (results)"
+		long						"outputs count"
+		TF_OperationArray*		"target operations array, may be nil"
+		long						"taret operations count"
+		TF_Buffer*				"RunMetadata"
 		TF_Status*)>
 	^ self externalCallFailed
 ! !
@@ -1254,6 +1257,17 @@ runOperation: aTF_Operation
 	operations first: aTF_Operation.	
 	[self runOperations: operations] ensure:[operations free]! !
 
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 09:36:17'!
+runOperation: aTF_Operation output: aTF_Output
+	| operations outputs answer |
+	operations _ TF_OperationArray externalNew: 1.
+	[	operations first: aTF_Operation.	
+		outputs _ TF_OutputArray externalNew: 1.
+		outputs first: aTF_Output.
+		answer _ self runOperations: operations outputs: aTF_Output size: 1
+	] ensure:[operations free].
+	^ answer! !
+
 !TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:02'!
 runOperations: aTF_OperationArray
 	| status |
@@ -1267,6 +1281,23 @@ runOperations: aTF_OperationArray
 		metadata: nil status: status.
 	
 	status check] ensure: [status delete].! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 09:35:06'!
+runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
+	| status outvalues |
+	self assert: anInteger = 1.
+	status _ TF_Status create.
+	outvalues _ TF_TensorArray new: 1.
+	outvalues first: (TF_Tensor type: TF_Tensor typeInt64 dimenssions: #()).
+	[self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: aTF_OutputArray values: outvalues count: anInteger
+		targets: aTF_OperationArray count: 1
+		metadata: nil status: status.
+	
+	status check] ensure: [status delete].
+	^ outvalues first! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
 onGraph: aTF_Graph
