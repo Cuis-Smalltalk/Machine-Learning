@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 9:44:38 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 11:33:52 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 41!
+!provides: 'TensorFlow' 1 42!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -250,6 +250,18 @@ testOutputArrayAtPut
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:44'!
 testOutputArrayElementsOfRightClass
 	^ self testArray: TF_OutputArray sampleElement: TF_Output new.! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 11:30:34'!
+testTensorArrayAtPut
+	| sample |
+	sample _ TF_Tensor externalNew.
+	
+	[self testArrayAtPutFor: TF_TensorArray elementSample: sample]
+		ensure: [sample free]! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 11:30:55'!
+testTensorArrayElementsOfRightClass
+	^ self testArray: TF_TensorArray sampleElement: TF_Tensor new.! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 20:54:13'!
 testUIn64ArrayfromArray
@@ -825,7 +837,7 @@ operationOutputType: aTF_Output
 	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/23/2016 00:12:01'!
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/27/2016 09:13:16'!
 runSession: aTF_Session
 	options: opsTF_Buffer
 	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
