@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 2:48:23 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 9:44:38 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 40!
+!provides: 'TensorFlow' 1 41!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -70,6 +70,16 @@ ExternalWordArray subclass: #TF_OutputArray
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_OutputArray class' category: #'TensorFlow-Kernel'!
 TF_OutputArray class
+	instanceVariableNames: ''!
+
+!classDefinition: #TF_TensorArray category: #'TensorFlow-Kernel'!
+ExternalWordArray subclass: #TF_TensorArray
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_TensorArray class' category: #'TensorFlow-Kernel'!
+TF_TensorArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #UInt64Array category: #'TensorFlow-Kernel'!
@@ -981,6 +991,10 @@ elementClass
 !TF_OutputArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:48'!
 elementClass
 	^TF_Output! !
+
+!TF_TensorArray methodsFor: 'as yet unclassified' stamp: 'gera 12/27/2016 09:09:07'!
+elementClass
+	^TF_Tensor! !
 
 !UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:47:24'!
 elementAtOffset: offset
