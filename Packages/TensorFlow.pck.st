@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 11:37:19 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 11:56:49 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 43!
+!provides: 'TensorFlow' 1 44!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -667,34 +667,34 @@ testTensorDimensions1D
 testTensorDimensions2D
 	^ self testTensorDimensions: #(1 4)! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:30'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:55:49'!
 testTensorDimensions: anArray
 	| tensor |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
-		dimenssions: anArray.
+		dimensions: anArray.
 	self assert: tensor numberOfDimensions = anArray size.
 	anArray withIndexDo: [:each :index |
 		self assert: (tensor sizeOn: index - 1) = (anArray at: index)].
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:47:04'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:55:52'!
 testTensorNewScalar
 	| tensor |
-	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #().
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
 	self deny: tensor getHandle isNil.
 	self deny: tensor getHandle = 0.
 	tensor delete.
 	self assert: tensor getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:47:25'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:55:58'!
 testTensorType
 	| tensor |
-	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimenssions: #().
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
 	self assert: tensor type == tensor class typeInt64.
 	tensor delete.
 
-	tensor _ TF_Tensor type: TF_Tensor typeFloat dimenssions: #().
+	tensor _ TF_Tensor type: TF_Tensor typeFloat dimensions: #().
 	self assert: tensor type == tensor class typeFloat.
 	tensor delete.
 ! !
@@ -705,8 +705,8 @@ testVersion
 	version _ TensorFlowCAPI current version.
 	self assert: version =  '0.12.0'! !
 
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/26/2016 10:46:00'!
-allocateTensorType: anInteger dimenssions: aLonnLongArray dimenssionsCount: dimCount length: len
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
+allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
 	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
 	^ self externalCallFailed! !
 
@@ -1282,13 +1282,13 @@ runOperations: aTF_OperationArray
 	
 	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 09:35:06'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 11:55:45'!
 runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 	| status outvalues |
 	self assert: anInteger = 1.
 	status _ TF_Status create.
 	outvalues _ TF_TensorArray new: 1.
-	outvalues first: (TF_Tensor type: TF_Tensor typeInt64 dimenssions: #()).
+	outvalues first: (TF_Tensor type: TF_Tensor typeInt64 dimensions: #()).
 	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
@@ -1418,8 +1418,8 @@ sizeForType: anInteger
 	anInteger = self typeInt32 ifTrue: [^4].
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 14:48:20'!
-type: anInteger dimenssions: anIntegerArray
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/27/2016 11:56:32'!
+type: anInteger dimensions: anIntegerArray
 	" I understand dimenssions are:
 		#()		-> Scalar
 		#(7)		-> Unidimensional array of 7 elements
@@ -1435,8 +1435,8 @@ type: anInteger dimenssions: anIntegerArray
 		
 	[answer _ TensorFlowCAPI current
 		allocateTensorType: anInteger
-		dimenssions: externalized
-		dimenssionsCount: anIntegerArray size
+		dimensions: externalized
+		dimensionsCount: anIntegerArray size
 		length: byteSize] ensure: [externalized free].
 	^ answer
 ! !
