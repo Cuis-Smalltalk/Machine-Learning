@@ -883,6 +883,11 @@ tensor: aTF_Tensor sizeOn: dimension
 	<cdecl: longlong 'TF_Dim' (TF_Tensor* ulonglong)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 09:17:49'!
+tensorData: aTF_Tensor
+	<cdecl: void* 'TF_TensorData' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:04:40'!
 tensorNumDimensions: aTF_Tensor
 	<cdecl: longlong 'TF_NumDims' (TF_Tensor*)>
@@ -1349,6 +1354,10 @@ message
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:55:36'!
 create
 	^ TensorFlowCAPI current newStatus! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'gera 12/27/2016 09:18:01'!
+data
+	^self library tensorData: self.! !
 
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:44:32'!
 delete
