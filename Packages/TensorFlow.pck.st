@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 8:48:49 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 11:09:04 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 41!
+!provides: 'TensorFlow' 1 42!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -130,6 +130,16 @@ TF_Structure subclass: #TF_Operation
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_Operation class' category: #'TensorFlow-Kernel'!
 TF_Operation class
+	instanceVariableNames: ''!
+
+!classDefinition: #TF_OperationDescription category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_OperationDescription
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_OperationDescription class' category: #'TensorFlow-Kernel'!
+TF_OperationDescription class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Output category: #'TensorFlow-Kernel'!
@@ -733,6 +743,24 @@ deleteTensor: aTF_Tensor
 	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'jb 12/26/2016 22:34:59'!
+description: aTF_OperationDescription add: aTF_Output
+	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output)>
+	^ self externalCallFailed.
+	
+	
+! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'jb 12/26/2016 22:26:39'!
+description: aTF_OperationDescription finish: aTF_Status
+	<cdecl: TF_Operation* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'jb 12/26/2016 22:24:13'!
+description: aTF_OperationDescription set: aString to: anInt
+	<cdecl: void 'TF_SetAttrType' (TF_OperationDescription* char* ulonglong)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
 externalizeString: aString
 	| answer |
@@ -781,6 +809,12 @@ newGraph
 newImportGraphDefOptions
 	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'jb 12/26/2016 22:03:53'!
+newOperationOn: graph of: type named: name
+	<cdecl: TF_OperationDescription* 'TF_NewOperation' (TF_Graph* char* char*)>
+	^ self externalCallFailed
+	! !
 
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:21:09'!
 newSessionGraph: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
@@ -1116,6 +1150,21 @@ operationNamed: aString
 	^ answer
 ! !
 
+!TF_Graph methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:13:32'!
+operationNamed: aString of: type
+	| name typeAsExternal answer |
+	name _ self library externalizeString: aString.
+	typeAsExternal _ self library externalizeString: type.
+	[
+	answer _ self library
+		newOperationOn: self
+		of: typeAsExternal
+		named: name ] ensure: [
+		name free.
+		typeAsExternal free ].
+	answer isNull ifTrue: [ self error: 'Operation not found' ].
+	^ answer.! !
+
 !TF_Graph methodsFor: 'outputs' stamp: 'gera 12/26/2016 12:55:11'!
 outputDimenssionsCount: aTF_Output
 	| status answer |
@@ -1164,6 +1213,31 @@ outputsCount
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
 	^ self library operationOpType: self! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
+add: input
+	self library description: self add: input.! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:29:37'!
+finish
+	| answer status |
+	status _ TF_Status create.
+	[
+	answer _ self library
+		description: self
+		finish: status.
+	status check ] ensure: [ status delete ].
+	^ answer.! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:22:15'!
+set: attribute to: value
+	| externalized |
+	externalized _ self library externalizeString: attribute.
+	[
+	self library
+		description: self
+		set: externalized
+		to: value ] ensure: [ externalized free ].! !
 
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
 index
@@ -1362,14 +1436,44 @@ message
 create
 	^ TensorFlowCAPI current newStatus! !
 
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:59:46'!
+buffer
+	"This method was automatically generated. See TF_Tensor class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 17) type: ExternalType void asPointerType! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:59:46'!
+buffer: anObject
+	"This method was automatically generated. See TF_Tensor class>>fields."
+	handle longPointerAt: 17 put: anObject getHandle.! !
+
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:44:32'!
 delete
 	self library deleteTensor: self.
 	handle _ nil! !
 
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:59:46'!
+dtype
+	"This method was automatically generated. See TF_Tensor class>>fields."
+	^handle unsignedLongLongAt: 1! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:59:46'!
+dtype: anObject
+	"This method was automatically generated. See TF_Tensor class>>fields."
+	handle unsignedLongLongAt: 1 put: anObject! !
+
 !TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:09:58'!
 numberOfDimensions
 	^self library tensorNumDimensions: self.! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:59:46'!
+shape
+	"This method was automatically generated. See TF_Tensor class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 9) type: ExternalType void asPointerType! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:59:46'!
+shape: anObject
+	"This method was automatically generated. See TF_Tensor class>>fields."
+	handle longPointerAt: 9 put: anObject getHandle.! !
 
 !TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:10:24'!
 sizeOn: dimension
@@ -1378,6 +1482,15 @@ sizeOn: dimension
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:50:33'!
 type
 	^self library tensorType: self.! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'jb 12/26/2016 22:59:37'!
+fields
+	"self initialize"
+	^#(
+		(dtype 'ulonglong')
+		(shape 'void*')
+		(buffer 'TensorBuffer*'))
+	! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 11:14:21'!
 sizeForType: anInteger
