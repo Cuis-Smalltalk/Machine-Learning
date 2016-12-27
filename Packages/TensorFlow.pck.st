@@ -1283,22 +1283,23 @@ runOperations: aTF_OperationArray
 	
 	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 11:55:45'!
-runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
-	| status outvalues |
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 18:30:29'!
+runOperations: aTF_OperationArray outputs: aTF_Output size: anInteger
+	| status outvalues tensor |
 	self assert: anInteger = 1.
 	status _ TF_Status create.
 	outvalues _ TF_TensorArray new: 1.
-	outvalues first: (TF_Tensor type: TF_Tensor typeInt64 dimensions: #()).
 	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
-		outputs: aTF_OutputArray values: outvalues count: anInteger
+		outputs: aTF_Output values: outvalues count: anInteger
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
-	
-	status check] ensure: [status delete].
-	^ outvalues first! !
+	tensor _ outvalues first.
+	status check] ensure: [
+		status delete.
+		outvalues free].
+	^ tensor! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
 onGraph: aTF_Graph
