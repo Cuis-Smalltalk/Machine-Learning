@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 11:56:49 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 6:14:08 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 44!
+!provides: 'TensorFlow' 1 45!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -52,6 +52,16 @@ TF_Structure subclass: #ExternalWordArray
 ExternalWordArray class
 	instanceVariableNames: ''!
 
+!classDefinition: #Int64Array category: #'TensorFlow-Kernel'!
+ExternalWordArray subclass: #Int64Array
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'Int64Array class' category: #'TensorFlow-Kernel'!
+Int64Array class
+	instanceVariableNames: ''!
+
 !classDefinition: #TF_OperationArray category: #'TensorFlow-Kernel'!
 ExternalWordArray subclass: #TF_OperationArray
 	instanceVariableNames: ''
@@ -80,16 +90,6 @@ ExternalWordArray subclass: #TF_TensorArray
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_TensorArray class' category: #'TensorFlow-Kernel'!
 TF_TensorArray class
-	instanceVariableNames: ''!
-
-!classDefinition: #UInt64Array category: #'TensorFlow-Kernel'!
-ExternalWordArray subclass: #UInt64Array
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'UInt64Array class' category: #'TensorFlow-Kernel'!
-UInt64Array class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
@@ -269,10 +269,10 @@ testUIn64ArrayfromArray
 	self testUIn64ArrayfromArray: #(16r12345678 2 16r76543210 4 16rDEADBEAF 6 16rFFFFFFFF).
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/26/2016 09:10:59'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 18:11:45'!
 testUIn64ArrayfromArray: template
 	| array |
-	array _ UInt64Array externalFromArray: template.
+	array _ Int64Array externalFromArray: template.
 	
 	template withIndexDo: [:each :index |
 		self assert: ((template at: index) = (array at: index))
@@ -280,15 +280,17 @@ testUIn64ArrayfromArray: template
 
 	array free.! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 20:58:00'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 18:13:43'!
 testUInt64ArrayAtPut
-	self testArrayAtPutFor: UInt64Array elementSample: 12345.
-	self testArrayAtPutFor: UInt64Array elementSample: 16rFE00FE00.
+	self testArrayAtPutFor: Int64Array elementSample: 12345.
+	self testArrayAtPutFor: Int64Array elementSample: 16rFE00FE00.
+	self testArrayAtPutFor: Int64Array elementSample: 16r7E00FE00FE00FE00.
+	self testArrayAtPutFor: Int64Array elementSample: 16r-7E00FE00FE00FE00.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:39'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 18:11:59'!
 testUInt64ArrayElementsOfRightClass
-	^ self testArray: UInt64Array sampleElement: 1234.! !
+	^ self testArray: Int64Array sampleElement: 1234.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 10:59:08'!
 constantFloatGraph
@@ -582,7 +584,7 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 09:43:31'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 12:27:06'!
 testSessionRunTargetOutput
 	| graph operation session output tensor |
 	graph _ self constantInt64Graph.
@@ -1008,6 +1010,27 @@ new
 new: count
 	^self fromHandle: (ByteArray new: self byteSize * count)! !
 
+!Int64Array methodsFor: 'accessing' stamp: 'gera 12/27/2016 18:11:32'!
+elementAtOffset: offset
+	^handle signedLongLongAt: offset
+	! !
+
+!Int64Array methodsFor: 'accessing' stamp: 'gera 12/27/2016 18:11:36'!
+elementAtOffset: offset put: anInteger
+	handle signedLongLongAt: offset put: anInteger! !
+
+!Int64Array class methodsFor: 'instance creation' stamp: 'jb 12/26/2016 09:43:53'!
+byteSize
+	^ 8! !
+
+!Int64Array class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:31'!
+externalFromArray: anIntegerArray
+	| answer |
+	answer _ self externalNew: anIntegerArray size.
+	anIntegerArray withIndexDo: [:each :index |
+		answer at: index put: each].
+	^ answer! !
+
 !TF_OperationArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:55'!
 elementClass
 	^TF_Operation! !
@@ -1019,27 +1042,6 @@ elementClass
 !TF_TensorArray methodsFor: 'as yet unclassified' stamp: 'gera 12/27/2016 09:09:07'!
 elementClass
 	^TF_Tensor! !
-
-!UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:47:24'!
-elementAtOffset: offset
-	^handle unsignedLongLongAt: offset
-	! !
-
-!UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 19:17:14'!
-elementAtOffset: offset put: anInteger
-	handle unsignedLongLongAt: offset put: anInteger! !
-
-!UInt64Array class methodsFor: 'instance creation' stamp: 'jb 12/26/2016 09:43:53'!
-byteSize
-	^ 8! !
-
-!UInt64Array class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:31'!
-externalFromArray: anIntegerArray
-	| answer |
-	answer _ self externalNew: anIntegerArray size.
-	anIntegerArray withIndexDo: [:each :index |
-		answer at: index put: each].
-	^ answer! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
@@ -1418,7 +1420,7 @@ sizeForType: anInteger
 	anInteger = self typeInt32 ifTrue: [^4].
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/27/2016 11:56:32'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/27/2016 18:12:04'!
 type: anInteger dimensions: anIntegerArray
 	" I understand dimenssions are:
 		#()		-> Scalar
@@ -1428,7 +1430,7 @@ type: anInteger dimensions: anIntegerArray
 	"
 		
 	| externalized answer byteSize elementSize |
-	externalized _ UInt64Array externalFromArray: anIntegerArray.
+	externalized _ Int64Array externalFromArray: anIntegerArray.
 	elementSize _ self sizeForType: anInteger.
 	byteSize _ anIntegerArray inject: elementSize into: [:prev :each | prev * each].
 	self assert: byteSize ~= 0.
