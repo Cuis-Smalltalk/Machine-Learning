@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 7:13:05 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 7:17:17 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 49!
+!provides: 'TensorFlow' 1 50!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -62,14 +62,14 @@ ExternalWordArray subclass: #Int64Array
 Int64Array class
 	instanceVariableNames: ''!
 
-!classDefinition: #TF_OperationArray category: #'TensorFlow-Kernel'!
-ExternalWordArray subclass: #TF_OperationArray
+!classDefinition: #TF_OperationPtrArray category: #'TensorFlow-Kernel'!
+ExternalWordArray subclass: #TF_OperationPtrArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_OperationArray class' category: #'TensorFlow-Kernel'!
-TF_OperationArray class
+!classDefinition: 'TF_OperationPtrArray class' category: #'TensorFlow-Kernel'!
+TF_OperationPtrArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OutputArray category: #'TensorFlow-Kernel'!
@@ -82,14 +82,14 @@ ExternalWordArray subclass: #TF_OutputArray
 TF_OutputArray class
 	instanceVariableNames: ''!
 
-!classDefinition: #TF_TensorArray category: #'TensorFlow-Kernel'!
-ExternalWordArray subclass: #TF_TensorArray
+!classDefinition: #TF_TensorPtrArray category: #'TensorFlow-Kernel'!
+ExternalWordArray subclass: #TF_TensorPtrArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_TensorArray class' category: #'TensorFlow-Kernel'!
-TF_TensorArray class
+!classDefinition: 'TF_TensorPtrArray class' category: #'TensorFlow-Kernel'!
+TF_TensorPtrArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
@@ -226,17 +226,17 @@ testArrayAtPutFor: anExternalArraySubclass elementSample: anObject
 	]
 	! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:12:06'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:15:41'!
 testOperationArrayAtPut
 	| sample |
 	sample _ TF_Operation externalNew.
 	
-	[self testArrayAtPutFor: TF_OperationArray elementSample: sample]
+	[self testArrayAtPutFor: TF_OperationPtrArray elementSample: sample]
 		ensure: [sample free]! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:54'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:15:43'!
 testOperationArrayElementsOfRightClass
-	^ self testArray: TF_OperationArray sampleElement: TF_Operation new.
+	^ self testArray: TF_OperationPtrArray sampleElement: TF_Operation new.
 ! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:12:29'!
@@ -251,17 +251,17 @@ testOutputArrayAtPut
 testOutputArrayElementsOfRightClass
 	^ self testArray: TF_OutputArray sampleElement: TF_Output new.! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 11:30:34'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:16:37'!
 testTensorArrayAtPut
 	| sample |
 	sample _ TF_Tensor externalNew.
 	
-	[self testArrayAtPutFor: TF_TensorArray elementSample: sample]
+	[self testArrayAtPutFor: TF_TensorPtrArray elementSample: sample]
 		ensure: [sample free]! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 11:30:55'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:16:40'!
 testTensorArrayElementsOfRightClass
-	^ self testArray: TF_TensorArray sampleElement: TF_Tensor new.! !
+	^ self testArray: TF_TensorPtrArray sampleElement: TF_Tensor new.! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 20:54:13'!
 testUIn64ArrayfromArray
@@ -543,13 +543,13 @@ testOutputDims
 	graph delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 10:59:53'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/27/2016 19:15:38'!
 testRunOperationArray
 	| graph operation session operations |
 	graph _ self constantFloatGraph.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
-	operations _ TF_OperationArray externalNew: 1.
+	operations _ TF_OperationPtrArray externalNew: 1.
 	operations first: operation.
 	self shouldnt: [session runOperations: operations] raise: Error.
 	operations free.
@@ -855,7 +855,7 @@ operationOutputType: aTF_Output
 	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/27/2016 09:13:16'!
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/27/2016 19:17:14'!
 runSession: aTF_Session
 	options: opsTF_Buffer
 	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
@@ -868,12 +868,12 @@ runSession: aTF_Session
 		TF_Session*
 		TF_Buffer*				"RunOptions, may be nil"
 		TF_Output*				"inputs"
-		TF_TensorArray*			"inputs' values"
+		TF_TensorPtrArray*		"inputs' values"
 		long						"inputs count"
 		TF_Output*				"outputs"
-		TF_TensorArray*			"outputs values (results)"
+		TF_TensorPtrArray*		"outputs values (results)"
 		long						"outputs count"
-		TF_OperationArray*		"target operations array, may be nil"
+		TF_OperationPtrArray*	"target operations array, may be nil"
 		long						"taret operations count"
 		TF_Buffer*				"RunMetadata"
 		TF_Status*)>
@@ -1040,7 +1040,7 @@ externalFromArray: anIntegerArray
 		answer at: index put: each].
 	^ answer! !
 
-!TF_OperationArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:55'!
+!TF_OperationPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:55'!
 elementClass
 	^TF_Operation! !
 
@@ -1048,7 +1048,7 @@ elementClass
 elementClass
 	^TF_Output! !
 
-!TF_TensorArray methodsFor: 'as yet unclassified' stamp: 'gera 12/27/2016 09:09:07'!
+!TF_TensorPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/27/2016 09:09:07'!
 elementClass
 	^TF_Tensor! !
 
@@ -1261,17 +1261,17 @@ run
 	
 	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:38:43'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:15:46'!
 runOperation: aTF_Operation
 	| operations |
-	operations _ TF_OperationArray externalNew: 1.
+	operations _ TF_OperationPtrArray externalNew: 1.
 	operations first: aTF_Operation.	
 	[self runOperations: operations] ensure:[operations free]! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 18:31:13'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:15:49'!
 runOperation: aTF_Operation output: aTF_Output
 	| operations  answer |
-	operations _ TF_OperationArray externalNew: 1.
+	operations _ TF_OperationPtrArray externalNew: 1.
 	[	operations first: aTF_Operation.	
 		answer _ self runOperations: operations outputs: aTF_Output size: 1
 	] ensure:[operations free].
@@ -1291,12 +1291,12 @@ runOperations: aTF_OperationArray
 	
 	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 18:32:52'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:16:44'!
 runOperations: aTF_OperationArray outputs: aTF_Output size: anInteger
 	| status outvalues tensor |
 	self assert: anInteger = 1.
 	status _ TF_Status create.
-	outvalues _ TF_TensorArray new: anInteger.
+	outvalues _ TF_TensorPtrArray new: anInteger.
 	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
