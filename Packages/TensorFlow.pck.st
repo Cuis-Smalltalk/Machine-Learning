@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 2:48:23 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 26 December 2016 at 8:48:49 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 40!
+!provides: 'TensorFlow' 1 41!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -70,6 +70,16 @@ ExternalWordArray subclass: #TF_OutputArray
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_OutputArray class' category: #'TensorFlow-Kernel'!
 TF_OutputArray class
+	instanceVariableNames: ''!
+
+!classDefinition: #TF_TensorArray category: #'TensorFlow-Kernel'!
+ExternalWordArray subclass: #TF_TensorArray
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_TensorArray class' category: #'TensorFlow-Kernel'!
+TF_TensorArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #UInt64Array category: #'TensorFlow-Kernel'!
@@ -560,20 +570,22 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/26/2016 12:40:19'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'jb 12/26/2016 17:18:56'!
 testSessionRunTargetOutput
-	| graph operation session outputs output |
+	| graph operation session outputs output nOutputs values |
 	graph _ self constantFloatGraph.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
 	output _ TF_Output onOperation: operation index: 1.
-	outputs _ TF_OutputArray externalNew: 1.
+	nOutputs _ 1.
+	outputs _ TF_OutputArray externalNew: nOutputs.
 	outputs first: output.
-	self shouldnt: [session runOperation: operation outputs: outputs] raise: Error.
+	self shouldnt: [values _ session runOperation: operation outputs: outputs count: nOutputs] raise: Error.
 	session close.
 	session delete.
 	outputs free.
-	output free.! !
+	output free.
+	values free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
 testStatusCodes
@@ -815,7 +827,7 @@ operationOutputType: aTF_Output
 	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/23/2016 00:12:01'!
+!TensorFlowCAPI methodsFor: 'session' stamp: 'jb 12/26/2016 17:10:34'!
 runSession: aTF_Session
 	options: opsTF_Buffer
 	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
@@ -830,8 +842,8 @@ runSession: aTF_Session
 		void*"TF_Output*"	"inputs"
 		void*"TF_Tensor*"	"inputs' values"
 		long			"inputs count"
-		void*"TF_Output*"		"outputs"
-		void*"TF_Tensor**"	"outputs values (results)"
+		TF_OutputArray"TF_Output*"		"outputs"
+		TF_TensorArray*"TF_Tensor**"	"outputs values (results)"
 		long				"outputs count"
 		PointerArray*		"TF_Operation**"		"target operations array, may be nil"
 		long				"taret operations count"
@@ -978,9 +990,13 @@ new: count
 elementClass
 	^TF_Operation! !
 
-!TF_OutputArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:48'!
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:50:48'!
 elementClass
 	^TF_Output! !
+
+!TF_TensorArray methodsFor: 'accessing' stamp: 'jb 12/26/2016 16:21:29'!
+elementClass
+	^TF_Tensor! !
 
 !UInt64Array methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:47:24'!
 elementAtOffset: offset
@@ -1219,7 +1235,14 @@ runOperation: aTF_Operation
 	operations first: aTF_Operation.	
 	[self runOperations: operations] ensure:[operations free]! !
 
-!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:02'!
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 16:27:22'!
+runOperation: aTF_Operation outputs: aTF_OutputArray count: nOutputs
+	| operations |
+	operations _ TF_OperationArray externalNew: 1.
+	operations first: aTF_Operation.	
+	[self runOperations: operations outputs: aTF_OutputArray count: nOutputs] ensure:[operations free]! !
+
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 20:45:46'!
 runOperations: aTF_OperationArray
 	| status |
 	status _ TF_Status create.
@@ -1227,11 +1250,26 @@ runOperations: aTF_OperationArray
 	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
-		outputs: nil values: nil count: 0
+		outputs: (TF_OutputArray new:1) values: nil count: 0
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
 	
 	status check] ensure: [status delete].! !
+
+!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 20:44:36'!
+runOperations: aTF_OperationArray outputs: aTF_OutputArray count: nOutputs
+	| status values |
+	status _ TF_Status create.
+	values _ TF_TensorArray externalNew: nOutputs.
+	[self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: aTF_OutputArray values: values count: nOutputs
+		targets: aTF_OperationArray count: 1
+		metadata: nil status: status.
+	
+	status check] ensure: [status delete].
+	^values! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
 onGraph: aTF_Graph
