@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 11:33:52 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 11:37:19 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 42!
+!provides: 'TensorFlow' 1 43!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -643,6 +643,10 @@ testStatusSetGetCode
 
 	status delete.
 	self assert: status getHandle isNil.! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:36:05'!
+testTensorData
+	self fail! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:54'!
 testTensorDimensions0D
