@@ -650,9 +650,17 @@ testStatusSetGetCode
 	status delete.
 	self assert: status getHandle isNil.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:36:05'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:08:15'!
 testTensorData
-	self fail! !
+	| tensor |
+	tensor _ TF_Tensor
+		type: TF_Tensor typeInt64
+		dimensions: #(2 3).
+	[	self assert: tensor numberOfDimensions = 2.
+		self deny: tensor data getHandle asInteger = 0.
+		self deny: tensor data getHandle isNil.
+	] ensure: [tensor delete].
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:54'!
 testTensorDimensions0D
