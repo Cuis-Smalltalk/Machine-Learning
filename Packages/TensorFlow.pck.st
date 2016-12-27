@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 7:09:59 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 7:13:05 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 48!
+!provides: 'TensorFlow' 1 49!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1428,13 +1428,14 @@ sizeForType: anInteger
 	anInteger = self typeInt32 ifTrue: [^4].
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/27/2016 18:12:04'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/27/2016 19:13:03'!
 type: anInteger dimensions: anIntegerArray
 	" I understand dimenssions are:
 		#()		-> Scalar
 		#(7)		-> Unidimensional array of 7 elements
 		#(7 4)		-> 7x4 elements matrix
 		#(2 5 9)	-> 2x5x9 elements cube
+		etc.
 	"
 		
 	| externalized answer byteSize elementSize |
