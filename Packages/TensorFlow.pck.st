@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 6:14:08 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 6:31:20 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 45!
+!provides: 'TensorFlow' 1 46!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1260,13 +1260,11 @@ runOperation: aTF_Operation
 	operations first: aTF_Operation.	
 	[self runOperations: operations] ensure:[operations free]! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 09:36:17'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 18:31:13'!
 runOperation: aTF_Operation output: aTF_Output
-	| operations outputs answer |
+	| operations  answer |
 	operations _ TF_OperationArray externalNew: 1.
 	[	operations first: aTF_Operation.	
-		outputs _ TF_OutputArray externalNew: 1.
-		outputs first: aTF_Output.
 		answer _ self runOperations: operations outputs: aTF_Output size: 1
 	] ensure:[operations free].
 	^ answer! !
