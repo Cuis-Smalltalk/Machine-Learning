@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 6:31:20 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 6:32:59 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 46!
+!provides: 'TensorFlow' 1 47!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1283,12 +1283,12 @@ runOperations: aTF_OperationArray
 	
 	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 18:30:29'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 18:32:52'!
 runOperations: aTF_OperationArray outputs: aTF_Output size: anInteger
 	| status outvalues tensor |
 	self assert: anInteger = 1.
 	status _ TF_Status create.
-	outvalues _ TF_TensorArray new: 1.
+	outvalues _ TF_TensorArray new: anInteger.
 	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
