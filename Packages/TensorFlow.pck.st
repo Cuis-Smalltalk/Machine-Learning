@@ -600,6 +600,7 @@ testSessionRunTargetOutput
 	self assert: (tensor data getHandle signedLongLongAt: 1) = 16r4242424242424242.
 	session close.
 	session delete.
+	tensor delete.
 	output free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
