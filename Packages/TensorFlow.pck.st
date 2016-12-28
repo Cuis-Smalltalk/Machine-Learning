@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 12:13:35 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 12:51:15 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 51!
+!provides: 'TensorFlow' 1 52!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -498,7 +498,36 @@ testNewImportGraphDefOptions
 	options delete.
 	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 19:09:26'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 00:24:17'!
+testNewOperationDescription
+	| graph description |
+	graph _ TF_Graph create.
+	description _ graph newOperation: 'Const' named: 'first_operation'.
+	self deny: description isNull.
+	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 00:51:10'!
+testNewOperationDescriptionType
+	| graph description operation |
+	graph _ TF_Graph create.
+	description _ graph newOperation: 'Placeholder' named: 'first_operation'.
+	self deny: description isNull.
+	description at: 'dtype' putType: TF_Tensor typeInt64.
+	self shouldnt: [operation _ description finish] raise: Error.
+	self assert: description isNull.
+	self assert: operation type = 'Placeholder'.
+	self assert: operation name = 'first_operation'.
+	self assert: operation InputsCount = 0.
+	self assert: operation outputsCount = 1.
+	
+	operation _ graph operationNamed: 'first_operation'.
+	self assert: operation type = 'Placeholder'.
+	self assert: operation name = 'first_operation'.
+	self assert: operation InputsCount = 0.
+	self assert: operation outputsCount = 1.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:08:08'!
 testNewSession
 	| graph session |
 	graph _ TF_Graph create.
@@ -759,18 +788,8 @@ deleteTensor: aTF_Tensor
 	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'jb 12/26/2016 22:34:59'!
-description: aTF_OperationDescription add: aTF_Output
-	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'jb 12/26/2016 22:26:39'!
-description: aTF_OperationDescription finish: aTF_Status
-	<cdecl: TF_Operation* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'jb 12/26/2016 22:24:13'!
-description: aTF_OperationDescription set: aString to: anInt
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 00:44:16'!
+description: aTF_OperationDescription set: aString toType: anInt
 	<cdecl: void 'TF_SetAttrType' (TF_OperationDescription* char* ulonglong)>
 	^ self externalCallFailed.! !
 
@@ -782,6 +801,11 @@ externalizeString: aString
 	aString withIndexDo: [:char :index |
 		answer byteAt:  index put: char asciiValue].
 	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/27/2016 23:56:18'!
+finishOperation: aTF_OperationDescription status: aTF_Status
+	<cdecl: TF_Operation* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
+	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/26/2016 13:13:55'!
 forGraph: aTF_Graph outputDims: aTF_Output status: aTF_Status
@@ -823,8 +847,8 @@ newImportGraphDefOptions
 	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'jb 12/26/2016 22:03:53'!
-newOperationOn: graph of: type named: name
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/27/2016 23:15:02'!
+newOperationOn: graph type: type named: name
 	<cdecl: TF_OperationDescription* 'TF_NewOperation' (TF_Graph* char* char*)>
 	^ self externalCallFailed
 	! !
@@ -1158,6 +1182,11 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
+!TF_Graph methodsFor: 'extending' stamp: 'gera 12/27/2016 23:16:19'!
+newOperation: typeString named: aString
+	^ self library newOperationOn: self type: typeString named: aString
+! !
+
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:44:06'!
 operationNamed: aString
 	| externalized answer |
@@ -1221,26 +1250,27 @@ type
 add: input
 	self library description: self add: input.! !
 
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:29:37'!
-finish
-	| answer status |
-	status _ TF_Status create.
-	[
-	answer _ self library
-		description: self
-		finish: status.
-	status check ] ensure: [ status delete ].
-	^ answer.! !
-
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:22:15'!
-set: attribute to: value
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 12/28/2016 00:44:26'!
+at: attribute putType: value
 	| externalized |
 	externalized _ self library externalizeString: attribute.
 	[
 	self library
 		description: self
 		set: externalized
-		to: value ] ensure: [ externalized free ].! !
+		toType: value ] ensure: [ externalized free ].! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 12/28/2016 00:29:21'!
+finish
+	| answer status |
+	status _ TF_Status create.
+	[	answer _ self library
+			finishOperation: self
+			status: status.
+		handle _ nil.
+		status check
+	] ensure: [status delete].
+	^ answer.! !
 
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
 index
@@ -1312,16 +1342,16 @@ runOperation: aTF_Operation
 	operations first: aTF_Operation.	
 	[self runOperations: operations] ensure:[operations free]! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:15:49'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 23:59:04'!
 runOperation: aTF_Operation output: aTF_Output
 	| operations  answer |
 	operations _ TF_OperationPtrArray externalNew: 1.
 	[	operations first: aTF_Operation.	
 		answer _ self runOperations: operations outputs: aTF_Output size: 1
-	] ensure:[operations free].
+	] ensure: [operations free].
 	^ answer! !
 
-!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:02'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 23:59:18'!
 runOperations: aTF_OperationArray
 	| status |
 	status _ TF_Status create.
@@ -1332,7 +1362,6 @@ runOperations: aTF_OperationArray
 		outputs: nil values: nil count: 0
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
-	
 	status check] ensure: [status delete].! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:16:44'!
