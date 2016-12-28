@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 2:12:10 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 11:50:56 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 62!
+!provides: 'TensorFlow' 1 64!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -378,6 +378,21 @@ emptyGraphDef
 	" This GraphDef corresponds to an Empty Graph (no operations), saved as ProtoBuf "
 	^ #[16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 11:48:57'!
+mulGraphOneInputInt64Created
+	| graph constant const in |
+	graph _ TF_Graph create.
+	constant _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	constant data getHandle signedLongLongAt: 1 put: 16r0606060606060606.
+	
+	in _ graph placeholder: 'in' type: constant type.
+	const _ graph const: 'const' value: constant.
+	graph mul: 'mul' described: [:description |
+		description addInput: (in output: 0).
+		description addInput: (const output: 0)].
+	
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 12/21/2016 02:11:17'!
 setUp
 	library _ TensorFlowCAPI current! !
@@ -622,6 +637,30 @@ testOutputDims
 	output _ operation output: 0.
 	self assert: (graph outputDimenssionsCount: output) = 0.
 	graph delete.
+	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 11:50:48'!
+testRunGraphMulOneInput
+	| graph input inputValue result mul output session |
+	graph _ self mulGraphOneInputInt64Created.
+	
+	input _ (graph operationNamed: 'in') input: 0.
+	inputValue _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	inputValue data getHandle signedLongLongAt: 1 put: 11.
+	mul _ graph operationNamed: 'mul'.
+	output _ mul output: 0.
+	session _ TF_Session onGraph: graph.
+	result _ session runOperation: mul input: input value: inputValue output: output.
+	
+	self deny: result isNull.
+	self deny: result data isNull.
+	self assert: (result data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+
+	session close.
+	session delete.
+	inputValue delete.
+	result delete.
+	input free.
 	output free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/27/2016 19:15:38'!
@@ -1472,6 +1511,28 @@ runOperation: aTF_Operation
 	operations _ TF_OperationPtrArray externalNew: 1.
 	operations first: aTF_Operation.	
 	[self runOperations: operations] ensure:[operations free]! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 12/28/2016 11:47:42'!
+runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output: outTF_Output
+	| operations  invalues outvalues status tensor |
+	operations _ TF_OperationPtrArray externalNew: 1.
+	operations first: aTF_Operation.
+	status _ TF_Status create.
+	outvalues _ TF_TensorPtrArray new: 1.
+	invalues _ TF_TensorPtrArray new: 1.
+	invalues first: inTF_Tensor.
+	[self library
+		runSession: self options: nil
+		inputs: inTF_OutputOrInput values: invalues count: 1
+		outputs: outTF_Output values: outvalues count: 1
+		targets: operations count: 1
+		metadata: nil status: status.
+	tensor _ outvalues first.
+	status check] ensure: [
+		status delete.
+		outvalues free].
+	^ tensor
+! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 23:59:04'!
 runOperation: aTF_Operation output: aTF_Output
