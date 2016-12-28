@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 1:26:26 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 1:37:18 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 55!
+!provides: 'TensorFlow' 1 56!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -422,11 +422,11 @@ testGetOperationOnEmptyGraph
 	graph _ self emptyGraph.
 	self should: [graph operationNamed: 'something'] raise: Error! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:10:00'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:36:36'!
 testGraph: aTF_Graph outputType: anInteger
 	| operation output |
 	operation _ aTF_Graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 0.
+	output _ operation output: 0.
 	self assert: output type == anInteger.
 	output free.! !
 
@@ -595,12 +595,12 @@ testOperationOutputTypeInt32
 testOperationOutputTypeInt64
 	^self testGraph: self constantInt64Graph outputType: TF_Tensor typeInt64! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 14:26:05'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/28/2016 01:36:52'!
 testOutputDims
 	| graph operation output |
 	graph _ self constantInt64Graph.
 	operation _ graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 0.
+	output _ operation output: 0.
 	self assert: (graph outputDimenssionsCount: output) = 0.
 	graph delete.
 	output free.! !
@@ -650,12 +650,12 @@ testSessionRunTargetOutput
 	^ self testSessionRunTargetOutputOnGraph: self constantInt64Graph.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 01:12:55'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 01:37:03'!
 testSessionRunTargetOutputOnGraph: graph
 	| operation session output tensor |
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 0.
+	output _ operation output: 0.
 	self shouldnt: [
 		tensor _ session runOperation: operation output: output] raise: Error.
 	self deny: tensor isNull.
@@ -1282,9 +1282,17 @@ InputsCount
 device
 	^ self library operationDevice: self! !
 
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
+input: indexInteger
+	^ TF_Input onOperation: self index: indexInteger! !
+
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
 	^ self library operationName: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
+output: indexInteger
+	^ TF_Output onOperation: self index: indexInteger! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:48'!
 outputsCount
