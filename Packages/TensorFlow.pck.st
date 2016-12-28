@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 7:17:17 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 12:13:35 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 50!
+!provides: 'TensorFlow' 1 51!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -369,16 +369,15 @@ emptyGraphDef
 setUp
 	library _ TensorFlowCAPI current! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 19:08:42'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:04:10'!
 testCloseSession
 	| graph session |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
-	self deny: session getHandle isNil.
-	self deny: session getHandle asInteger = 0.
+	self deny: session isNull.
 	self shouldnt: [session close] raise: Error.
 	self shouldnt: [session delete] raise: Error.
-	self assert: session getHandle isNil.! !
+	self assert: session isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/22/2016 00:58:57'!
 testExternalizeString
@@ -449,7 +448,7 @@ testImportEmpty
 		graph delete] raise: Error.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/27/2016 19:08:48'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/28/2016 00:07:27'!
 testNewBufferFromFileNamed
 	| buffer string data temporaryFile |
 	string _ ' hola manola'.
@@ -459,77 +458,70 @@ testNewBufferFromFileNamed
 	buffer _ TF_Buffer fromFileNamed: temporaryFile.
 	temporaryFile asFileEntry delete.
 	
-	self deny: buffer getHandle isNil.
-	self deny: buffer getHandle asInteger = 0.
+	self deny: buffer isNull.
 	self assert: buffer length == string size.
 	
 	data _ buffer data fromCString first: string size.
 	self assert: string = data.
 	
 	buffer delete.
-	self assert: buffer getHandle isNil.
+	self assert: buffer isNull.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/27/2016 19:08:57'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/28/2016 00:07:45'!
 testNewBufferFromString
 	| buffer string data |
 	string _ ' hola manola'.
 	buffer _ TF_Buffer fromString: string.
-	self deny: buffer getHandle isNil.
-	self deny: buffer getHandle asInteger = 0.
+	self deny: buffer isNull.
 	self assert: buffer length == string size.
 	
 	data _ buffer data fromCString first: string size.
 	self assert: string = data.
 	
 	buffer delete.
-	self assert: buffer getHandle isNil.! !
+	self assert: buffer isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/27/2016 19:09:16'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/28/2016 00:09:54'!
 testNewGraph
 	| graph |
 	graph _ TF_Graph create.
-	self deny: graph getHandle isNil.
-	self deny: graph getHandle asInteger = 0.
+	self deny: graph isNull.
 	graph delete.
-	self assert: graph getHandle isNil.! !
+	self assert: graph isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/27/2016 19:09:22'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:11:14'!
 testNewImportGraphDefOptions
 	| options |
 	options _ TF_ImportGraphDefOptions create.
-	self deny: options getHandle isNil.
-	self deny: options getHandle asInteger = 0.
+	self deny: options isNull.
 	options delete.
-	self assert: options getHandle isNil.! !
+	self assert: options isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 19:09:26'!
 testNewSession
 	| graph session |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
-	self deny: session getHandle isNil.
-	self deny: session getHandle asInteger = 0.
+	self deny: session isNull.
 	session delete.
-	self assert: session getHandle isNil.! !
+	self assert: session isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/27/2016 19:09:29'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:12:36'!
 testNewSessionOptions
 	| options |
 	options _ TF_SessionOptions create.
-	self deny: options getHandle isNil.
-	self deny: options getHandle asInteger = 0.
+	self deny: options isNull.
 	options delete.
-	self assert: options getHandle isNil.! !
+	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/27/2016 19:09:32'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:11:49'!
 testNewStatus
 	| status |
 	status _ TF_Status create.
-	self deny: status getHandle isNil.
-	self deny: status getHandle asInteger = 0.
+	self deny: status isNull.
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:10:55'!
 testOperationOutputTypeFloat
@@ -574,15 +566,14 @@ testSessionOnEmptyGraph
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/27/2016 19:09:36'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:12:49'!
 testSessionOptionsSetTarget
 	| options |
 	options _ library newSessionOptions.
-	self deny: options getHandle isNil.
-	self deny: options getHandle asInteger = 0.
+	self deny: options isNull.
 	options target: 'local'.
 	options delete.
-	self assert: options getHandle isNil.! !
+	self assert: options isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/26/2016 10:59:57'!
 testSessionRunTarget
@@ -594,7 +585,7 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 19:09:43'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:12:08'!
 testSessionRunTargetOutput
 	| graph operation session output tensor |
 	graph _ self constantInt64Graph.
@@ -603,17 +594,15 @@ testSessionRunTargetOutput
 	output _ TF_Output onOperation: operation index: 0.
 	self shouldnt: [
 		tensor _ session runOperation: operation output: output] raise: Error.
-	self deny: tensor getHandle isNil.
-	self deny: tensor getHandle asInteger = 0.
-	self deny: tensor data getHandle isNil.
-	self deny: tensor data getHandle asInteger = 0.
+	self deny: tensor isNull.
+	self deny: tensor data isNull.
 	self assert: (tensor data getHandle signedLongLongAt: 1) = 16r4242424242424242.
 	session close.
 	session delete.
 	tensor delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:31'!
 testStatusCodes
 	| status  |
 	status _ TF_Status create.
@@ -627,9 +616,9 @@ testStatusCodes
 	self should: [status check] raise: Error.
 
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:25:46'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:44'!
 testStatusGetMessage
 	| status message |
 	status _ TF_Status create.
@@ -643,9 +632,9 @@ testStatusGetMessage
 	self assert: message = 'Something is very seven'.
 
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:26:17'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:50'!
 testStatusSetGetCode
 	| status code |
 	status _ TF_Status create.
@@ -658,7 +647,7 @@ testStatusSetGetCode
 	self assert: code = 2.
 
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:08:15'!
 testTensorData
@@ -699,14 +688,13 @@ testTensorDimensions: anArray
 		self assert: (tensor sizeOn: index - 1) = (anArray at: index)].
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:09:58'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
 testTensorNewScalar
 	| tensor |
 	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
-	self deny: tensor getHandle isNil.
-	self deny: tensor getHandle asInteger = 0.
+	self deny: tensor isNull.
 	tensor delete.
-	self assert: tensor getHandle isNil.! !
+	self assert: tensor isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:55:58'!
 testTensorType
