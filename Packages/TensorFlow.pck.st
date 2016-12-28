@@ -1219,13 +1219,14 @@ fromString: aString
 	externalized free.
 	^ answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:50:45'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:07:25'!
 const: nameString value: aTF_Tensor
-	| description |
-	description _ self newOperation: 'Const' named: nameString.
-	description at: 'dtype' putType: aTF_Tensor type.
-	description at: 'value' putTensor: aTF_Tensor.
-	^description finish! !
+	^ self
+		newOperation: 'Const'
+		named: nameString
+		described: [:description |
+			description at: 'dtype' putType: aTF_Tensor type.
+			description at: 'value' putTensor: aTF_Tensor]! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:41:55'!
 delete
@@ -1265,6 +1266,13 @@ newOperation: typeString named: aString
 	^ self library newOperationOn: self type: typeString named: aString
 ! !
 
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:08:25'!
+newOperation: typeString named: aString described: aBlock
+	| description |
+	description _ self newOperation: typeString named: aString.
+	aBlock value: description.
+	^description finish! !
+
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:44:06'!
 operationNamed: aString
 	| externalized answer |
@@ -1283,12 +1291,13 @@ outputDimenssionsCount: aTF_Output
 	[status check] ensure: [status delete].
 	^answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:51:36'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:05:18'!
 placeholder: nameString type: typeInteger
-	| description |
-	description _ self newOperation: 'Placeholder' named: nameString.
-	description at: 'dtype' putType: TF_Tensor typeInt64.
-	^description finish! !
+	^ self
+		newOperation: 'Placeholder'
+		named: nameString
+		described: [:description |
+			description at: 'dtype' putType: TF_Tensor typeInt64]! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
