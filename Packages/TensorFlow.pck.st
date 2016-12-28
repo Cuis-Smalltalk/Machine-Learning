@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 2:08:31 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 2:12:10 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 61!
+!provides: 'TensorFlow' 1 62!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -532,21 +532,19 @@ testNewOperationDescription
 	self deny: description isNull.
 	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 02:01:08'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 02:12:07'!
 testNewOperationMul
-	| graph description operation a b |
+	| graph operation a b |
 	graph _ TF_Graph create.
 	a _ graph placeholder: 'a' type: TF_Tensor typeInt64.
 	b _ graph placeholder: 'b' type: TF_Tensor typeInt64.
 	
-	description _ graph mul: 'aMultiplication'.
-	self deny: description isNull.
-	description addInputFromOutput: 0 of: a.
-	description addInputFromOutput: 0 of: b.
+	operation _ graph
+		mul: 'aMultiplication'
+		described: [:description |
+			description addInputFromOutput: 0 of: a.
+			description addInputFromOutput: 0 of: b].
 
-	self shouldnt: [operation _ description finish] raise: Error.
-	self assert: description isNull.
-	
 	self assert: operation type = 'Mul'.
 	self assert: operation name = 'aMultiplication'.
 	self assert: operation InputsCount = 2.
@@ -1257,9 +1255,9 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:24:52'!
-mul: nameString
-	^self newOperation: 'Mul' named: nameString! !
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
+mul: nameString described: aBlock
+	^self newOperation: 'Mul' named: nameString described: aBlock! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/27/2016 23:16:19'!
 newOperation: typeString named: aString
