@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 1:23:19 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 1:26:26 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 54!
+!provides: 'TensorFlow' 1 55!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -536,23 +536,24 @@ testNewOperationDescription
 	self deny: description isNull.
 	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:23:14'!
-testNewOperationDescriptionType
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:26:09'!
+testNewOperationPlaceholder
 	| graph description operation |
 	graph _ TF_Graph create.
-	description _ graph placeholder: 'first_operation'.
+	description _ graph placeholder: 'aPlaceholder'.
 	self deny: description isNull.
 	description at: 'dtype' putType: TF_Tensor typeInt64.
 	self shouldnt: [operation _ description finish] raise: Error.
 	self assert: description isNull.
+	
 	self assert: operation type = 'Placeholder'.
-	self assert: operation name = 'first_operation'.
+	self assert: operation name = 'aPlaceholder'.
 	self assert: operation InputsCount = 0.
 	self assert: operation outputsCount = 1.
 	
-	operation _ graph operationNamed: 'first_operation'.
+	operation _ graph operationNamed: 'aPlaceholder'.
 	self assert: operation type = 'Placeholder'.
-	self assert: operation name = 'first_operation'.
+	self assert: operation name = 'aPlaceholder'.
 	self assert: operation InputsCount = 0.
 	self assert: operation outputsCount = 1.
 ! !
