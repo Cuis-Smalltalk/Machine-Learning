@@ -817,6 +817,11 @@ deleteTensor: aTF_Tensor
 	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:31:40'!
+description: aTF_OperationDescription addInput: aTF_Output
+	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output*)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
 description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
 	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
@@ -1224,6 +1229,10 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:24:52'!
+mul: nameString
+	^self newOperation: 'Mul' named: nameString! !
+
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/27/2016 23:16:19'!
 newOperation: typeString named: aString
 	^ self library newOperationOn: self type: typeString named: aString
@@ -1306,6 +1315,21 @@ type
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
 	self library description: self add: input.! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:32:31'!
+addInput: aTF_OutputOrInput
+	^self library
+		description: self
+		addInput: aTF_OutputOrInput! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:40:51'!
+addInputFromOutput: indexInteger of: aTF_Operation
+	| input |
+	input _ aTF_Operation input: indexInteger.
+	[self library
+		description: self
+		addInput: input
+	] ensure: [input free]! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 01:05:31'!
 at: attribute putTensor: aTF_Tensor
