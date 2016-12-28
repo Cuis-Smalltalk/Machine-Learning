@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 12:51:15 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 1:23:19 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 52!
+!provides: 'TensorFlow' 1 54!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -320,6 +320,23 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:22:42'!
+constantGraphInt64Created
+	| graph description operation constant |
+	graph _ TF_Graph create.
+	constant _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	constant data getHandle signedLongLongAt: 1 put: 16r4242424242424242.
+	
+	description _ graph const: 'a'.
+	self deny: description isNull.
+	description at: 'dtype' putType: TF_Tensor typeInt64.
+	description at: 'value' putTensor: constant.
+	
+	self shouldnt: [operation _ description finish] raise: Error.
+	self assert: description isNull.
+	self deny: operation isNull.
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:24'!
 constantInt32Graph
 	^ TF_Graph fromString: self constantInt32GraphDef! !
@@ -412,6 +429,19 @@ testGraph: aTF_Graph outputType: anInteger
 	output _ TF_Output onOperation: operation index: 0.
 	self assert: output type == anInteger.
 	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:17:35'!
+testGraphCreationConst
+	| graph operation |
+	graph _ self constantGraphInt64Created.
+	
+	operation _ graph operationNamed: 'a'.
+	self assert: operation type = 'Const'.
+	self assert: operation name = 'a'.
+	self assert: operation InputsCount = 0.
+	self assert: operation outputsCount = 1.
+
+	self testSessionRunTargetOutputOnGraph: graph! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
 testImportBad
@@ -506,11 +536,11 @@ testNewOperationDescription
 	self deny: description isNull.
 	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 00:51:10'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:23:14'!
 testNewOperationDescriptionType
 	| graph description operation |
 	graph _ TF_Graph create.
-	description _ graph newOperation: 'Placeholder' named: 'first_operation'.
+	description _ graph placeholder: 'first_operation'.
 	self deny: description isNull.
 	description at: 'dtype' putType: TF_Tensor typeInt64.
 	self shouldnt: [operation _ description finish] raise: Error.
@@ -614,10 +644,14 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:12:08'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 01:13:51'!
 testSessionRunTargetOutput
-	| graph operation session output tensor |
-	graph _ self constantInt64Graph.
+	^ self testSessionRunTargetOutputOnGraph: self constantInt64Graph.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 01:12:55'!
+testSessionRunTargetOutputOnGraph: graph
+	| operation session output tensor |
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
 	output _ TF_Output onOperation: operation index: 0.
@@ -787,6 +821,11 @@ deleteStatus: aTF_Status
 deleteTensor: aTF_Tensor
 	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
 	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
+description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
+	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
+	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 00:44:16'!
 description: aTF_OperationDescription set: aString toType: anInt
@@ -1153,6 +1192,10 @@ fromString: aString
 	externalized free.
 	^ answer! !
 
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:22:17'!
+const: nameString
+	^self newOperation: 'Const' named: nameString! !
+
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:41:55'!
 delete
 	self library deleteGraph: self.
@@ -1182,7 +1225,7 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
-!TF_Graph methodsFor: 'extending' stamp: 'gera 12/27/2016 23:16:19'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/27/2016 23:16:19'!
 newOperation: typeString named: aString
 	^ self library newOperationOn: self type: typeString named: aString
 ! !
@@ -1204,6 +1247,10 @@ outputDimenssionsCount: aTF_Output
 	answer _ self library forGraph: self outputDims: aTF_Output status: status.
 	[status check] ensure: [status delete].
 	^answer! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:22:26'!
+placeholder: nameString
+	^self newOperation: 'Placeholder' named: nameString! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
@@ -1250,7 +1297,23 @@ type
 add: input
 	self library description: self add: input.! !
 
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 12/28/2016 00:44:26'!
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 01:05:31'!
+at: attribute putTensor: aTF_Tensor
+	| externalized status |
+	externalized _ self library externalizeString: attribute.
+	status _ TF_Status create.
+	[	self library
+			description: self
+			set: externalized
+			toTensor: aTF_Tensor
+			status: status.
+		status check
+	] ensure: [
+		status delete.
+		externalized free
+	].! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 00:44:26'!
 at: attribute putType: value
 	| externalized |
 	externalized _ self library externalizeString: attribute.
