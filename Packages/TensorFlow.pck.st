@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 1:37:18 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 1:44:38 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 56!
+!provides: 'TensorFlow' 1 58!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -320,17 +320,15 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:22:42'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:44:28'!
 constantGraphInt64Created
 	| graph description operation constant |
 	graph _ TF_Graph create.
 	constant _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
 	constant data getHandle signedLongLongAt: 1 put: 16r4242424242424242.
 	
-	description _ graph const: 'a'.
+	description _ graph const: 'a' value: constant.
 	self deny: description isNull.
-	description at: 'dtype' putType: TF_Tensor typeInt64.
-	description at: 'value' putTensor: constant.
 	
 	self shouldnt: [operation _ description finish] raise: Error.
 	self assert: description isNull.
@@ -536,13 +534,12 @@ testNewOperationDescription
 	self deny: description isNull.
 	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:26:09'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:42:08'!
 testNewOperationPlaceholder
 	| graph description operation |
 	graph _ TF_Graph create.
-	description _ graph placeholder: 'aPlaceholder'.
+	description _ graph placeholder: 'aPlaceholder' type: TF_Tensor typeInt64.
 	self deny: description isNull.
-	description at: 'dtype' putType: TF_Tensor typeInt64.
 	self shouldnt: [operation _ description finish] raise: Error.
 	self assert: description isNull.
 	
@@ -1193,9 +1190,13 @@ fromString: aString
 	externalized free.
 	^ answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:22:17'!
-const: nameString
-	^self newOperation: 'Const' named: nameString! !
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:44:09'!
+const: nameString value: aTF_Tensor
+	| answer |
+	answer _ self newOperation: 'Const' named: nameString.
+	answer at: 'dtype' putType: aTF_Tensor type.
+	answer at: 'value' putTensor: aTF_Tensor.
+	^answer! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:41:55'!
 delete
@@ -1249,9 +1250,12 @@ outputDimenssionsCount: aTF_Output
 	[status check] ensure: [status delete].
 	^answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:22:26'!
-placeholder: nameString
-	^self newOperation: 'Placeholder' named: nameString! !
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 01:42:53'!
+placeholder: nameString type: typeInteger
+	| answer |
+	answer _ self newOperation: 'Placeholder' named: nameString.
+	answer at: 'dtype' putType: TF_Tensor typeInt64.
+	^answer! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
