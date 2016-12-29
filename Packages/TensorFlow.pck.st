@@ -236,6 +236,43 @@ testArrayAtPutFor: anExternalWordArraySubclass elementSample: anObject
 	]
 	! !
 
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 17:49:24'!
+testExternalFromArrayOperation
+	| op1 op2 array |
+	op1 _ TF_Operation fromHandle: (ExternalAddress new + 11111).
+	op2 _ TF_Operation fromHandle: (ExternalAddress new + 22222).
+	array _ TF_OperationPtrArray externalFromArray: (Array with: op1 with: op2).
+	[
+	self assert: array first getHandle = op1 getHandle.
+	self assert: (array at: 2) getHandle = op2 getHandle.
+	] ensure: [array free].! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 17:57:33'!
+testExternalFromArrayOutput
+	| o1 o2 array |
+	o1 _ TF_Output new index: 16r8070605040302010.
+	o2 _ TF_Output new index: 16rFEDCBA9876543210.
+	array _ TF_OutputArray externalFromArray: (Array with: o1 with: o2).
+	[
+	self assert: array first index = o1 index.
+	self assert: (array at: 2) index = o2 index.
+	] ensure: [
+		array free].! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 17:54:53'!
+testExternalFromArrayTensor
+	| t1 t2 array |
+	t1 _ TF_Tensor fromInt64: 16r8070605040302010.
+	t2 _ TF_Tensor fromInt64: 16rFEDCBA9876543210.
+	array _ TF_TensorPtrArray externalFromArray: (Array with: t1 with: t2).
+	[
+	self assert: array first getHandle = t1 getHandle.
+	self assert: (array at: 2) getHandle = t2 getHandle.
+	] ensure: [
+		array free.
+		t1 delete.
+		t2 delete].! !
+
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:15:41'!
 testOperationArrayAtPut
 	| sample |
@@ -1208,6 +1245,14 @@ template: anObject
 	"This method was automatically generated. See PointerArray class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
 
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:45:31'!
+externalFromArray: anIntegerArray
+	| answer |
+	answer _ self externalNew: anIntegerArray size.
+	anIntegerArray withIndexDo: [:each :index |
+		answer at: index put: each].
+	^ answer! !
+
 !ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
 externalNew
 	^ self shouldNotImplement! !
@@ -1241,14 +1286,6 @@ elementAtOffset: offset put: anInteger
 !Int64Array class methodsFor: 'instance creation' stamp: 'jb 12/26/2016 09:43:53'!
 byteSize
 	^ 8! !
-
-!Int64Array class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 09:10:31'!
-externalFromArray: anIntegerArray
-	| answer |
-	answer _ self externalNew: anIntegerArray size.
-	anIntegerArray withIndexDo: [:each :index |
-		answer at: index put: each].
-	^ answer! !
 
 !TF_OperationPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:55'!
 elementClass
