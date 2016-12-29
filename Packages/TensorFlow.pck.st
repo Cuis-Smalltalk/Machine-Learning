@@ -890,11 +890,11 @@ testTensorType
 	tensor delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'jb 12/26/2016 11:46:26'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 12/29/2016 15:30:33'!
 testVersion
 	| version |
 	version _ TensorFlowCAPI current version.
-	self assert: version =  '0.12.0'! !
+	self assert: (#('0.11.head' '0.12.0') includes: version)! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
