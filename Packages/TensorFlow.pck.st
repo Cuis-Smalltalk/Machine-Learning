@@ -1242,11 +1242,11 @@ template: anObject
 	"This method was automatically generated. See PointerArray class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
 
-!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:45:31'!
-externalFromArray: anIntegerArray
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 18:35:06'!
+externalFromArray: anArray
 	| answer |
-	answer _ self externalNew: anIntegerArray size.
-	anIntegerArray withIndexDo: [:each :index |
+	answer _ self externalNew: anArray size.
+	anArray withIndexDo: [:each :index |
 		answer at: index put: each].
 	^ answer! !
 
