@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 5:57:38 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 6:09:11 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 66!
+!provides: 'TensorFlow' 1 69!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -763,16 +763,13 @@ testRunGraphMulOneInput
 	input free.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/27/2016 19:15:38'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:08:10'!
 testRunOperationArray
-	| graph operation session operations |
+	| graph operation session |
 	graph _ self constantFloatGraph.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
-	operations _ TF_OperationPtrArray externalNew: 1.
-	operations first: operation.
-	self shouldnt: [session runOperations: operations] raise: Error.
-	operations free.
+	self shouldnt: [session runOperations: (Array with: operation)] raise: Error.
 	session close.
 	session delete.! !
 
@@ -793,7 +790,7 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/26/2016 10:59:57'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 18:09:07'!
 testSessionRunTarget
 	| graph operation session |
 	graph _ self constantFloatGraph.
@@ -1635,12 +1632,9 @@ run
 	
 	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:15:46'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:03:48'!
 runOperation: aTF_Operation
-	| operations |
-	operations _ TF_OperationPtrArray externalNew: 1.
-	operations first: aTF_Operation.	
-	[self runOperations: operations] ensure:[operations free]! !
+	^self runOperations: (Array with: aTF_Operation)! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 16:15:40'!
 runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output: outTF_Output
@@ -1680,18 +1674,20 @@ runOperation: aTF_Operation output: aTF_Output
 		operations free].
 	^ answer! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 23:59:18'!
-runOperations: aTF_OperationArray
-	| status |
+!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:05:37'!
+runOperations: anArrayOfTF_Operations
+	| status operations |
 	status _ TF_Status create.
-	
+	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTF_Operations.
 	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
 		outputs: nil values: nil count: 0
-		targets: aTF_OperationArray count: 1
+		targets: operations count: anArrayOfTF_Operations size
 		metadata: nil status: status.
-	status check] ensure: [status delete].! !
+	status check] ensure: [
+		status delete.
+		operations free].! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 16:07:45'!
 runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
