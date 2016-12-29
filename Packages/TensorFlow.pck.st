@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 27 December 2016 at 7:17:17 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 4:15:50 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 50!
+!provides: 'TensorFlow' 1 65!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -132,6 +132,16 @@ TF_Structure subclass: #TF_Operation
 TF_Operation class
 	instanceVariableNames: ''!
 
+!classDefinition: #TF_OperationDescription category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_OperationDescription
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_OperationDescription class' category: #'TensorFlow-Kernel'!
+TF_OperationDescription class
+	instanceVariableNames: ''!
+
 !classDefinition: #TF_Output category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Output
 	instanceVariableNames: ''
@@ -193,22 +203,22 @@ TF_Tensor class
 	instanceVariableNames: ''!
 
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:05:51'!
-testArray: anExternalArraySubclass sampleElement: anObject
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
+testArray: anExternalWordArraySubclass sampleElement: anObject
 	| array size  |
 	size _ 4.
-	array _ anExternalArraySubclass new: 4.
+	array _ anExternalWordArraySubclass new: 4.
 	self assert: size * Smalltalk wordSize = array getHandle size.
 	self assert: (array first isKindOf: anObject class).
 	1 to: size do: [:index |
 		self assert: ((array at: index) isKindOf: anObject class)].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:14:38'!
-testArrayAtPutFor: anExternalArraySubclass elementSample: anObject
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:07'!
+testArrayAtPutFor: anExternalWordArraySubclass elementSample: anObject
 	| array size one  |
 	size _ 4.
-	array _ anExternalArraySubclass new: 4.
+	array _ anExternalWordArraySubclass new: 4.
 	one _ array first.
 	
 	array first: anObject.
@@ -239,17 +249,77 @@ testOperationArrayElementsOfRightClass
 	^ self testArray: TF_OperationPtrArray sampleElement: TF_Operation new.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:12:29'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 15:37:49'!
 testOutputArrayAtPut
-	| sample |
-	sample _ TF_Output externalNew.
+	| array size one other operation |
+	size _ 4.
+	array _ TF_OutputArray externalNew: size.
+	operation _ TF_Operation fromHandle: ExternalAddress new + 16rF1F2F3F4.
 	
-	[self testArrayAtPutFor: TF_OutputArray elementSample: sample]
-		ensure: [sample free]! !
+	one _ TF_Output new.
+	one index: 16rF1F2F3F4F5F6F7F8.
+	one operation: operation.
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:44'!
+	other _ array first.
+	array first: one.
+
+	self deny: one getHandle = other getHandle.	
+	
+	self assert: one index = other index.
+	self assert: one operation = other operation.
+	
+	operation _ TF_Operation fromHandle: ExternalAddress new + 16r12345678.
+	one index: 16rF0F1F2F3F4F5F6F7.
+	one operation: operation.
+
+	1 to: size do: [:index |
+		other _ array at: index.
+		array at: index put: one.
+
+		self deny: one getHandle = other getHandle.	
+		self assert: one index = other index.
+		self assert: one operation = other operation.
+	]! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 15:04:16'!
+testOutputArrayElementsAreAliases
+	| array size one other |
+	size _ 4.
+	array _ TF_OutputArray externalNew: size.
+
+	one _ array first.
+	other _ array at: 1.
+	
+	one index: 12345678.
+	self assert: one index = 12345678.
+	self assert: other index = 12345678.
+
+	other index: 77665544.
+	self assert: one index = 77665544.
+	self assert: other index = 77665544.
+
+	1 to: size do: [:index |
+		one _ array at: index.
+		other _ array at: index.
+
+		one index: 12348765.
+		self assert: one index = 12348765.
+		self assert: other index = 12348765.
+
+		other index: 77222244.
+		self assert: one index = 77222244.
+		self assert: other index = 77222244].
+! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:53:08'!
 testOutputArrayElementsOfRightClass
-	^ self testArray: TF_OutputArray sampleElement: TF_Output new.! !
+	| array size  |
+	size _ 4.
+	array _ TF_OutputArray externalNew: size.
+	self assert: (array first isKindOf: TF_Output).
+	1 to: size do: [:index |
+		self assert: ((array at: index) isKindOf: TF_Output)].
+! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:16:37'!
 testTensorArrayAtPut
@@ -310,6 +380,19 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:53:36'!
+constantGraphInt64Created
+	| graph operation constant |
+	graph _ TF_Graph create.
+	constant _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	constant data getHandle signedLongLongAt: 1 put: 16r4242424242424242.
+	
+	self shouldnt: [
+		operation _ graph const: 'a' value: constant
+	] raise: Error.
+	self deny: operation isNull.
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:24'!
 constantInt32Graph
 	^ TF_Graph fromString: self constantInt32GraphDef! !
@@ -355,20 +438,34 @@ emptyGraphDef
 	" This GraphDef corresponds to an Empty Graph (no operations), saved as ProtoBuf "
 	^ #[16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 11:48:57'!
+mulGraphOneInputInt64Created
+	| graph constant const in |
+	graph _ TF_Graph create.
+	constant _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	constant data getHandle signedLongLongAt: 1 put: 16r0606060606060606.
+	
+	in _ graph placeholder: 'in' type: constant type.
+	const _ graph const: 'const' value: constant.
+	graph mul: 'mul' described: [:description |
+		description addInput: (in output: 0).
+		description addInput: (const output: 0)].
+	
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 12/21/2016 02:11:17'!
 setUp
 	library _ TensorFlowCAPI current! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 19:08:42'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:04:10'!
 testCloseSession
 	| graph session |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
-	self deny: session getHandle isNil.
-	self deny: session getHandle asInteger = 0.
+	self deny: session isNull.
 	self shouldnt: [session close] raise: Error.
 	self shouldnt: [session delete] raise: Error.
-	self assert: session getHandle isNil.! !
+	self assert: session isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/22/2016 00:58:57'!
 testExternalizeString
@@ -396,13 +493,25 @@ testGetOperationOnEmptyGraph
 	graph _ self emptyGraph.
 	self should: [graph operationNamed: 'something'] raise: Error! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:10:00'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:36:36'!
 testGraph: aTF_Graph outputType: anInteger
 	| operation output |
 	operation _ aTF_Graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 0.
+	output _ operation output: 0.
 	self assert: output type == anInteger.
 	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 16:02:59'!
+testGraphCreationConst
+	| graph operation |
+	graph _ self constantGraphInt64Created.
+	
+	operation _ graph operationNamed: 'a'.
+	self assert: operation type = 'Const'.
+	self assert: operation name = 'a'.
+	self assert: operation InputsCount = 0.
+	self assert: operation outputsCount = 1.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
 testImportBad
@@ -439,7 +548,7 @@ testImportEmpty
 		graph delete] raise: Error.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/27/2016 19:08:48'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/28/2016 00:07:27'!
 testNewBufferFromFileNamed
 	| buffer string data temporaryFile |
 	string _ ' hola manola'.
@@ -449,77 +558,123 @@ testNewBufferFromFileNamed
 	buffer _ TF_Buffer fromFileNamed: temporaryFile.
 	temporaryFile asFileEntry delete.
 	
-	self deny: buffer getHandle isNil.
-	self deny: buffer getHandle asInteger = 0.
+	self deny: buffer isNull.
 	self assert: buffer length == string size.
 	
 	data _ buffer data fromCString first: string size.
 	self assert: string = data.
 	
 	buffer delete.
-	self assert: buffer getHandle isNil.
+	self assert: buffer isNull.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/27/2016 19:08:57'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/28/2016 00:07:45'!
 testNewBufferFromString
 	| buffer string data |
 	string _ ' hola manola'.
 	buffer _ TF_Buffer fromString: string.
-	self deny: buffer getHandle isNil.
-	self deny: buffer getHandle asInteger = 0.
+	self deny: buffer isNull.
 	self assert: buffer length == string size.
 	
 	data _ buffer data fromCString first: string size.
 	self assert: string = data.
 	
 	buffer delete.
-	self assert: buffer getHandle isNil.! !
+	self assert: buffer isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/27/2016 19:09:16'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/28/2016 00:09:54'!
 testNewGraph
 	| graph |
 	graph _ TF_Graph create.
-	self deny: graph getHandle isNil.
-	self deny: graph getHandle asInteger = 0.
+	self deny: graph isNull.
 	graph delete.
-	self assert: graph getHandle isNil.! !
+	self assert: graph isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/27/2016 19:09:22'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:11:14'!
 testNewImportGraphDefOptions
 	| options |
 	options _ TF_ImportGraphDefOptions create.
-	self deny: options getHandle isNil.
-	self deny: options getHandle asInteger = 0.
+	self deny: options isNull.
 	options delete.
-	self assert: options getHandle isNil.! !
+	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 19:09:26'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 00:24:17'!
+testNewOperationDescription
+	| graph description |
+	graph _ TF_Graph create.
+	description _ graph newOperation: 'Const' named: 'first_operation'.
+	self deny: description isNull.
+	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 02:12:07'!
+testNewOperationMul
+	| graph operation a b |
+	graph _ TF_Graph create.
+	a _ graph placeholder: 'a' type: TF_Tensor typeInt64.
+	b _ graph placeholder: 'b' type: TF_Tensor typeInt64.
+	
+	operation _ graph
+		mul: 'aMultiplication'
+		described: [:description |
+			description addInputFromOutput: 0 of: a.
+			description addInputFromOutput: 0 of: b].
+
+	self assert: operation type = 'Mul'.
+	self assert: operation name = 'aMultiplication'.
+	self assert: operation InputsCount = 2.
+	self assert: operation outputsCount = 1.
+	
+	operation _ graph operationNamed: 'aMultiplication'.
+	self assert: operation type = 'Mul'.
+	self assert: operation name = 'aMultiplication'.
+	self assert: operation InputsCount = 2.
+	self assert: operation outputsCount = 1.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:53:15'!
+testNewOperationPlaceholder
+	| graph operation |
+	graph _ TF_Graph create.
+	self shouldnt: [
+		operation _ graph placeholder: 'aPlaceholder' type: TF_Tensor typeInt64.
+	] raise: Error.
+	
+	self assert: operation type = 'Placeholder'.
+	self assert: operation name = 'aPlaceholder'.
+	self assert: operation InputsCount = 0.
+	self assert: operation outputsCount = 1.
+	
+	operation _ graph operationNamed: 'aPlaceholder'.
+	self assert: operation type = 'Placeholder'.
+	self assert: operation name = 'aPlaceholder'.
+	self assert: operation InputsCount = 0.
+	self assert: operation outputsCount = 1.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:08:08'!
 testNewSession
 	| graph session |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
-	self deny: session getHandle isNil.
-	self deny: session getHandle asInteger = 0.
+	self deny: session isNull.
 	session delete.
-	self assert: session getHandle isNil.! !
+	self assert: session isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/27/2016 19:09:29'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:12:36'!
 testNewSessionOptions
 	| options |
 	options _ TF_SessionOptions create.
-	self deny: options getHandle isNil.
-	self deny: options getHandle asInteger = 0.
+	self deny: options isNull.
 	options delete.
-	self assert: options getHandle isNil.! !
+	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/27/2016 19:09:32'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:11:49'!
 testNewStatus
 	| status |
 	status _ TF_Status create.
-	self deny: status getHandle isNil.
-	self deny: status getHandle asInteger = 0.
+	self deny: status isNull.
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:10:55'!
 testOperationOutputTypeFloat
@@ -533,14 +688,45 @@ testOperationOutputTypeInt32
 testOperationOutputTypeInt64
 	^self testGraph: self constantInt64Graph outputType: TF_Tensor typeInt64! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 14:26:05'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/28/2016 01:36:52'!
 testOutputDims
 	| graph operation output |
 	graph _ self constantInt64Graph.
 	operation _ graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 0.
+	output _ operation output: 0.
 	self assert: (graph outputDimenssionsCount: output) = 0.
 	graph delete.
+	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 16:02:53'!
+testRunGraphConst
+	| graph |
+	graph _ self constantGraphInt64Created.
+
+	self testSessionRunTargetOutputOnGraph: graph! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 11:50:48'!
+testRunGraphMulOneInput
+	| graph input inputValue result mul output session |
+	graph _ self mulGraphOneInputInt64Created.
+	
+	input _ (graph operationNamed: 'in') input: 0.
+	inputValue _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	inputValue data getHandle signedLongLongAt: 1 put: 11.
+	mul _ graph operationNamed: 'mul'.
+	output _ mul output: 0.
+	session _ TF_Session onGraph: graph.
+	result _ session runOperation: mul input: input value: inputValue output: output.
+	
+	self deny: result isNull.
+	self deny: result data isNull.
+	self assert: (result data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+
+	session close.
+	session delete.
+	inputValue delete.
+	result delete.
+	input free.
 	output free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/27/2016 19:15:38'!
@@ -564,15 +750,14 @@ testSessionOnEmptyGraph
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/27/2016 19:09:36'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:12:49'!
 testSessionOptionsSetTarget
 	| options |
 	options _ library newSessionOptions.
-	self deny: options getHandle isNil.
-	self deny: options getHandle asInteger = 0.
+	self deny: options isNull.
 	options target: 'local'.
 	options delete.
-	self assert: options getHandle isNil.! !
+	self assert: options isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/26/2016 10:59:57'!
 testSessionRunTarget
@@ -584,26 +769,29 @@ testSessionRunTarget
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/27/2016 19:09:43'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 01:13:51'!
 testSessionRunTargetOutput
-	| graph operation session output tensor |
-	graph _ self constantInt64Graph.
+	^ self testSessionRunTargetOutputOnGraph: self constantInt64Graph.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 16:00:14'!
+testSessionRunTargetOutputOnGraph: graph
+	| operation session output tensor |
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
-	output _ TF_Output onOperation: operation index: 0.
-	self shouldnt: [
-		tensor _ session runOperation: operation output: output] raise: Error.
-	self deny: tensor getHandle isNil.
-	self deny: tensor getHandle asInteger = 0.
-	self deny: tensor data getHandle isNil.
-	self deny: tensor data getHandle asInteger = 0.
+	output _ operation output: 0.
+	
+	tensor _ session runOperation: operation output: output.
+	
+	self deny: tensor isNull.
+	self deny: tensor data isNull.
 	self assert: (tensor data getHandle signedLongLongAt: 1) = 16r4242424242424242.
 	session close.
 	session delete.
 	tensor delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/21/2016 11:09:31'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:31'!
 testStatusCodes
 	| status  |
 	status _ TF_Status create.
@@ -617,9 +805,9 @@ testStatusCodes
 	self should: [status check] raise: Error.
 
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:25:46'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:44'!
 testStatusGetMessage
 	| status message |
 	status _ TF_Status create.
@@ -633,9 +821,9 @@ testStatusGetMessage
 	self assert: message = 'Something is very seven'.
 
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'jb 12/26/2016 10:26:17'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:50'!
 testStatusSetGetCode
 	| status code |
 	status _ TF_Status create.
@@ -648,7 +836,7 @@ testStatusSetGetCode
 	self assert: code = 2.
 
 	status delete.
-	self assert: status getHandle isNil.! !
+	self assert: status isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:08:15'!
 testTensorData
@@ -689,14 +877,13 @@ testTensorDimensions: anArray
 		self assert: (tensor sizeOn: index - 1) = (anArray at: index)].
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:09:58'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
 testTensorNewScalar
 	| tensor |
 	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
-	self deny: tensor getHandle isNil.
-	self deny: tensor getHandle asInteger = 0.
+	self deny: tensor isNull.
 	tensor delete.
-	self assert: tensor getHandle isNil.! !
+	self assert: tensor isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:55:58'!
 testTensorType
@@ -710,11 +897,11 @@ testTensorType
 	tensor delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'jb 12/26/2016 11:46:26'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 12/29/2016 15:30:33'!
 testVersion
 	| version |
 	version _ TensorFlowCAPI current version.
-	self assert: version =  '0.12.0'! !
+	self assert: (#('0.11.head' '0.12.0') includes: version)! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
@@ -761,6 +948,21 @@ deleteTensor: aTF_Tensor
 	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:59:08'!
+description: aTF_OperationDescription addInput: aTF_Output
+	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
+description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
+	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 00:44:16'!
+description: aTF_OperationDescription set: aString toType: anInt
+	<cdecl: void 'TF_SetAttrType' (TF_OperationDescription* char* ulonglong)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
 externalizeString: aString
 	| answer |
@@ -769,6 +971,11 @@ externalizeString: aString
 	aString withIndexDo: [:char :index |
 		answer byteAt:  index put: char asciiValue].
 	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/27/2016 23:56:18'!
+finishOperation: aTF_OperationDescription status: aTF_Status
+	<cdecl: TF_Operation* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
+	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/26/2016 13:13:55'!
 forGraph: aTF_Graph outputDims: aTF_Output status: aTF_Status
@@ -809,6 +1016,12 @@ newGraph
 newImportGraphDefOptions
 	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/27/2016 23:15:02'!
+newOperationOn: graph type: type named: name
+	<cdecl: TF_OperationDescription* 'TF_NewOperation' (TF_Graph* char* char*)>
+	^ self externalCallFailed
+	! !
 
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:21:09'!
 newSessionGraph: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
@@ -855,7 +1068,7 @@ operationOutputType: aTF_Output
 	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/27/2016 19:17:14'!
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/29/2016 15:59:21'!
 runSession: aTF_Session
 	options: opsTF_Buffer
 	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
@@ -870,7 +1083,7 @@ runSession: aTF_Session
 		TF_Output*				"inputs"
 		TF_TensorPtrArray*		"inputs' values"
 		long						"inputs count"
-		TF_Output*				"outputs"
+		TF_OutputArray*			"outputs"
 		TF_TensorPtrArray*		"outputs values (results)"
 		long						"outputs count"
 		TF_OperationPtrArray*	"target operations array, may be nil"
@@ -1044,9 +1257,38 @@ externalFromArray: anIntegerArray
 elementClass
 	^TF_Operation! !
 
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:44:00'!
+elementAtOffset: byteOffset
+	^self elementClass fromHandle: (handle + (byteOffset - 1))
+	
+! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:51:07'!
+elementAtOffset: byteOffset put: anExternalStructure
+	handle structAt: byteOffset put: anExternalStructure getHandle length: 16.! !
+
 !TF_OutputArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:48'!
 elementClass
 	^TF_Output! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 14:09:24'!
+template
+	"This method was automatically generated. See TF_OutputArray class>>fields."
+	^TF_Output fromHandle: (handle structAt: 1 length: 16)! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 14:09:24'!
+template: anObject
+	"This method was automatically generated. See TF_OutputArray class>>fields."
+	handle structAt: 1 put: anObject getHandle length: 16.! !
+
+!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:03'!
+fields
+	"self initialize"
+	^#((template 'TF_Output'))! !
+
+!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:40'!
+new: unused
+	^ self shouldNotImplement! !
 
 !TF_TensorPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/27/2016 09:09:07'!
 elementClass
@@ -1110,6 +1352,15 @@ fromString: aString
 	externalized free.
 	^ answer! !
 
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:07:25'!
+const: nameString value: aTF_Tensor
+	^ self
+		newOperation: 'Const'
+		named: nameString
+		described: [:description |
+			description at: 'dtype' putType: aTF_Tensor type.
+			description at: 'value' putTensor: aTF_Tensor]! !
+
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:41:55'!
 delete
 	self library deleteGraph: self.
@@ -1139,6 +1390,22 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
+mul: nameString described: aBlock
+	^self newOperation: 'Mul' named: nameString described: aBlock! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/27/2016 23:16:19'!
+newOperation: typeString named: aString
+	^ self library newOperationOn: self type: typeString named: aString
+! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:08:25'!
+newOperation: typeString named: aString described: aBlock
+	| description |
+	description _ self newOperation: typeString named: aString.
+	aBlock value: description.
+	^description finish! !
+
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:44:06'!
 operationNamed: aString
 	| externalized answer |
@@ -1156,6 +1423,14 @@ outputDimenssionsCount: aTF_Output
 	answer _ self library forGraph: self outputDims: aTF_Output status: status.
 	[status check] ensure: [status delete].
 	^answer! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:05:18'!
+placeholder: nameString type: typeInteger
+	^ self
+		newOperation: 'Placeholder'
+		named: nameString
+		described: [:description |
+			description at: 'dtype' putType: TF_Tensor typeInt64]! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
@@ -1186,9 +1461,17 @@ InputsCount
 device
 	^ self library operationDevice: self! !
 
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
+input: indexInteger
+	^ TF_Input onOperation: self index: indexInteger! !
+
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
 	^ self library operationName: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
+output: indexInteger
+	^ TF_Output onOperation: self index: indexInteger! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:48'!
 outputsCount
@@ -1197,6 +1480,63 @@ outputsCount
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
 	^ self library operationOpType: self! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
+add: input
+	self library description: self add: input.! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:32:31'!
+addInput: aTF_OutputOrInput
+	^self library
+		description: self
+		addInput: aTF_OutputOrInput! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:40:51'!
+addInputFromOutput: indexInteger of: aTF_Operation
+	| input |
+	input _ aTF_Operation input: indexInteger.
+	[self library
+		description: self
+		addInput: input
+	] ensure: [input free]! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 01:05:31'!
+at: attribute putTensor: aTF_Tensor
+	| externalized status |
+	externalized _ self library externalizeString: attribute.
+	status _ TF_Status create.
+	[	self library
+			description: self
+			set: externalized
+			toTensor: aTF_Tensor
+			status: status.
+		status check
+	] ensure: [
+		status delete.
+		externalized free
+	].! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 00:44:26'!
+at: attribute putType: value
+	| externalized |
+	externalized _ self library externalizeString: attribute.
+	[
+	self library
+		description: self
+		set: externalized
+		toType: value ] ensure: [ externalized free ].! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 12/28/2016 00:29:21'!
+finish
+	| answer status |
+	status _ TF_Status create.
+	[	answer _ self library
+			finishOperation: self
+			status: status.
+		handle _ nil.
+		status check
+	] ensure: [status delete].
+	^ answer.! !
 
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
 index
@@ -1268,16 +1608,45 @@ runOperation: aTF_Operation
 	operations first: aTF_Operation.	
 	[self runOperations: operations] ensure:[operations free]! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:15:49'!
-runOperation: aTF_Operation output: aTF_Output
-	| operations  answer |
+!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 16:15:40'!
+runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output: outTF_Output
+	| operations  invalues outvalues status tensor outputs |
 	operations _ TF_OperationPtrArray externalNew: 1.
+	operations first: aTF_Operation.
+	status _ TF_Status create.
+	outvalues _ TF_TensorPtrArray new: 1.
+	invalues _ TF_TensorPtrArray new: 1.
+	invalues first: inTF_Tensor.
+	outputs _ TF_OutputArray externalNew: 1.
+	outputs first: outTF_Output.
+
+	[self library
+		runSession: self options: nil
+		inputs: inTF_OutputOrInput values: invalues count: 1
+		outputs: outputs values: outvalues count: 1
+		targets: operations count: 1
+		metadata: nil status: status.
+	tensor _ outvalues first.
+	status check] ensure: [
+		status delete.
+		outvalues free].
+	^ tensor
+! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 16:06:49'!
+runOperation: aTF_Operation output: aTF_Output
+	| operations  answer outputs |
+	operations _ TF_OperationPtrArray externalNew: 1.
+	outputs _ TF_OutputArray externalNew: 1.
+	outputs first: aTF_Output.
 	[	operations first: aTF_Operation.	
-		answer _ self runOperations: operations outputs: aTF_Output size: 1
-	] ensure:[operations free].
+		answer _ self runOperations: operations outputs: outputs size: 1
+	] ensure: [
+		outputs free.
+		operations free].
 	^ answer! !
 
-!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:02'!
+!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 23:59:18'!
 runOperations: aTF_OperationArray
 	| status |
 	status _ TF_Status create.
@@ -1288,19 +1657,17 @@ runOperations: aTF_OperationArray
 		outputs: nil values: nil count: 0
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
-	
 	status check] ensure: [status delete].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/27/2016 19:16:44'!
-runOperations: aTF_OperationArray outputs: aTF_Output size: anInteger
+!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 16:07:45'!
+runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 	| status outvalues tensor |
-	self assert: anInteger = 1.
 	status _ TF_Status create.
 	outvalues _ TF_TensorPtrArray new: anInteger.
 	[self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
-		outputs: aTF_Output values: outvalues count: anInteger
+		outputs: aTF_OutputArray values: outvalues count: anInteger
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
 	tensor _ outvalues first.
