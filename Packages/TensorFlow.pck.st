@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 4:15:50 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 5:57:38 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 65!
+!provides: 'TensorFlow' 1 66!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -380,12 +380,11 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:53:36'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 17:53:13'!
 constantGraphInt64Created
 	| graph operation constant |
 	graph _ TF_Graph create.
-	constant _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
-	constant data getHandle signedLongLongAt: 1 put: 16r4242424242424242.
+	constant _ TF_Tensor fromInt64: 16r4242424242424242.
 	
 	self shouldnt: [
 		operation _ graph const: 'a' value: constant
@@ -438,12 +437,11 @@ emptyGraphDef
 	" This GraphDef corresponds to an Empty Graph (no operations), saved as ProtoBuf "
 	^ #[16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 11:48:57'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 17:53:15'!
 mulGraphOneInputInt64Created
 	| graph constant const in |
 	graph _ TF_Graph create.
-	constant _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
-	constant data getHandle signedLongLongAt: 1 put: 16r0606060606060606.
+	constant _ TF_Tensor fromInt64: 16r0606060606060606.
 	
 	in _ graph placeholder: 'in' type: constant type.
 	const _ graph const: 'const' value: constant.
@@ -705,14 +703,13 @@ testRunGraphConst
 
 	self testSessionRunTargetOutputOnGraph: graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 11:50:48'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 17:53:18'!
 testRunGraphMulOneInput
 	| graph input inputValue result mul output session |
 	graph _ self mulGraphOneInputInt64Created.
 	
 	input _ (graph operationNamed: 'in') input: 0.
-	inputValue _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
-	inputValue data getHandle signedLongLongAt: 1 put: 11.
+	inputValue _ TF_Tensor fromInt64: 11.
 	mul _ graph operationNamed: 'mul'.
 	output _ mul output: 0.
 	session _ TF_Session onGraph: graph.
@@ -1787,6 +1784,13 @@ sizeOn: dimension
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:50:33'!
 type
 	^self library tensorType: self.! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
+fromInt64: value
+	| answer |
+	answer _ self type: self typeInt64 dimensions: #().
+	answer data getHandle signedLongLongAt: 1 put: value.
+	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 11:14:21'!
 sizeForType: anInteger
