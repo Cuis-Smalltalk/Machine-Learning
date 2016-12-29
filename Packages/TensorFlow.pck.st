@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3007] on 28 December 2016 at 11:50:56 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 3:38:20 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 64!
 !requires: 'FFI' 1 18 nil!
@@ -203,22 +203,22 @@ TF_Tensor class
 	instanceVariableNames: ''!
 
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:05:51'!
-testArray: anExternalArraySubclass sampleElement: anObject
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
+testArray: anExternalWordArraySubclass sampleElement: anObject
 	| array size  |
 	size _ 4.
-	array _ anExternalArraySubclass new: 4.
+	array _ anExternalWordArraySubclass new: 4.
 	self assert: size * Smalltalk wordSize = array getHandle size.
 	self assert: (array first isKindOf: anObject class).
 	1 to: size do: [:index |
 		self assert: ((array at: index) isKindOf: anObject class)].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:14:38'!
-testArrayAtPutFor: anExternalArraySubclass elementSample: anObject
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:07'!
+testArrayAtPutFor: anExternalWordArraySubclass elementSample: anObject
 	| array size one  |
 	size _ 4.
-	array _ anExternalArraySubclass new: 4.
+	array _ anExternalWordArraySubclass new: 4.
 	one _ array first.
 	
 	array first: anObject.
@@ -249,17 +249,77 @@ testOperationArrayElementsOfRightClass
 	^ self testArray: TF_OperationPtrArray sampleElement: TF_Operation new.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:12:29'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 15:37:49'!
 testOutputArrayAtPut
-	| sample |
-	sample _ TF_Output externalNew.
+	| array size one other operation |
+	size _ 4.
+	array _ TF_OutputArray externalNew: size.
+	operation _ TF_Operation fromHandle: ExternalAddress new + 16rF1F2F3F4.
 	
-	[self testArrayAtPutFor: TF_OutputArray elementSample: sample]
-		ensure: [sample free]! !
+	one _ TF_Output new.
+	one index: 16rF1F2F3F4F5F6F7F8.
+	one operation: operation.
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/25/2016 19:06:44'!
+	other _ array first.
+	array first: one.
+
+	self deny: one getHandle = other getHandle.	
+	
+	self assert: one index = other index.
+	self assert: one operation = other operation.
+	
+	operation _ TF_Operation fromHandle: ExternalAddress new + 16r12345678.
+	one index: 16rF0F1F2F3F4F5F6F7.
+	one operation: operation.
+
+	1 to: size do: [:index |
+		other _ array at: index.
+		array at: index put: one.
+
+		self deny: one getHandle = other getHandle.	
+		self assert: one index = other index.
+		self assert: one operation = other operation.
+	]! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 15:04:16'!
+testOutputArrayElementsAreAliases
+	| array size one other |
+	size _ 4.
+	array _ TF_OutputArray externalNew: size.
+
+	one _ array first.
+	other _ array at: 1.
+	
+	one index: 12345678.
+	self assert: one index = 12345678.
+	self assert: other index = 12345678.
+
+	other index: 77665544.
+	self assert: one index = 77665544.
+	self assert: other index = 77665544.
+
+	1 to: size do: [:index |
+		one _ array at: index.
+		other _ array at: index.
+
+		one index: 12348765.
+		self assert: one index = 12348765.
+		self assert: other index = 12348765.
+
+		other index: 77222244.
+		self assert: one index = 77222244.
+		self assert: other index = 77222244].
+! !
+
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:53:08'!
 testOutputArrayElementsOfRightClass
-	^ self testArray: TF_OutputArray sampleElement: TF_Output new.! !
+	| array size  |
+	size _ 4.
+	array _ TF_OutputArray externalNew: size.
+	self assert: (array first isKindOf: TF_Output).
+	1 to: size do: [:index |
+		self assert: ((array at: index) isKindOf: TF_Output)].
+! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:16:37'!
 testTensorArrayAtPut
@@ -1190,9 +1250,38 @@ externalFromArray: anIntegerArray
 elementClass
 	^TF_Operation! !
 
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:44:00'!
+elementAtOffset: byteOffset
+	^self elementClass fromHandle: (handle + (byteOffset - 1))
+	
+! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:51:07'!
+elementAtOffset: byteOffset put: anExternalStructure
+	handle structAt: byteOffset put: anExternalStructure getHandle length: 16.! !
+
 !TF_OutputArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:48'!
 elementClass
 	^TF_Output! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 14:09:24'!
+template
+	"This method was automatically generated. See TF_OutputArray class>>fields."
+	^TF_Output fromHandle: (handle structAt: 1 length: 16)! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 14:09:24'!
+template: anObject
+	"This method was automatically generated. See TF_OutputArray class>>fields."
+	handle structAt: 1 put: anObject getHandle length: 16.! !
+
+!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:03'!
+fields
+	"self initialize"
+	^#((template 'TF_Output'))! !
+
+!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:40'!
+new: unused
+	^ self shouldNotImplement! !
 
 !TF_TensorPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/27/2016 09:09:07'!
 elementClass
