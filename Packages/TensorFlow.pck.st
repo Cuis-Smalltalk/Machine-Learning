@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 10:35:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 30 December 2016 at 10:10:31 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 71!
+!provides: 'TensorFlow' 1 72!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -544,6 +544,13 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 12/30/2016 10:09:52'!
+testGetAllOps
+	| ops |
+	ops _ TensorFlowCAPI current getAllOps.
+	self assert: (ops data fromCString includesSubString: 'tensor').
+	ops delete! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 10:59:21'!
 testGetOperationOnConstantGraph
 	| graph op |
@@ -1074,6 +1081,11 @@ finishOperation: aTF_OperationDescription status: aTF_Status
 forGraph: aTF_Graph outputDims: aTF_Output status: aTF_Status
 	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
 	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/29/2016 23:03:34'!
+getAllOps
+	<cdecl: TF_Buffer* 'TF_GetAllOpList' (void)>
+	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:59:30'!
 getCode: aTF_Status
