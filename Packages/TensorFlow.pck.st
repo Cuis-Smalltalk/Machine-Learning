@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 6:39:39 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 29 December 2016 at 10:35:13 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 70!
+!provides: 'TensorFlow' 1 71!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -488,6 +488,24 @@ mulGraphOneInputInt64Created
 	
 	^ graph! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:23:28'!
+mulGraphTwoInputsInt64Created
+	| graph constant const in1 in2 mul1 |
+	graph _ TF_Graph create.
+	constant _ TF_Tensor fromInt64: 16r0101010101010101.
+	
+	in1 _ graph placeholder: 'in1' type: constant type.
+	in2 _ graph placeholder: 'in2' type: constant type.
+	const _ graph const: 'const' value: constant.
+	mul1 _ graph mul: 'mul1' described: [:description |
+		description addInput: (const output: 0).
+		description addInput: (in1 output: 0)].
+	graph mul: 'mul2' described: [:description |
+		description addInput: (mul1 output: 0).
+		description addInput: (in2 output: 0)].
+	
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 12/21/2016 02:11:17'!
 setUp
 	library _ TensorFlowCAPI current! !
@@ -776,6 +794,36 @@ testRunGraphMulOneInput
 	result delete.
 	input free.
 	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 22:35:07'!
+testRunGraphMulTwoInputs
+	| graph inputs inputValues mul output session results |
+	graph _ self mulGraphTwoInputsInt64Created.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 6)
+		with: (TF_Tensor fromInt64: 11).
+	mul _ graph operationNamed: 'mul2'.
+	output _ mul output: 0.
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOperations: (Array with: mul)
+		inputs: inputs
+		values: inputValues
+		outputs: (Array with: output).
+	
+	self deny: results isNull.
+	self deny: results first isNull.
+	self deny: results first data isNull.
+	self assert: (results first data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+
+	session close.
+	session delete.
+	results first delete.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:08:10'!
 testRunOperationArray
