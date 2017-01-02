@@ -1075,6 +1075,16 @@ description: aTF_OperationDescription addInput: aTF_Output
 	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output)>
 	^ self externalCallFailed.! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/2/2017 12:36:00'!
+description: aTF_OperationDescription addInputs: aTF_OutputArray size: anInteger
+	<cdecl: void 'TF_AddInputList' (TF_OperationDescription* TF_OutputArray* longlong)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/30/2016 12:52:47'!
+description: aTF_OperationDescription set: aString toInt64: anInt
+	<cdecl: void 'TF_SetAttrInt' (TF_OperationDescription* char* ulonglong)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
 description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
 	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
@@ -1630,6 +1640,27 @@ addInputFromOutput: indexInteger of: aTF_Operation
 		description: self
 		addInput: input
 	] ensure: [input free]! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/2/2017 12:36:18'!
+addInputs: anArrayOfTF_Output
+	| inputs |
+	inputs _ TF_OutputArray externalFromArray: anArrayOfTF_Output.
+	[self library
+		description: self
+		addInputs: inputs
+		size: anArrayOfTF_Output size.
+	] ensure: [inputs free].
+! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/30/2016 12:27:14'!
+at: attribute putInt: value
+	| externalized |
+	externalized _ self library externalizeString: attribute.
+	[
+	self library
+		description: self
+		set: externalized
+		toInt64: value ] ensure: [ externalized free ].! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 01:05:31'!
 at: attribute putTensor: aTF_Tensor
