@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 2 January 2017 at 3:41:08 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 2 January 2017 at 7:50:56 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 75!
+!provides: 'TensorFlow' 1 76!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1077,6 +1077,33 @@ testTensorType
 	tensor delete.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/2/2017 19:50:32'!
+testTensorTypes
+	| types |
+	types _ #(
+		Float 1
+		Double 2
+		Int32 3
+		UInt8 4
+		Int16 5
+		Int8 6
+		String 7
+		Complex64 8
+		Int64 9
+		Bool 10
+		QInt8 11
+		QUInt8 12
+		QInt32 13
+		BFloat16 14
+		QInt16 15
+		QUInt16 16
+		UInt16 17
+		Complex128 18
+		Half 19
+		Resource 20).
+	types pairsDo: [:name :value |
+		self assert: (TF_Tensor perform: (#type, name) asSymbol) = value]! !
+
 !TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 12/29/2016 15:30:33'!
 testVersion
 	| version |
@@ -2067,9 +2094,37 @@ type: anInteger dimensions: anIntegerArray
 	^ answer
 ! !
 
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:54'!
+typeBFloat16
+	^14! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:52'!
+typeBool
+	^10! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:37'!
+typeComplex128
+	^18! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:31'!
+typeComplex64
+	^8! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:29'!
+typeDouble
+	^2! !
+
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:41:58'!
 typeFloat
 	^1! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:35'!
+typeHalf
+	^19! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:54'!
+typeInt16
+	^5! !
 
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 11:14:05'!
 typeInt32
@@ -2078,4 +2133,44 @@ typeInt32
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:42:07'!
 typeInt64
 	^9! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:06'!
+typeInt8
+	^6! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:14'!
+typeQInt16
+	^15! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:30'!
+typeQInt32
+	^13! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:00'!
+typeQInt8
+	^11! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:08'!
+typeQUInt16
+	^16! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:50:48'!
+typeQUInt8
+	^12! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:40'!
+typeResource
+	^20! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:12'!
+typeString
+	^7! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:19'!
+typeUInt16
+	^17! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:40'!
+typeUInt8
+	^4! !
 TF_Structure initialize!
