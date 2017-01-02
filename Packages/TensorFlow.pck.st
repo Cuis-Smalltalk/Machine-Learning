@@ -1933,6 +1933,13 @@ sizeOn: dimension
 type
 	^self library tensorType: self.! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
+fromInt32: value
+	| answer |
+	answer _ self type: self typeInt32 dimensions: #().
+	answer data getHandle signedLongAt: 1 put: value.
+	^ answer! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
 fromInt64: value
 	| answer |
