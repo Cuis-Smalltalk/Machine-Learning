@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 30 December 2016 at 10:10:31 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 2 January 2017 at 12:36:42 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 72!
+!provides: 'TensorFlow' 1 74!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -399,6 +399,24 @@ testUInt64ArrayAtPut
 testUInt64ArrayElementsOfRightClass
 	^ self testArray: Int64Array sampleElement: 1234.! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/2/2017 12:36:38'!
+concatGraphInputList
+	| graph in1 in2 concat dimension dimensionValue inputs |
+	graph _ TF_Graph create.
+	dimensionValue _ TF_Tensor fromInt32: 0.
+	dimension _ graph const: 'const' value: dimensionValue.
+	
+	in1 _ graph placeholder: 'in1' type: TF_Tensor typeInt64.
+	in2 _ graph placeholder: 'in2' type: TF_Tensor typeInt64.
+	inputs _ Array with: (in1 output: 0) with: (in2 output: 0).
+	concat _ graph concat: 'concat' described: [:description |
+		description addInput: (dimension output: 0).
+		description addInputs: inputs.
+		description at: 'N' putInt: 2.
+	].
+	concat.
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 10:59:08'!
 constantFloatGraph
 	^ TF_Graph fromString: self constantFloatGraphDef! !
@@ -519,6 +537,10 @@ testCloseSession
 	self shouldnt: [session close] raise: Error.
 	self shouldnt: [session delete] raise: Error.
 	self assert: session isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/30/2016 12:44:23'!
+testConcatGraphInputList
+	self concatGraphInputList! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:29:27'!
 testCreateGraphMulOneInput
