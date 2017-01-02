@@ -1479,6 +1479,10 @@ fromString: aString
 	externalized free.
 	^ answer! !
 
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/30/2016 12:16:54'!
+concat: nameString described: aBlock
+	^self newOperation: 'Concat' named: nameString described: aBlock! !
+
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:07:25'!
 const: nameString value: aTF_Tensor
 	^ self
