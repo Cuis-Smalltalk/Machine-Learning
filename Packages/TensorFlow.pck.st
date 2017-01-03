@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 3 January 2017 at 9:35:54 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 3 January 2017 at 9:38:16 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 77!
+!provides: 'TensorFlow' 1 78!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -624,10 +624,10 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 12/30/2016 10:09:52'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:31'!
 testGetAllOps
 	| ops |
-	ops _ TensorFlowCAPI current getAllOps.
+	ops _ library getAllOps.
 	self assert: (ops data fromCString includesSubString: 'tensor').
 	ops delete! !
 
@@ -1114,10 +1114,10 @@ testTensorTypes
 	types pairsDo: [:name :value |
 		self assert: (TF_Tensor perform: (#type, name) asSymbol) = value]! !
 
-!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 12/29/2016 15:30:33'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:37'!
 testVersion
 	| version |
-	version _ TensorFlowCAPI current version.
+	version _ library version.
 	self assert: (#('0.11.head' '0.12.0') includes: version)! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
