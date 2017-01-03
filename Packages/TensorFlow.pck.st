@@ -1018,6 +1018,16 @@ testStatusSetGetCode
 	status delete.
 	self assert: status isNull.! !
 
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/3/2017 09:35:44'!
+testStringSizeEmpty
+	self assert: (library stringEncodedSize: 0) = 1.
+	self assert: (library stringEncodedSize: 127) = 128.
+	self assert: (library stringEncodedSize: 128) = 130.
+	self assert: (library stringEncodedSize: 127*127) = (127*127+2).
+	self assert: (library stringEncodedSize: 127*127+123) = (127*127+123+2).
+	self assert: (library stringEncodedSize: 127*127*127) = (127*127*127+3).
+	! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:08:15'!
 testTensorData
 	| tensor |
@@ -1329,6 +1339,11 @@ sessionOptions: aTF_SessionOptions setTarget: aString
 !TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:54:03'!
 setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:21:04'!
+stringEncodedSize: anASCIIZString
+	<cdecl: ulonglong 'TF_StringEncodedSize' (ulonglong)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
