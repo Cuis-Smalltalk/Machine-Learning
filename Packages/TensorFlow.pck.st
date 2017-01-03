@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 2 January 2017 at 7:50:56 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 3 January 2017 at 9:35:54 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 76!
+!provides: 'TensorFlow' 1 77!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2063,11 +2063,47 @@ fromInt64: value
 	answer data getHandle signedLongLongAt: 1 put: value.
 	^ answer! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/26/2016 11:14:21'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/2/2017 23:30:33'!
 sizeForType: anInteger
 	anInteger = self typeFloat ifTrue: [^8].
 	anInteger = self typeInt64 ifTrue: [^8].
 	anInteger = self typeInt32 ifTrue: [^4].
+
+"
+8
+		UInt8 4
+		Int8 6
+		QInt8 11
+		QUInt8 12
+
+16
+		Int16 5
+		BFloat16 14
+		QInt16 15
+		QUInt16 16
+		UInt16 17
+		Half 19
+
+32
+		Float 1
+		Int32 3
+		QInt32 13
+
+64
+		Double 2
+		Complex64 8
+		Int64 9
+
+128
+		Complex128 18
+
+		String 7
+		Resource 20).
+
+		Bool 10
+"
+
+
 	^ self shouldBeImplemented.! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/27/2016 19:13:03'!
