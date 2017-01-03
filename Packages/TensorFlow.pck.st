@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 3 January 2017 at 9:38:16 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 3 January 2017 at 9:43:40 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 78!
+!provides: 'TensorFlow' 1 80!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1018,15 +1018,19 @@ testStatusSetGetCode
 	status delete.
 	self assert: status isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/3/2017 09:35:44'!
-testStringSizeEmpty
-	self assert: (library stringEncodedSize: 0) = 1.
-	self assert: (library stringEncodedSize: 127) = 128.
-	self assert: (library stringEncodedSize: 128) = 130.
-	self assert: (library stringEncodedSize: 127*127) = (127*127+2).
-	self assert: (library stringEncodedSize: 127*127+123) = (127*127+123+2).
-	self assert: (library stringEncodedSize: 127*127*127) = (127*127*127+3).
-	! !
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/3/2017 09:43:15'!
+testStringSize
+	self assert: (library primStringEncodedSize: 0) = (0+1).
+	self assert: (library primStringEncodedSize: 127) = (127+1).
+	self assert: (library primStringEncodedSize: 128) = (128+2).
+	self assert: (library primStringEncodedSize: 127*127) = (127*127+2).
+	self assert: (library primStringEncodedSize: 127*127+123) = (127*127+123+2).
+	self assert: (library primStringEncodedSize: 127*127*127) = (127*127*127+3).
+
+	self assert: (library stringEncodedSize: '') = (0+1).
+	self assert: (library stringEncodedSize: (String new: 127)) = (127+1).
+	self assert: (library stringEncodedSize: (String new: 128)) = (128+2).
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:08:15'!
 testTensorData
@@ -1300,6 +1304,11 @@ operationOutputType: aTF_Output
 	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:43:38'!
+primStringEncodedSize: anInteger
+	<cdecl: ulonglong 'TF_StringEncodedSize' (ulonglong)>
+	^self externalCallFailed! !
+
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/29/2016 18:19:01'!
 runSession: aTF_Session
 	options: opsTF_Buffer
@@ -1341,10 +1350,9 @@ setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:21:04'!
-stringEncodedSize: anASCIIZString
-	<cdecl: ulonglong 'TF_StringEncodedSize' (ulonglong)>
-	^self externalCallFailed! !
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:40:22'!
+stringEncodedSize: aString
+	^self primStringEncodedSize: aString size! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
 tensor: aTF_Tensor sizeOn: dimension
