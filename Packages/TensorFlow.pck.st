@@ -1430,6 +1430,11 @@ moduleName
 library
 	^ TensorFlowCAPI current! !
 
+!TF_Structure methodsFor: 'printing' stamp: 'gera 1/3/2017 10:26:05'!
+printOn: strm
+	super printOn: strm.
+	strm space; print: handle.! !
+
 !TF_Structure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:24:05'!
 fields
 	"self initialize"
