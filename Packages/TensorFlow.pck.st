@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 4 January 2017 at 12:31:31 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 4 January 2017 at 9:43:15 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 82!
+!provides: 'TensorFlow' 1 84!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1023,6 +1023,20 @@ testStatusSetGetCode
 	self assert: code = 2.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/4/2017 09:38:31'!
+testStringEncode
+	| size string encoded encodedSize |
+	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
+	
+	string _ 'a ver como queda este string encodeado?'.
+	size _ library stringEncodedSize: string.
+	encoded _ ByteArray new: size+20.
+	encodedSize _ library stringEncode: string to: encoded.
+	
+	self assert: encodedSize = size.
+	self assert: encoded first = string size.
+	self assert: (encoded copyFrom: 2 to: 1+string size) asString = string! !
+
 !TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/3/2017 09:43:15'!
 testStringSize
 	self assert: (library primStringEncodedSize: 0) = (0+1).
@@ -1354,6 +1368,21 @@ sessionOptions: aTF_SessionOptions setTarget: aString
 setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/4/2017 09:07:04'!
+stringEncode: src len: srcLen dst: dst len: dstLen status: status
+	<cdecl: ulonglong 'TF_StringEncode' (char* ulonglong char* ulonglong TF_Status)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/4/2017 09:33:51'!
+stringEncode: src to: dst
+	| status answer |
+	status _ TF_Status create.
+	answer _ self stringEncode: src len: src size dst: dst len: dst size status: status.
+	status check.
+	^ answer
+! !
 
 !TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:40:22'!
 stringEncodedSize: aString
