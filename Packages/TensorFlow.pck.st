@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 4 January 2017 at 9:43:15 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 4 January 2017 at 6:43:56 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 84!
+!provides: 'TensorFlow' 1 85!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -624,12 +624,11 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:31:24'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 18:21:01'!
 testFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
 	| handles |
 	handles _ (1 to: 11) collect: [:i |
-		(Delay forMilliseconds: 1) wait.
 		Smalltalk garbageCollect.
 		TF_Status create getHandle].
 
