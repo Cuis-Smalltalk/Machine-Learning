@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 3 January 2017 at 9:43:40 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3013] on 4 January 2017 at 12:31:31 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 80!
+!provides: 'TensorFlow' 1 82!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -624,6 +624,17 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
 
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:31:24'!
+testFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles |
+	handles _ (1 to: 11) collect: [:i |
+		(Delay forMilliseconds: 1) wait.
+		Smalltalk garbageCollect.
+		TF_Status create getHandle].
+
+	self assert: (handles asSet size) < 11.! !
+
 !TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:31'!
 testGetAllOps
 	| ops |
@@ -971,7 +982,7 @@ testSessionRunTargetOutputOnGraph: graph
 	tensor delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:31'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:15'!
 testStatusCodes
 	| status  |
 	status _ TF_Status create.
@@ -983,11 +994,9 @@ testStatusCodes
 	status code: 1 message: 'You cancelled it!!'.
 	self assert: status codeText = 'CANCELLED'.
 	self should: [status check] raise: Error.
+! !
 
-	status delete.
-	self assert: status isNull.! !
-
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:44'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:26'!
 testStatusGetMessage
 	| status message |
 	status _ TF_Status create.
@@ -999,11 +1008,9 @@ testStatusGetMessage
 	status code: 7 message: 'Something is very seven'.
 	message _ status message.
 	self assert: message = 'Something is very seven'.
+! !
 
-	status delete.
-	self assert: status isNull.! !
-
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:10:50'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:32'!
 testStatusSetGetCode
 	| status code |
 	status _ TF_Status create.
@@ -1014,9 +1021,7 @@ testStatusSetGetCode
 	status code: 2 message: ''.
 	code _ status code.
 	self assert: code = 2.
-
-	status delete.
-	self assert: status isNull.! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/3/2017 09:43:15'!
 testStringSize
@@ -1615,7 +1620,7 @@ delete
 	self library deleteGraph: self.
 	handle _ nil! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:25:56'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
 import: aTF_Buffer
 	| options status |
 	
@@ -1625,7 +1630,7 @@ import: aTF_Buffer
 	self library importGraphDefInto: self from: aTF_Buffer options: options status: status.
 	
 	options delete.
-	[status check] ensure: [status delete].! !
+	status check.! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:27:24'!
 importFileNamed: aString
@@ -1665,12 +1670,12 @@ operationNamed: aString
 	^ answer
 ! !
 
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 12/26/2016 12:55:11'!
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/3/2017 17:20:21'!
 outputDimenssionsCount: aTF_Output
 	| status answer |
 	status _ TF_Status create.
 	answer _ self library forGraph: self outputDims: aTF_Output status: status.
-	[status check] ensure: [status delete].
+	status check.
 	^answer! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:05:18'!
@@ -1770,7 +1775,7 @@ at: attribute putInt: value
 		set: externalized
 		toInt64: value ] ensure: [ externalized free ].! !
 
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 01:05:31'!
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/3/2017 17:20:28'!
 at: attribute putTensor: aTF_Tensor
 	| externalized status |
 	externalized _ self library externalizeString: attribute.
@@ -1782,7 +1787,6 @@ at: attribute putTensor: aTF_Tensor
 			status: status.
 		status check
 	] ensure: [
-		status delete.
 		externalized free
 	].! !
 
@@ -1796,16 +1800,15 @@ at: attribute putType: value
 		set: externalized
 		toType: value ] ensure: [ externalized free ].! !
 
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 12/28/2016 00:29:21'!
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/3/2017 18:34:17'!
 finish
 	| answer status |
 	status _ TF_Status create.
-	[	answer _ self library
-			finishOperation: self
-			status: status.
-		handle _ nil.
-		status check
-	] ensure: [status delete].
+	answer _ self library
+		finishOperation: self
+		status: status.
+	handle _ nil.
+	status check.
 	^ answer.! !
 
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
@@ -1846,30 +1849,33 @@ onOperation: aTF_Operation index: anInteger
 		operation: aTF_Operation;
 		index: anInteger! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 12/21/2016 23:28:28'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/3/2017 17:20:55'!
 close
 	| status |
 	status _ TF_Status create.
 	self library closeSession: self status: status.
-	[status check] ensure: [status delete].! !
+	status check! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 12/22/2016 00:41:59'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/3/2017 17:21:01'!
 delete
 	| status |
 	status _ TF_Status create.
 	self library deleteSession: self status: status.
-	[status check] ensure: [status delete].
+	status check.
 	handle _ nil! !
 
-!TF_Session methodsFor: 'running' stamp: 'jb 12/26/2016 11:39:16'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
 run
 	| status |
 	status _ TF_Status create.
 	
-	[self library
-		runSession: self options: nil inputs: nil values: nil count: 0 outputs: nil values: nil count: 0 targets: nil count: 0 metadata: nil status: status.
+	self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: nil values: nil count: 0
+		targets: nil count: 0 metadata: nil status: status.
 	
-	status check] ensure: [status delete].! !
+	status check! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:03:48'!
 runOperation: aTF_Operation
@@ -1903,7 +1909,7 @@ runOperation: aTF_Operation output: aTF_Output
 		operations free].
 	^ answer! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:05:37'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:35'!
 runOperations: anArrayOfTF_Operations
 	| status operations |
 	status _ TF_Status create.
@@ -1915,10 +1921,9 @@ runOperations: anArrayOfTF_Operations
 		targets: operations count: anArrayOfTF_Operations size
 		metadata: nil status: status.
 	status check] ensure: [
-		status delete.
 		operations free].! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:13:14'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:40'!
 runOperations: anArrayOfTF_Operations inputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
 	| operations inputs invalues outputs outvalues status |
 	status _ TF_Status create.
@@ -1936,14 +1941,13 @@ runOperations: anArrayOfTF_Operations inputs: inArrayOfTF_Outputs values: inArra
 		metadata: nil status: status.
 	status check] ensure: [
 		operations free.
-		status delete.
 		invalues free.
 		inputs free.
 		outputs free].
 	^ outvalues
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 16:07:45'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:44'!
 runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 	| status outvalues tensor |
 	status _ TF_Status create.
@@ -1956,18 +1960,17 @@ runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 		metadata: nil status: status.
 	tensor _ outvalues first.
 	status check] ensure: [
-		status delete.
 		outvalues free].
 	^ tensor! !
 
-!TF_Session class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:28:37'!
+!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 17:21:52'!
 onGraph: aTF_Graph
 	| options status answer |
 	options _ TF_SessionOptions create.
 	status _ TF_Status create.
 	answer _ TensorFlowCAPI current newSessionGraph: aTF_Graph options: options status: status.
 	options delete.
-	[status check] ensure: [status delete].
+	status check.
 	^ answer! !
 
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:42:04'!
@@ -2034,10 +2037,18 @@ codeTexts
   'UNAUTHENTICATED' "16"
 )! !
 
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:42:12'!
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:32:53'!
 delete
+	self finalizationRegistry remove: self ifAbsent: [].
 	self library deleteStatus: self.
-	handle _ nil! !
+	handle _ nil.! !
+
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:02:31'!
+finalize
+	"I am an executor (a copy) of an ExternalAddress that was just garbage collected.
+	I must finalize. my mission is to free memory"
+	handle isNull ifTrue: [^self].
+	self delete! !
 
 !TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 10:48:36'!
 isOk
@@ -2047,8 +2058,15 @@ isOk
 message
 	^ self library message: self! !
 
-!TF_Status class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:55:36'!
+!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 10:23:18'!
 create
+	|answer |
+	answer _ TensorFlowCAPI current newStatus.
+	self finalizationRegistry add: answer.
+	^ answer! !
+
+!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 09:53:25'!
+persistent
 	^ TensorFlowCAPI current newStatus! !
 
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/27/2016 09:18:01'!
