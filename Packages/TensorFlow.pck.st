@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:36:12 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:53:47 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 98!
+!provides: 'TensorFlow' 1 100!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -594,6 +594,18 @@ mulGraphTwoInputsInt64Created
 setUp
 	library _ TensorFlowCAPI current! !
 
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/5/2017 20:39:37'!
+testBufferDataBytes
+	| buffer string data |
+	string _ ' hola manola'.
+	buffer _ TF_Buffer fromString: string.
+
+	data _ buffer dataBytes.
+	self assert: string = data asString.
+	
+	buffer delete.
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:04:10'!
 testCloseSession
 	| graph session |
@@ -693,6 +705,17 @@ testGraphCreationConst
 	self assert: operation name = 'a'.
 	self assert: operation InputsCount = 0.
 	self assert: operation outputsCount = 1.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:53:42'!
+testGraphDefinition
+	| definition operations |
+	definition _ self mulGraphTwoInputsInt64Created definition.
+	operations _ (TF_Graph fromString: definition) allVariables.
+		
+	self assert: operations size = 2.
+	self assert: operations first = 'in1'.
+	self assert: operations second = 'in2'.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:20:14'!
@@ -1437,6 +1460,12 @@ graph: aTF_Graph operationAt: contextULongLongPtr
 	^ self externalCallFailed
 ! !
 
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/5/2017 20:47:43'!
+graph: aTF_Graph toGraphDef: aTF_Buffer status: aTF_Status
+	<cdecl: void 'TF_GraphToGraphDef' (TF_Graph* TF_Buffer* TF_Status*)>
+	^ self externalCallFailed
+! !
+
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
 importGraphDefInto: aTF_Graph from: aTF_Buffer options: aTF_ImportGraphDefOptions status: aTF_Status
 	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TF_Buffer* TF_ImportGraphDefOptions* TF_Status*)>
@@ -1797,6 +1826,10 @@ data: anObject
 	"This method was automatically generated. See TF_Buffer class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
 
+!TF_Buffer methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:43:10'!
+dataBytes
+	^ self data getHandle structAt: 1 length: self length! !
+
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
 deallocator
 	"This method was automatically generated. See TF_Buffer class>>fields."
@@ -1865,6 +1898,15 @@ const: nameString value: aTF_Tensor
 		described: [:description |
 			description at: 'dtype' putType: aTF_Tensor type.
 			description at: 'value' putTensor: aTF_Tensor]! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:50:50'!
+definition
+	| buffer status |
+	status _ TF_Status create.
+	buffer _ TF_Buffer new.
+	self library graph: self toGraphDef: buffer status: status.
+	status check.
+	^ buffer dataBytes asString! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:41:55'!
 delete
@@ -2353,6 +2395,15 @@ isOk
 !TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:50:21'!
 message
 	^ self library message: self! !
+
+!TF_Status methodsFor: 'printing' stamp: 'gera 1/5/2017 20:50:15'!
+printOn: strm
+	super printOn: strm.
+	strm
+		space;
+		print: self code;
+		space;
+		print: self message.! !
 
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 10:23:18'!
 create
