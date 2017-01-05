@@ -430,7 +430,7 @@ concatGraphInputList
 	concat.
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/2/2017 15:40:41'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:41'!
 concatGraphInputListNoSizeNoType
 	| graph in1 in2 concat dimension dimensionValue inputs |
 	graph _ TF_Graph create.
@@ -447,7 +447,7 @@ concatGraphInputListNoSizeNoType
 	concat.
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/2/2017 15:38:00'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:38:00'!
 concatGraphInputListWrongSize
 	| graph in1 in2 concat dimension dimensionValue inputs |
 	graph _ TF_Graph create.
@@ -465,7 +465,7 @@ concatGraphInputListWrongSize
 	concat.
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/2/2017 15:39:49'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:39:49'!
 concatGraphInputListWrongType
 	| graph in1 in2 concat dimension dimensionValue inputs |
 	graph _ TF_Graph create.
@@ -483,11 +483,11 @@ concatGraphInputListWrongType
 	concat.
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 10:59:08'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 10:59:08'!
 constantFloatGraph
 	^ TF_Graph fromString: self constantFloatGraphDef! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 10:58:56'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 10:58:56'!
 constantFloatGraphDef
 	" This GraphDef corresponds to simple Graph, defined as
 	
@@ -501,7 +501,7 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 17:53:13'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/29/2016 17:53:13'!
 constantGraphInt64Created
 	| graph operation constant |
 	graph _ TF_Graph create.
@@ -513,11 +513,11 @@ constantGraphInt64Created
 	self deny: operation isNull.
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:24'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 11:13:24'!
 constantInt32Graph
 	^ TF_Graph fromString: self constantInt32GraphDef! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 11:13:29'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 11:13:29'!
 constantInt32GraphDef
 	" This GraphDef corresponds to simple Graph, defined as
 	
@@ -530,11 +530,11 @@ constantInt32GraphDef
  16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70 16r65 16r12 16r02 16r30 16r03 16r0A 16r0C 16r0A
  16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 12:23:16'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 12:23:16'!
 constantInt64Graph
 	^ TF_Graph fromString: self constantInt64GraphDef! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 12:23:03'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 12:23:03'!
 constantInt64GraphDef
 	" This GraphDef corresponds to simple Graph, defined as
 	
@@ -548,17 +548,17 @@ constantInt64GraphDef
  16r65 16r12 16r02 16r30 16r09 16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E
  16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:20:25'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/22/2016 02:20:25'!
 emptyGraph
 	^ TF_Graph fromString: self emptyGraphDef.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:51:30'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/22/2016 01:51:30'!
 emptyGraphDef
 	" This GraphDef corresponds to an Empty Graph (no operations), saved as ProtoBuf "
 	^ #[16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 17:53:15'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/29/2016 17:53:15'!
 mulGraphOneInputInt64Created
 	| graph constant const in |
 	graph _ TF_Graph create.
@@ -572,7 +572,7 @@ mulGraphOneInputInt64Created
 	
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:23:28'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/29/2016 18:23:28'!
 mulGraphTwoInputsInt64Created
 	| graph constant const in1 in2 mul1 |
 	graph _ TF_Graph create.
@@ -950,7 +950,7 @@ testRunGraphMulOneInput
 	input free.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 22:35:07'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/5/2017 05:22:49'!
 testRunGraphMulTwoInputs
 	| graph inputs inputValues mul output session results |
 	graph _ self mulGraphTwoInputsInt64Created.
