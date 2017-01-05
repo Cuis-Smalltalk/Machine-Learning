@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 5:11:37 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 5:25:53 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 89!
+!provides: 'TensorFlow' 1 90!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -399,7 +399,19 @@ testUInt64ArrayAtPut
 testUInt64ArrayElementsOfRightClass
 	^ self testArray: Int64Array sampleElement: 1234.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/2/2017 15:40:57'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 05:21:07'!
+addGraphTwoInputsInt64Created
+	| graph in1 in2  |
+	graph _ TF_Graph create.
+	
+	in1 _ graph placeholder: 'in1' type: TF_Tensor typeInt64.
+	in2 _ graph placeholder: 'in2' type: TF_Tensor typeInt64.
+	graph add: 'add' described: [:description |
+		description addInput: (in1 output: 0).
+		description addInput: (in2 output: 0)].
+	^ graph! !
+
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:57'!
 concatGraphInputList
 	| graph in1 in2 concat dimension dimensionValue inputs |
 	graph _ TF_Graph create.
@@ -599,6 +611,12 @@ testConcatGraphInputList
 	self should: [self concatGraphInputListWrongSize] raise: Error.
 	self should: [self concatGraphInputListWrongType] raise: Error.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:22:30'!
+testCreateGraphAddTwoInputs
+	| graph |
+	graph _ self addGraphTwoInputsInt64Created.
+	graph delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:29:27'!
 testCreateGraphMulOneInput
@@ -870,6 +888,37 @@ testOutputDims
 	self assert: (graph outputDimenssionsCount: output) = 0.
 	graph delete.
 	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:25:43'!
+testRunGraphAddTwoInputs
+	| graph inputs inputValues add output session results |
+	graph _ self addGraphTwoInputsInt64Created.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 16r2021222021222021)
+		with: (TF_Tensor fromInt64: 16r2221202221202221).
+	add _ graph operationNamed: 'add'.
+	output _ add output: 0.
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOperations: (Array with: add)
+		inputs: inputs
+		values: inputValues
+		outputs: (Array with: output).
+	
+	self deny: results isNull.
+	self deny: results first isNull.
+	self deny: results first data isNull.
+	self assert: (results first data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+
+	session close.
+	session delete.
+	graph delete.
+	results first delete.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 16:02:53'!
 testRunGraphConst
@@ -1701,6 +1750,10 @@ fromString: aString
 	answer _ TensorFlowCAPI current newBufferFromString: externalized size: aString size.
 	externalized free.
 	^ answer! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 05:21:30'!
+add: nameString described: aBlock
+	^self newOperation: 'Add' named: nameString described: aBlock! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/30/2016 12:16:54'!
 concat: nameString described: aBlock
