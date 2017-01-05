@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 3:23:38 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 5:11:37 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 88!
+!provides: 'TensorFlow' 1 89!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -814,6 +814,15 @@ testNewOperationPlaceholder
 	self assert: operation InputsCount = 0.
 	self assert: operation outputsCount = 1.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:11:32'!
+testNewOperationPlaceholderNoType
+	| graph |
+	graph _ TF_Graph create.
+	self
+		should: [(graph newOperation: 'Placeholder' named: 'placeholder') finish]
+		raise: Error
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:08:08'!
 testNewSession
