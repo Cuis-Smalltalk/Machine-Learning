@@ -1022,7 +1022,27 @@ testStatusSetGetCode
 	self assert: code = 2.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/4/2017 09:38:31'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/5/2017 01:47:45'!
+testStringDecode
+	| size string encoded decoded status |
+	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
+	
+	string _ 'a ver como queda este string encodeado?'.
+	
+	status _ TF_Status create.
+	size _ library stringEncodedSize: string.
+	encoded _ ExternalAddress gcallocate: size + 20.
+	encoded byteAt: size + 1 put: $@ asciiValue.
+	library stringEncode: string len: string size destination: encoded len: size + 20 status: status.
+	status check.
+
+	decoded _ library stringDecode: encoded.
+
+	self deny: decoded = (string, '@').
+	self assert: decoded = string.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/5/2017 03:22:45'!
 testStringEncode
 	| size string encoded encodedSize |
 	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
@@ -1386,6 +1406,25 @@ sessionOptions: aTF_SessionOptions setTarget: aString
 setStatus: aTF_Status code: anInteger message: anExternalString
 	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/5/2017 03:14:02'!
+stringDecode: src
+	| destination status answer dstSize |
+	destination _ ByteArray new: 8.
+	dstSize _ ByteArray new: 8.
+	status _ TF_Status create.
+	answer _ self stringDecode: src len: src size destination: destination len: dstSize status: status.
+	status check.
+	dstSize _ dstSize unsignedLongLongAt: 1.
+	destination _ destination pointerAt: 1.
+	answer _ (destination structAt: 1 length: dstSize) asString.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/5/2017 03:11:10'!
+stringDecode: srcString len: srcLen destination: dstPointer len: dstLenPointer status: status
+	<cdecl: ulonglong 'TF_StringDecode' (char* ulonglong char* ulonglong* TF_Status)>
+	^ self externalCallFailed
+! !
 
 !TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/4/2017 19:02:15'!
 stringEncode: srcString len: srcLen destination: dstString len: dstLen status: status
