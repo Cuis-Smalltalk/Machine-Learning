@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 5:25:53 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:03:33 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 90!
+!provides: 'TensorFlow' 1 93!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -399,7 +399,7 @@ testUInt64ArrayAtPut
 testUInt64ArrayElementsOfRightClass
 	^ self testArray: Int64Array sampleElement: 1234.! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 05:21:07'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 19:58:05'!
 addGraphTwoInputsInt64Created
 	| graph in1 in2  |
 	graph _ TF_Graph create.
@@ -888,6 +888,26 @@ testOutputDims
 	self assert: (graph outputDimenssionsCount: output) = 0.
 	graph delete.
 	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 20:03:31'!
+testPrintOn
+	| graph printString |
+	graph _ self addGraphTwoInputsInt64Created.
+
+	printString _ (graph operationNamed: 'in1') printString substrings.
+	self assert: printString second = 'TF_Operation'.
+	self assert: printString third = '@'.
+	self assert: (printString fourth beginsWith: '16r').
+	self assert: printString fifth = '''Placeholder'''.
+	self assert: printString last = '''in1'''.
+
+	printString _ (graph operationNamed: 'add') printString substrings.
+	self assert: printString second = 'TF_Operation'.
+	self assert: printString third = '@'.
+	self assert: (printString fourth beginsWith: '16r').
+	self assert: printString fifth = '''Add'''.
+	self assert: printString last = '''add'''.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:25:43'!
 testRunGraphAddTwoInputs
@@ -1884,6 +1904,15 @@ output: indexInteger
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:48'!
 outputsCount
 	^ self library operationNumOutputs: self! !
+
+!TF_Operation methodsFor: 'printing' stamp: 'gera 1/5/2017 19:56:48'!
+printOn: strm
+	super printOn: strm.
+	strm
+		space;
+		print: self type;
+		space;
+		print: self name.! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
