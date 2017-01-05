@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:25:57 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:34:35 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 95!
+!provides: 'TensorFlow' 1 97!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -740,6 +740,28 @@ testGraphOperationsDo
 	self assert: operations third = 'const'.
 	self assert: operations fourth = 'mul1'.
 	self assert: operations fifth = 'mul2'.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:31:38'!
+testGraphOperationsSelect
+	| graph operations |
+	graph _ self mulGraphTwoInputsInt64Created.
+	
+	operations _ graph operationsSelect: [:op | op type = 'Placeholder'].
+	
+	self assert: operations size = 2.
+	self assert: operations first = 'in1'.
+	self assert: operations second = 'in2'.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:34:22'!
+testGraphOperationsSelectEmpty
+	| graph operations |
+	graph _ self mulGraphTwoInputsInt64Created.
+	
+	operations _ graph operationsSelect: [:op | false].
+	
+	self assert: operations size = 0.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
@@ -1912,6 +1934,26 @@ operationsDo: oneArgBlock
 	[operation _ self operationAt: context.
 		operation isNull] whileFalse: [oneArgBlock value: operation].
 ! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:33:53'!
+operationsSelect: oneArgBlock
+	| answer |
+	answer _ OrderedCollection new.
+	
+	self operationsSelect: oneArgBlock thenDo: [:op | answer add: op].
+	
+	^ answer asArray! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:33:20'!
+operationsSelect: conditionBlock thenDo: actionBlock
+	| answer |
+	answer _ OrderedCollection new.
+	
+	self operationsDo: [:op |
+		(conditionBlock value: op)
+			ifTrue: [actionBlock value: op]].
+	
+	^ answer asArray! !
 
 !TF_Graph methodsFor: 'outputs' stamp: 'gera 1/3/2017 17:20:21'!
 outputDimenssionsCount: aTF_Output
