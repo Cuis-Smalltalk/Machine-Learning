@@ -1301,6 +1301,13 @@ testTensorTypes
 	types pairsDo: [:name :value |
 		self assert: (TF_Tensor perform: (#type, name) asSymbol) = value]! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/5/2017 03:49:51'!
+testTypeDictionary
+	self assert: (TF_Tensor codeForType: #TF_FLOAT) = 1.
+	self assert: (TF_Tensor codeForType: #TF_INT64) = 9.
+	self assert: (TF_Tensor codeForType: #TF_INT32) = 3.
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:37'!
 testVersion
 	| version |
@@ -2342,6 +2349,10 @@ sizeOn: dimension
 type
 	^self library tensorType: self.! !
 
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/5/2017 03:47:23'!
+codeForType: aSymbol
+	^ self types at: aSymbol! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
 fromInt32: value
 	| answer |
@@ -2502,4 +2513,42 @@ typeUInt16
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:40'!
 typeUInt8
 	^4! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/5/2017 03:46:20'!
+types
+	" self types "
+	| types |
+	types _ `
+       | source |
+	  source _ 'TF_FLOAT = 1,
+	  TF_DOUBLE = 2,
+	  TF_INT32 = 3,  // Int32 tensors are always in host memory.
+	  TF_UINT8 = 4,
+	  TF_INT16 = 5,
+	  TF_INT8 = 6,
+	  TF_STRING = 7,
+	  TF_COMPLEX64 = 8,  // Single-precision complex
+	  TF_COMPLEX = 8,    // Old identifier kept for API backwards compatibility
+	  TF_INT64 = 9,
+	  TF_BOOL = 10,
+	  TF_QINT8 = 11,     // Quantized int8
+	  TF_QUINT8 = 12,    // Quantized uint8
+	  TF_QINT32 = 13,    // Quantized int32
+	  TF_BFLOAT16 = 14,  // Float32 truncated to 16 bits.  Only for cast ops.
+	  TF_QINT16 = 15,    // Quantized int16
+	  TF_QUINT16 = 16,   // Quantized uint16
+	  TF_UINT16 = 17,
+	  TF_COMPLEX128 = 18,  // Double-precision complex
+	  TF_HALF = 19,
+	  TF_RESOURCE = 20,'.
+	  source _ source lines collect: [:line |
+			| words |
+			words _ line substrings.
+			words first asSymbol -> words third asNumber].
+	  (Dictionary new: source size)
+	       addAll: source;
+	       yourself`.
+	^ types
+
+! !
 TF_Structure initialize!
