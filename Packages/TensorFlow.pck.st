@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:03:33 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:20:22 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 93!
+!provides: 'TensorFlow' 1 94!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -695,6 +695,36 @@ testGraphCreationConst
 	self assert: operation outputsCount = 1.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:20:14'!
+testGraphOperationAt
+	| graph operation context |
+	graph _ self mulGraphTwoInputsInt64Created.
+	context _ graph newOperationIteratorContext.
+	
+	operation _ graph operationAt: context.
+	self assert: operation name = 'in1'.
+	self assert: operation type = 'Placeholder'.
+
+	operation _ graph operationAt: context.
+	self assert: operation name = 'in2'.
+	self assert: operation type = 'Placeholder'.
+
+	operation _ graph operationAt: context.
+	self assert: operation name = 'const'.
+	self assert: operation type = 'Const'.
+
+	operation _ graph operationAt: context.
+	self assert: operation name = 'mul1'.
+	self assert: operation type = 'Mul'.
+
+	operation _ graph operationAt: context.
+	self assert: operation name = 'mul2'.
+	self assert: operation type = 'Mul'.
+
+	operation _ graph operationAt: context.
+	self assert: operation isNull.
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
 testImportBad
 	| graph buffer |
@@ -1364,6 +1394,12 @@ graph: aTF_Graph getOperationNamed: aString
 	<cdecl: TF_Operation* 'TF_GraphOperationByName' (TF_Graph* char*)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/5/2017 20:08:15'!
+graph: aTF_Graph operationAt: contextULongLongPtr
+	<cdecl: TF_Operation* 'TF_GraphNextOperation' (TF_Graph* ulonglong*)>
+	^ self externalCallFailed
+! !
+
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
 importGraphDefInto: aTF_Graph from: aTF_Buffer options: aTF_ImportGraphDefOptions status: aTF_Status
 	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TF_Buffer* TF_ImportGraphDefOptions* TF_Status*)>
@@ -1833,6 +1869,14 @@ newOperation: typeString named: aString described: aBlock
 	description _ self newOperation: typeString named: aString.
 	aBlock value: description.
 	^description finish! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:20:02'!
+newOperationIteratorContext
+	^ ByteArray new: 8! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:09:21'!
+operationAt: contextULongLongPtr
+	^ self library graph: self operationAt: contextULongLongPtr! !
 
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:44:06'!
 operationNamed: aString
