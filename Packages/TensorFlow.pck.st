@@ -977,6 +977,7 @@ testRunGraphMulTwoInputs
 
 	session close.
 	session delete.
+	graph delete.
 	results first delete.
 ! !
 
