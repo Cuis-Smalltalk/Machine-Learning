@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 11:58:47 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 12:06:43 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 102!
+!provides: 'TensorFlow' 1 104!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -483,10 +483,6 @@ concatGraphInputListWrongType
 	concat.
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 10:59:08'!
-constantFloatGraph
-	^ TF_Graph fromString: self constantFloatGraphDef! !
-
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 10:58:56'!
 constantFloatGraphDef
 	" This GraphDef corresponds to simple Graph, defined as
@@ -501,21 +497,9 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:57:10'!
-constantGraphInt64
-	| graph operation constant |
-	graph _ TF_Graph create.
-	constant _ TF_Tensor fromInt64: 16r4242424242424242.
-	
-	self shouldnt: [
-		operation _ graph const: 'a' value: constant
-	] raise: Error.
-	self deny: operation isNull.
-	^ graph! !
-
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 11:13:24'!
-constantInt32Graph
-	^ TF_Graph fromString: self constantInt32GraphDef! !
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/6/2017 00:04:03'!
+constantFloatGraphFromDef
+	^ TF_Graph fromString: self constantFloatGraphDef! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 11:13:29'!
 constantInt32GraphDef
@@ -530,9 +514,21 @@ constantInt32GraphDef
  16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70 16r65 16r12 16r02 16r30 16r03 16r0A 16r0C 16r0A
  16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 12:23:16'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/6/2017 00:03:26'!
+constantInt32GraphFromDef
+	^ TF_Graph fromString: self constantInt32GraphDef! !
+
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/6/2017 00:00:14'!
 constantInt64Graph
-	^ TF_Graph fromString: self constantInt64GraphDef! !
+	| graph operation constant |
+	graph _ TF_Graph create.
+	constant _ TF_Tensor fromInt64: 16r4242424242424242.
+	
+	self shouldnt: [
+		operation _ graph const: 'a' value: constant
+	] raise: Error.
+	self deny: operation isNull.
+	^ graph! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 12:23:03'!
 constantInt64GraphDef
@@ -547,6 +543,10 @@ constantInt64GraphDef
  16r84 16r89 16r92 16rA4 16rC8 16r90 16rA1 16r42 16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70
  16r65 16r12 16r02 16r30 16r09 16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E
  16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
+
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/6/2017 00:02:53'!
+constantInt64GraphFromDef
+	^ TF_Graph fromString: self constantInt64GraphDef! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/22/2016 02:20:25'!
 emptyGraph
@@ -671,10 +671,10 @@ testGetAllOps
 	self assert: (ops data fromCString includesSubString: 'tensor').
 	ops delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 10:59:21'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:17'!
 testGetOperationOnConstantGraph
 	| graph op |
-	graph _ self constantFloatGraph.
+	graph _ self constantFloatGraphFromDef.
 	self shouldnt: [op _ graph operationNamed: 'a'] raise: Error.
 	self assert: op name = 'a'.
 	self assert: op type = 'Const'.
@@ -695,10 +695,10 @@ testGraph: aTF_Graph outputType: anInteger
 	self assert: output type == anInteger.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:57:17'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:00:30'!
 testGraphCreationConst
 	| graph operation |
-	graph _ self constantGraphInt64.
+	graph _ self constantInt64Graph.
 	
 	operation _ graph operationNamed: 'a'.
 	self assert: operation type = 'Const'.
@@ -797,16 +797,16 @@ testImportBad
 	graph delete.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/26/2016 12:23:48'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/6/2017 00:04:20'!
 testImportConstantGraph
 	| graph |
 
 	self shouldnt: [
-		graph _ self constantFloatGraph.
+		graph _ self constantFloatGraphFromDef.
 		graph delete.
-		graph _ self constantInt32Graph.
+		graph _ self constantInt32GraphFromDef.
 		graph delete.
-		graph _ self constantInt64Graph.
+		graph _ self constantInt64GraphFromDef.
 		graph delete.
 		] raise: Error.
 	! !
@@ -957,22 +957,22 @@ testNewStatus
 	status delete.
 	self assert: status isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:10:55'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:22'!
 testOperationOutputTypeFloat
-	^self testGraph: self constantFloatGraph outputType: TF_Tensor typeFloat! !
+	^self testGraph: self constantFloatGraphFromDef outputType: TF_Tensor typeFloat! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 11:13:10'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:03:41'!
 testOperationOutputTypeInt32
-	^self testGraph: self constantInt32Graph outputType: TF_Tensor typeInt32! !
+	^self testGraph: self constantInt32GraphFromDef outputType: TF_Tensor typeInt32! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/26/2016 12:24:05'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:05:25'!
 testOperationOutputTypeInt64
-	^self testGraph: self constantInt64Graph outputType: TF_Tensor typeInt64! !
+	^self testGraph: self constantInt64GraphFromDef outputType: TF_Tensor typeInt64! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/28/2016 01:36:52'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/6/2017 00:06:30'!
 testOutputDims
 	| graph operation output |
-	graph _ self constantInt64Graph.
+	graph _ self constantInt64GraphFromDef.
 	operation _ graph operationNamed: 'a'.
 	output _ operation output: 0.
 	self assert: (graph outputDimenssionsCount: output) = 0.
@@ -1030,10 +1030,10 @@ testRunGraphAddTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:57:20'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:06:22'!
 testRunGraphConst
 	| graph |
-	graph _ self constantGraphInt64.
+	graph _ self constantInt64GraphFromDef.
 
 	self testSessionRunTargetOutputOnGraph: graph! !
 
@@ -1091,10 +1091,10 @@ testRunGraphMulTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:08:10'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:25'!
 testRunOperationArray
 	| graph operation session |
-	graph _ self constantFloatGraph.
+	graph _ self constantFloatGraphFromDef.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
 	self shouldnt: [session runOperations: (Array with: operation)] raise: Error.
@@ -1118,19 +1118,19 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 18:09:07'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/6/2017 00:04:29'!
 testSessionRunTarget
 	| graph operation session |
-	graph _ self constantFloatGraph.
+	graph _ self constantFloatGraphFromDef.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
 	self shouldnt: [session runOperation: operation] raise: Error.
 	session close.
 	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 01:13:51'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/6/2017 00:06:16'!
 testSessionRunTargetOutput
-	^ self testSessionRunTargetOutputOnGraph: self constantInt64Graph.
+	^ self testSessionRunTargetOutputOnGraph: self constantInt64GraphFromDef.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 16:00:14'!
