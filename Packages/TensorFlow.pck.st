@@ -2074,14 +2074,15 @@ output: indexInteger
 outputsCount
 	^ self library operationNumOutputs: self! !
 
-!TF_Operation methodsFor: 'printing' stamp: 'gera 1/5/2017 19:56:48'!
+!TF_Operation methodsFor: 'printing' stamp: 'gera 1/6/2017 00:20:40'!
 printOn: strm
 	super printOn: strm.
-	strm
-		space;
-		print: self type;
-		space;
-		print: self name.! !
+	handle isNull ifFalse: [
+		strm
+			space;
+			print: self type;
+			space;
+			print: self name]! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
@@ -2410,14 +2411,15 @@ isOk
 message
 	^ self library message: self! !
 
-!TF_Status methodsFor: 'printing' stamp: 'gera 1/5/2017 20:50:15'!
+!TF_Status methodsFor: 'printing' stamp: 'gera 1/6/2017 00:20:22'!
 printOn: strm
 	super printOn: strm.
-	strm
-		space;
-		print: self code;
-		space;
-		print: self message.! !
+	handle isNull ifFalse: [
+		strm
+			space;
+			print: self code;
+			space;
+			print: self message]! !
 
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 10:23:18'!
 create
