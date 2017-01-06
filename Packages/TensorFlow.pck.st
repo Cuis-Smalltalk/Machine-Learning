@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 3:32:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 5:21:58 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 112!
+!provides: 'TensorFlow' 1 113!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1033,6 +1033,35 @@ testOutputDims
 	self assert: (graph outputDimenssionsCount: output) = 0.
 	graph delete.
 	output free.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:20:49'!
+testPlaceholderType: type
+	| graph var session result tensor abs |
+	graph _ TF_Graph create.
+	tensor _ TF_Tensor type: type dimensions: #().
+	var _ graph placeholder: 'var' type: type.
+	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description |
+		description addInput: (var output: 0)].
+	session _ TF_Session onGraph: graph.
+	
+	result _ session
+		runOperation: abs
+		input: (var input: 0)
+		value: tensor
+		output: (abs output: 0).
+
+	session close.
+	session delete.
+	graph delete.
+	result delete.
+	tensor delete.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:21:34'!
+testPlaceholderTypes
+	self testPlaceholderType: TF_Tensor typeInt64.
+	self testPlaceholderType: TF_Tensor typeInt32.
+	self testPlaceholderType: TF_Tensor typeFloat.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:31'!
 testPrintOn
@@ -2113,13 +2142,13 @@ outputDimenssionsCount: aTF_Output
 	status check.
 	^answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:05:18'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/6/2017 17:21:53'!
 placeholder: nameString type: typeInteger
 	^ self
 		newOperation: 'Placeholder'
 		named: nameString
 		described: [:description |
-			description at: 'dtype' putType: TF_Tensor typeInt64]! !
+			description at: 'dtype' putType: typeInteger]! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
 create
