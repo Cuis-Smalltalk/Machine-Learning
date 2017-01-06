@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 2:56:55 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 3:24:48 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 111!
 !requires: 'FFI' 1 18 nil!
@@ -1380,6 +1380,17 @@ testTensorDimensions: anArray
 	self assert: tensor size = size.
 	tensor delete.! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 15:19:41'!
+testTensorFromInt64Array
+	| tensor |
+	tensor _ TF_Tensor fromInt64Array: #(16r1234567812345678 0 -12345678910111213).
+
+	self assert: tensor dimensions = #(3).
+	self assert: tensor size = 3.
+	self assert: tensor byteSize = (3*8).
+	
+	tensor delete.! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
 testTensorNewScalar
 	| tensor |
@@ -2579,6 +2590,14 @@ fromInt64: value
 	| answer |
 	answer _ self type: self typeInt64 dimensions: #().
 	answer data getHandle signedLongLongAt: 1 put: value.
+	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/6/2017 15:24:39'!
+fromInt64Array: values
+	| answer |
+	answer _ self type: self typeInt64 dimensions: {values size}.
+	values withIndexDo: [:value :index |
+		answer data getHandle signedLongLongAt: index-1*8 + 1 put: value].
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/2/2017 23:30:33'!
