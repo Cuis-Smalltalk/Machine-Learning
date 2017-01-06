@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 8:53:47 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 11:36:50 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 100!
+!provides: 'TensorFlow' 1 101!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1258,6 +1258,15 @@ testStringSize
 	self assert: (library stringEncodedSize: (String new: 128)) = (128+2).
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/5/2017 23:36:44'!
+testTensorByteSize
+	| tensor |
+	tensor _ TF_Tensor
+		type: TF_Tensor typeInt64
+		dimensions: #(2 3).
+
+	self assert: tensor byteSize = (8*2*3)! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:08:15'!
 testTensorData
 	| tensor |
@@ -1629,6 +1638,11 @@ stringEncodedSize: aString
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
 tensor: aTF_Tensor sizeOn: dimension
 	<cdecl: longlong 'TF_Dim' (TF_Tensor* ulonglong)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 1/5/2017 23:36:32'!
+tensorByteSize: aTF_Tensor
+	<cdecl: ulonglong 'TF_TensorByteSize' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 09:17:49'!
@@ -2415,6 +2429,10 @@ create
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 09:53:25'!
 persistent
 	^ TensorFlowCAPI current newStatus! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/5/2017 23:35:00'!
+byteSize
+	^ self library tensorByteSize: self! !
 
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/27/2016 09:18:01'!
 data
