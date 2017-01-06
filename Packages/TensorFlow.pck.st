@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 12:23:07 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 12:42:40 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 108!
+!provides: 'TensorFlow' 1 109!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1341,15 +1341,17 @@ testTensorDimensions1D
 testTensorDimensions2D
 	^ self testTensorDimensions: #(1 4)! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:55:49'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 12:38:41'!
 testTensorDimensions: anArray
-	| tensor |
+	| tensor dimensions |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
 		dimensions: anArray.
 	self assert: tensor numberOfDimensions = anArray size.
 	anArray withIndexDo: [:each :index |
 		self assert: (tensor sizeOn: index - 1) = (anArray at: index)].
+	dimensions _ tensor dimensions.
+	self assert: dimensions = anArray.
 	tensor delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
@@ -2498,6 +2500,15 @@ dataBytes
 delete
 	self library deleteTensor: self.
 	handle _ nil! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 12:41:46'!
+dimensions
+	| answer count |
+	count _ self numberOfDimensions.
+	answer _ WriteStream on: (Array new: count).
+	1 to: count do: [:i |
+		answer nextPut: (self sizeOn: i-1)].
+	^ answer contents! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
 numberOfDimensions
