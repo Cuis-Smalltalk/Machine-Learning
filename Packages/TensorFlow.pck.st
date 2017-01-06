@@ -1313,6 +1313,19 @@ testStringSize
 	self assert: (library stringEncodedSize: (String new: 128)) = (128+2).
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 14:56:51'!
+testTensorAllStrings
+	| result strings expected |
+	
+	expected _ #('0.420000').
+	result _ self runFloatAsStringGraph.
+	strings _ result allStrings.
+	
+	self assert: strings = expected.
+	
+	result delete.
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/5/2017 23:36:44'!
 testTensorByteSize
 	| tensor |
@@ -2496,6 +2509,21 @@ create
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 09:53:25'!
 persistent
 	^ TensorFlowCAPI current newStatus! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 14:56:06'!
+allStrings
+	| total answer bytes data |
+	total _ self size.
+	answer _ WriteStream on: (Array new: total).
+	bytes _ self dataBytes.
+	data _ self data getHandle + (8 * total).
+	1 to: total do: [:i |
+		| offset str |
+		offset _ bytes unsignedLongLongAt: i - 1 * 8 + 1.
+		str _ self library stringDecode: data + offset.
+		answer nextPut: str].
+	
+	^ answer contents! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/5/2017 23:35:00'!
 byteSize
