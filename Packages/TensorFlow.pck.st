@@ -2482,28 +2482,32 @@ create
 persistent
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'gera 1/5/2017 23:35:00'!
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/5/2017 23:35:00'!
 byteSize
 	^ self library tensorByteSize: self! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'gera 12/27/2016 09:18:01'!
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/27/2016 09:18:01'!
 data
 	^self library tensorData: self.! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 11:10:43'!
+dataBytes
+	^self data getHandle structAt: 1 length: self byteSize! !
 
 !TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:44:32'!
 delete
 	self library deleteTensor: self.
 	handle _ nil! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:09:58'!
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
 numberOfDimensions
 	^self library tensorNumDimensions: self.! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'jb 12/26/2016 12:10:24'!
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:10:24'!
 sizeOn: dimension
 	^self library tensor: self sizeOn: dimension.! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:50:33'!
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/26/2016 10:50:33'!
 type
 	^self library tensorType: self.! !
 
