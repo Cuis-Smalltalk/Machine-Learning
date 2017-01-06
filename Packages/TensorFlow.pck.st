@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 12:22:02 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 11:18:41 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 105!
+!provides: 'TensorFlow' 1 107!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -558,13 +558,14 @@ emptyGraphDef
 	" This GraphDef corresponds to an Empty Graph (no operations), saved as ProtoBuf "
 	^ #[16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/6/2017 00:21:53'!
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/6/2017 10:48:25'!
 floatAsStringGraph
 	| graph const |
 	graph _ self constantFloatGraphFromDef.
 	const _ graph operationNamed: 'a'.
-	graph asString: 'str' described: [:description |
-		description addInput: (const output: 0)].! !
+	graph asString: 'output' described: [:description |
+		description addInput: (const output: 0)].
+	^ graph! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:57:31'!
 mulGraphOneInputInt64
@@ -632,6 +633,11 @@ testConcatGraphInputList
 	self should: [self concatGraphInputListWrongType] raise: Error.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 10:43:39'!
+testCreateFloatAsStringGraph
+	self floatAsStringGraph
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:22'!
 testCreateGraphAddTwoInputs
 	| graph |
@@ -672,9 +678,36 @@ testFinalizationReleasesExternalMemory
 
 	self assert: (handles asSet size) < 11.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:21:33'!
-testFloatAsString
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 10:43:49'!
+testFloatAsStringGraphCreate
 	self floatAsStringGraph
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 11:18:38'!
+testFloatAsStringGraphRun
+	| session graph output result str expected |
+	
+	graph _ self floatAsStringGraph.
+	session _ TF_Session onGraph: graph.
+	expected _ '0.420000'.
+	output _ graph operationNamed: 'output'.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self deny: result isNull.
+	self deny: result data isNull.
+	str _ result dataBytes.
+	
+	self assert: 8+1+ expected size = str size.
+	self assert: (str unsignedLongLongAt: 1) = 0.
+	self assert: (str at: 9) = expected size.
+	self assert: (str copyFrom: 10 count: expected size) asString = expected.
+	
+	session close.
+	session delete.
+	graph delete.
+	result delete.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:31'!
