@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 3:24:48 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 3:32:13 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 111!
+!provides: 'TensorFlow' 1 112!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1380,14 +1380,17 @@ testTensorDimensions: anArray
 	self assert: tensor size = size.
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 15:19:41'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 15:31:51'!
 testTensorFromInt64Array
-	| tensor |
-	tensor _ TF_Tensor fromInt64Array: #(16r1234567812345678 0 -12345678910111213).
-
+	| tensor template values |
+	template _ #(16r1234567812345678 0 -12345678910111213).
+	tensor _ TF_Tensor fromInt64Array: template.
+	values _ tensor allInt64s.
+	
 	self assert: tensor dimensions = #(3).
 	self assert: tensor size = 3.
 	self assert: tensor byteSize = (3*8).
+	self assert: template = values.
 	
 	tensor delete.! !
 
@@ -2520,6 +2523,19 @@ create
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 09:53:25'!
 persistent
 	^ TensorFlowCAPI current newStatus! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 15:32:08'!
+allInt64s
+	| total answer data |
+	total _ self size.
+	answer _ WriteStream on: (Array new: total).
+	data _ self data getHandle.
+	1 to: total do: [:i |
+		| value |
+		value _ data signedLongLongAt: i-1*8+1..
+		answer nextPut: value].
+	
+	^ answer contents! !
 
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 14:56:06'!
 allStrings
