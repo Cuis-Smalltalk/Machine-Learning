@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 2:42:39 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 2:56:55 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 110!
+!provides: 'TensorFlow' 1 111!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -599,6 +599,23 @@ mulGraphTwoInputsInt64
 	
 	^ graph! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 14:50:15'!
+runFloatAsStringGraph
+	| session graph output result |
+	
+	graph _ self floatAsStringGraph.
+	session _ TF_Session onGraph: graph.
+	output _ graph operationNamed: 'output'.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	session close.
+	session delete.
+	graph delete.
+	^ result
+! !
+
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 12/21/2016 02:11:17'!
 setUp
 	library _ TensorFlowCAPI current! !
@@ -683,17 +700,12 @@ testFloatAsStringGraphCreate
 	self floatAsStringGraph
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 11:18:38'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 14:50:07'!
 testFloatAsStringGraphRun
-	| session graph output result str expected |
+	| result str expected |
 	
-	graph _ self floatAsStringGraph.
-	session _ TF_Session onGraph: graph.
 	expected _ '0.420000'.
-	output _ graph operationNamed: 'output'.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ self runFloatAsStringGraph.
 	
 	self deny: result isNull.
 	self deny: result data isNull.
@@ -704,9 +716,6 @@ testFloatAsStringGraphRun
 	self assert: (str at: 9) = expected size.
 	self assert: (str copyFrom: 10 count: expected size) asString = expected.
 	
-	session close.
-	session delete.
-	graph delete.
 	result delete.
 ! !
 
