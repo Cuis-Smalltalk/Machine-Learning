@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 5:21:58 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 5:56:15 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 113!
+!provides: 'TensorFlow' 1 114!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -411,6 +411,15 @@ addGraphTwoInputsInt64
 		description addInput: (in2 output: 0)].
 	^ graph! !
 
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/6/2017 17:31:10'!
+asStringGraphType: type
+	| graph in |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: type.
+	graph asString: 'out' described: [:description |
+		description addInput: (in output: 0)].
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:57'!
 concatGraphInputList
 	| graph in1 in2 concat dimension dimensionValue inputs |
@@ -619,6 +628,27 @@ runFloatAsStringGraph
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 12/21/2016 02:11:17'!
 setUp
 	library _ TensorFlowCAPI current! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:50:58'!
+testAsStringGraphRunOn: tensor
+	| graph session in out result |
+	graph _ self asStringGraphType: tensor type.
+	session _ TF_Session onGraph: graph.
+	
+	in _ graph operationNamed: 'in'.
+	out _ graph operationNamed: 'out'.
+	
+	result _ session
+		runOperation: out
+		input: (in input: 0)
+		value: tensor
+		output: (out output: 0).
+
+	session close.
+	session delete.
+	graph delete.
+
+	^ result! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/5/2017 20:39:37'!
 testBufferDataBytes
@@ -874,6 +904,32 @@ testImportEmpty
 		graph _ self emptyGraph.
 		graph delete] raise: Error.
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:51:50'!
+testInt64AsStringGraph
+	| result tensor |
+	tensor _ TF_Tensor fromInt64: 101010101.
+	result _ self testAsStringGraphRunOn: tensor.
+	
+	self assert: result allStrings first = '101010101'.
+
+	tensor delete.
+	result delete.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:56:05'!
+testInt64rrayAsStringGraph
+	| result tensor strings template |
+	
+	template _ #(101010101 -123321 1 2 3 4).
+	tensor _ TF_Tensor fromInt64Array: template.
+	result _ self testAsStringGraphRunOn: tensor.
+	strings _ result allStrings.
+	
+	strings withIndexDo: [:value :index |
+		self assert: value = (template at: index) asString].
+	
+	tensor delete.
+	result delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/28/2016 00:07:27'!
 testNewBufferFromFileNamed
