@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 11:18:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 12:23:07 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 107!
+!provides: 'TensorFlow' 1 108!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1399,11 +1399,11 @@ testTensorTypes
 	types pairsDo: [:name :value |
 		self assert: (TF_Tensor perform: (#type, name) asSymbol) = value]! !
 
-!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:37'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/6/2017 12:23:03'!
 testVersion
 	| version |
 	version _ library version.
-	self assert: (#('0.11.head' '0.12.0') includes: version)! !
+	self assert: (#('0.11.head' '0.12.0' '0.12.head') includes: version)! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
