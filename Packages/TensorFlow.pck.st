@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 11:36:50 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 5 January 2017 at 11:58:47 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 101!
+!provides: 'TensorFlow' 1 102!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -399,8 +399,8 @@ testUInt64ArrayAtPut
 testUInt64ArrayElementsOfRightClass
 	^ self testArray: Int64Array sampleElement: 1234.! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 19:58:05'!
-addGraphTwoInputsInt64Created
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:56:12'!
+addGraphTwoInputsInt64
 	| graph in1 in2  |
 	graph _ TF_Graph create.
 	
@@ -501,8 +501,8 @@ constantFloatGraphDef
  16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02
  16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/29/2016 17:53:13'!
-constantGraphInt64Created
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:57:10'!
+constantGraphInt64
 	| graph operation constant |
 	graph _ TF_Graph create.
 	constant _ TF_Tensor fromInt64: 16r4242424242424242.
@@ -558,8 +558,8 @@ emptyGraphDef
 	" This GraphDef corresponds to an Empty Graph (no operations), saved as ProtoBuf "
 	^ #[16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F 16r4F 16r70 16r22 16r02 16r08 16r0F] asString! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/29/2016 17:53:15'!
-mulGraphOneInputInt64Created
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:57:31'!
+mulGraphOneInputInt64
 	| graph constant const in |
 	graph _ TF_Graph create.
 	constant _ TF_Tensor fromInt64: 16r0606060606060606.
@@ -572,8 +572,8 @@ mulGraphOneInputInt64Created
 	
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/29/2016 18:23:28'!
-mulGraphTwoInputsInt64Created
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:57:52'!
+mulGraphTwoInputsInt64
 	| graph constant const in1 in2 mul1 |
 	graph _ TF_Graph create.
 	constant _ TF_Tensor fromInt64: 16r0101010101010101.
@@ -624,16 +624,16 @@ testConcatGraphInputList
 	self should: [self concatGraphInputListWrongType] raise: Error.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:22:30'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:22'!
 testCreateGraphAddTwoInputs
 	| graph |
-	graph _ self addGraphTwoInputsInt64Created.
+	graph _ self addGraphTwoInputsInt64.
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 18:29:27'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:57:41'!
 testCreateGraphMulOneInput
 	| graph input mul |
-	graph _ self mulGraphOneInputInt64Created.
+	graph _ self mulGraphOneInputInt64.
 	
 	self shouldnt: [input _ graph operationNamed: 'in'] raise: Error.
 	self shouldnt: [mul _ graph operationNamed: 'mul'] raise: Error.
@@ -695,10 +695,10 @@ testGraph: aTF_Graph outputType: anInteger
 	self assert: output type == anInteger.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 16:02:59'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:57:17'!
 testGraphCreationConst
 	| graph operation |
-	graph _ self constantGraphInt64Created.
+	graph _ self constantGraphInt64.
 	
 	operation _ graph operationNamed: 'a'.
 	self assert: operation type = 'Const'.
@@ -707,10 +707,10 @@ testGraphCreationConst
 	self assert: operation outputsCount = 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:53:42'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:03'!
 testGraphDefinition
 	| definition operations |
-	definition _ self mulGraphTwoInputsInt64Created definition.
+	definition _ self mulGraphTwoInputsInt64 definition.
 	operations _ (TF_Graph fromString: definition) allVariables.
 		
 	self assert: operations size = 2.
@@ -718,10 +718,10 @@ testGraphDefinition
 	self assert: operations second = 'in2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:20:14'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:06'!
 testGraphOperationAt
 	| graph operation context |
-	graph _ self mulGraphTwoInputsInt64Created.
+	graph _ self mulGraphTwoInputsInt64.
 	context _ graph newOperationIteratorContext.
 	
 	operation _ graph operationAt: context.
@@ -748,10 +748,10 @@ testGraphOperationAt
 	self assert: operation isNull.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:25:55'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:09'!
 testGraphOperationsDo
 	| graph operations |
-	graph _ self mulGraphTwoInputsInt64Created.
+	graph _ self mulGraphTwoInputsInt64.
 	operations _ OrderedCollection new.
 	
 	graph operationsDo: [:op |
@@ -765,20 +765,20 @@ testGraphOperationsDo
 	self assert: operations fifth = 'mul2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:35:58'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:12'!
 testGraphOperationsSelect
 	| operations |
-	operations _ self mulGraphTwoInputsInt64Created allVariables.
+	operations _ self mulGraphTwoInputsInt64 allVariables.
 		
 	self assert: operations size = 2.
 	self assert: operations first = 'in1'.
 	self assert: operations second = 'in2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 20:34:22'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:15'!
 testGraphOperationsSelectEmpty
 	| graph operations |
-	graph _ self mulGraphTwoInputsInt64Created.
+	graph _ self mulGraphTwoInputsInt64.
 	
 	operations _ graph operationsSelect: [:op | false].
 	
@@ -979,10 +979,10 @@ testOutputDims
 	graph delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 20:03:31'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:31'!
 testPrintOn
 	| graph printString |
-	graph _ self addGraphTwoInputsInt64Created.
+	graph _ self addGraphTwoInputsInt64.
 
 	printString _ (graph operationNamed: 'in1') printString substrings.
 	self assert: printString second = 'TF_Operation'.
@@ -999,10 +999,10 @@ testPrintOn
 	self assert: printString last = '''add'''.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:25:43'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:35'!
 testRunGraphAddTwoInputs
 	| graph inputs inputValues add output session results |
-	graph _ self addGraphTwoInputsInt64Created.
+	graph _ self addGraphTwoInputsInt64.
 	
 	inputs _ Array
 		with: ((graph operationNamed: 'in1') input: 0)
@@ -1030,17 +1030,17 @@ testRunGraphAddTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/29/2016 16:02:53'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:57:20'!
 testRunGraphConst
 	| graph |
-	graph _ self constantGraphInt64Created.
+	graph _ self constantGraphInt64.
 
 	self testSessionRunTargetOutputOnGraph: graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 17:53:18'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/5/2017 23:57:45'!
 testRunGraphMulOneInput
 	| graph input inputValue result mul output session |
-	graph _ self mulGraphOneInputInt64Created.
+	graph _ self mulGraphOneInputInt64.
 	
 	input _ (graph operationNamed: 'in') input: 0.
 	inputValue _ TF_Tensor fromInt64: 11.
@@ -1060,10 +1060,10 @@ testRunGraphMulOneInput
 	input free.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/5/2017 05:22:49'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/5/2017 23:58:17'!
 testRunGraphMulTwoInputs
 	| graph inputs inputValues mul output session results |
-	graph _ self mulGraphTwoInputsInt64Created.
+	graph _ self mulGraphTwoInputsInt64.
 	
 	inputs _ Array
 		with: ((graph operationNamed: 'in1') input: 0)
