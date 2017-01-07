@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 5:13:07 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 8:19:27 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 119!
+!provides: 'TensorFlow' 1 120!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -202,6 +202,15 @@ TF_Structure subclass: #TF_Tensor
 TF_Tensor class
 	instanceVariableNames: ''!
 
+
+!Object methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 20:18:45'!
+ignoreFinalization
+	self finalizationRegistry remove: self ifAbsent: [].
+! !
+
+!Object methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 20:18:16'!
+useFinalization
+	self finalizationRegistry add: self! !
 
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
@@ -2658,9 +2667,9 @@ codeTexts
   'UNAUTHENTICATED' "16"
 )! !
 
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:32:53'!
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/7/2017 20:18:56'!
 delete
-	self finalizationRegistry remove: self ifAbsent: [].
+	self ignoreFinalization.
 	self library deleteStatus: self.
 	handle _ nil.! !
 
@@ -2689,11 +2698,11 @@ printOn: strm
 			space;
 			print: self message]! !
 
-!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 10:23:18'!
+!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:19:08'!
 create
 	|answer |
 	answer _ TensorFlowCAPI current newStatus.
-	self finalizationRegistry add: answer.
+	answer useFinalization.
 	^ answer! !
 
 !TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 09:53:25'!
