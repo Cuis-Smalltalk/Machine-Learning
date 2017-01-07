@@ -2499,12 +2499,12 @@ delete
 	status check.
 	handle _ nil! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/7/2017 20:31:42'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/7/2017 20:48:24'!
 finalize
-	self isNull ifFalse: [self close].
-	self ignoreFinalization.
-	self delete.
-! !
+	[
+		self isNull ifFalse: [self close].
+		self ignoreFinalization.
+		self delete] on: Error do: [Transcript newLine; nextPutAll: 'Error finalizing: '; show: self]! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
 run
