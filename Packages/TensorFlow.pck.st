@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 6 January 2017 at 5:56:15 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 4:51:57 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 114!
+!provides: 'TensorFlow' 1 115!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -202,6 +202,10 @@ TF_Structure subclass: #TF_Tensor
 TF_Tensor class
 	instanceVariableNames: ''!
 
+
+!String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
+asAsciiZ
+	^self, Character null asString! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
