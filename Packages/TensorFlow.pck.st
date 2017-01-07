@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 4:55:46 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 5:04:40 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 116!
+!provides: 'TensorFlow' 1 117!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -661,6 +661,20 @@ testAttrGetInt
 	op _ graph operationNamed: 'concat'.
 	
 	self assert: (op intAt: 'N') = 2.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 05:04:23'!
+testAttrGetTensor
+	| op graph tensor |
+	graph _ self constantInt64Graph.
+	op _ graph operationNamed: 'a'.
+
+	tensor _ op tensorAt: 'value'.
+	
+	self assert: tensor type = TF_Tensor typeInt64.
+	self assert: tensor dimensions = #().
+	self assert: tensor allInt64s = #(16r4242424242424242).
 	
 	graph delete! !
 
@@ -1725,6 +1739,13 @@ operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
 
 ! !
 
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:59:08'!
+operation: aTF_Operation attr: nameZString getTensor: valueLongPtr status: status
+	<cdecl: void 'TF_OperationGetAttrTensor' (TF_Operation* char* void* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:54:15'!
 operation: aTF_Operation attr: nameZString getType: valueLongPtr status: status
 	<cdecl: void 'TF_OperationGetAttrType' (TF_Operation* char* ulonglong* TF_Status*)>
@@ -2308,6 +2329,16 @@ printOn: strm
 			print: self type;
 			space;
 			print: self name]! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:00:29'!
+tensorAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: ExternalAddress wordSize.
+	self library operation: self attr: nameString asAsciiZ getTensor: value status: status.
+	status check.
+	^ TF_Tensor fromHandle: (value pointerAt: 1)
+! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
