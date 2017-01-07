@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 5:04:40 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 5:13:07 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 117!
+!provides: 'TensorFlow' 1 119!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -694,6 +694,21 @@ testBufferDataBytes
 	string _ ' hola manola'.
 	buffer _ TF_Buffer fromString: string.
 
+	data _ buffer dataBytes.
+	self assert: string = data asString.
+	
+	buffer delete.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/7/2017 05:10:10'!
+testBufferNoNeedExternalize
+	| buffer string data |
+	string _ ' hola manola'.
+	buffer _ TF_Buffer fromString: string.
+	
+	string _ string copy.
+	Smalltalk garbageCollect.
+	
 	data _ buffer dataBytes.
 	self assert: string = data asString.
 	
@@ -2116,12 +2131,10 @@ fromFileNamed: aString
 	fileContents _ aString asFileEntry readStream contents.
 	^ self fromString: fileContents! !
 
-!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:02:39'!
+!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 05:08:50'!
 fromString: aString
-	| externalized answer |
-	externalized _ TensorFlowCAPI current externalizeString: aString.
-	answer _ TensorFlowCAPI current newBufferFromString: externalized size: aString size.
-	externalized free.
+	| answer |
+	answer _ TensorFlowCAPI current newBufferFromString: aString asAsciiZ size: aString size.
 	^ answer! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 05:21:30'!
@@ -2211,12 +2224,10 @@ newOperationIteratorContext
 operationAt: contextULongLongPtr
 	^ self library graph: self operationAt: contextULongLongPtr! !
 
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:44:06'!
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/7/2017 05:10:43'!
 operationNamed: aString
-	| externalized answer |
-	externalized _ self library externalizeString: aString.
-	answer _ self library graph: self getOperationNamed: externalized.
-	externalized free.
+	| answer |
+	answer _ self library graph: self getOperationNamed: aString asAsciiZ.
 	answer isNull ifTrue: [self error: 'Operation not found'].
 	^ answer
 ! !
@@ -2384,40 +2395,31 @@ addInputs: anArrayOfTF_Output
 	] ensure: [inputs free].
 ! !
 
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/30/2016 12:27:14'!
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:11:24'!
 at: attribute putInt: value
-	| externalized |
-	externalized _ self library externalizeString: attribute.
-	[
 	self library
 		description: self
-		set: externalized
-		toInt64: value ] ensure: [ externalized free ].! !
+		set: attribute asAsciiZ
+		toInt64: value! !
 
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/3/2017 17:20:28'!
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:02'!
 at: attribute putTensor: aTF_Tensor
-	| externalized status |
-	externalized _ self library externalizeString: attribute.
+	| status |
 	status _ TF_Status create.
-	[	self library
-			description: self
-			set: externalized
-			toTensor: aTF_Tensor
-			status: status.
-		status check
-	] ensure: [
-		externalized free
-	].! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 12/28/2016 00:44:26'!
-at: attribute putType: value
-	| externalized |
-	externalized _ self library externalizeString: attribute.
-	[
 	self library
 		description: self
-		set: externalized
-		toType: value ] ensure: [ externalized free ].! !
+		set: attribute asAsciiZ
+		toTensor: aTF_Tensor
+		status: status.
+	status check
+	! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:20'!
+at: attribute putType: value
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toType: value! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/3/2017 18:34:17'!
 finish
