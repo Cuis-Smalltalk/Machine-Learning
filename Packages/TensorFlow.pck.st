@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 8:19:27 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 8:31:49 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 120!
+!provides: 'TensorFlow' 1 121!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -621,7 +621,7 @@ mulGraphTwoInputsInt64
 	
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 14:50:15'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:39'!
 runFloatAsStringGraph
 	| session graph output result |
 	
@@ -632,8 +632,6 @@ runFloatAsStringGraph
 		runOperation: output
 		output: (output output: 0).
 	
-	session close.
-	session delete.
 	graph delete.
 	^ result
 ! !
@@ -642,7 +640,7 @@ runFloatAsStringGraph
 setUp
 	library _ TensorFlowCAPI current! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:50:58'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:44'!
 testAsStringGraphRunOn: tensor
 	| graph session in out result |
 	graph _ self asStringGraphType: tensor type.
@@ -657,8 +655,6 @@ testAsStringGraphRunOn: tensor
 		value: tensor
 		output: (out output: 0).
 
-	session close.
-	session delete.
 	graph delete.
 
 	^ result! !
@@ -724,12 +720,13 @@ testBufferNoNeedExternalize
 	buffer delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:04:10'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:29:13'!
 testCloseSession
 	| graph session |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
 	self deny: session isNull.
+	session ignoreFinalization.
 	self shouldnt: [session close] raise: Error.
 	self shouldnt: [session delete] raise: Error.
 	self assert: session isNull.! !
@@ -776,16 +773,6 @@ testExternalizeString
 		self assert: each asciiValue = (copy byteAt: index)].
 	self assert: (copy byteAt: original size + 1) = 0.
 	copy free.! !
-
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 18:21:01'!
-testFinalizationReleasesExternalMemory
-	" WeakArray restartFinalizationProcess "
-	| handles |
-	handles _ (1 to: 11) collect: [:i |
-		Smalltalk garbageCollect.
-		TF_Status create getHandle].
-
-	self assert: (handles asSet size) < 11.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 10:43:49'!
 testFloatAsStringGraphCreate
@@ -1105,11 +1092,12 @@ testNewOperationPlaceholderNoType
 		raise: Error
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/28/2016 00:08:08'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:29:25'!
 testNewSession
 	| graph session |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
+	session ignoreFinalization.
 	self deny: session isNull.
 	session delete.
 	self assert: session isNull.! !
@@ -1152,7 +1140,7 @@ testOutputDims
 	graph delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:20:49'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:29:36'!
 testPlaceholderType: type
 	| graph var session result tensor abs |
 	graph _ TF_Graph create.
@@ -1168,8 +1156,6 @@ testPlaceholderType: type
 		value: tensor
 		output: (abs output: 0).
 
-	session close.
-	session delete.
 	graph delete.
 	result delete.
 	tensor delete.! !
@@ -1201,7 +1187,7 @@ testPrintOn
 	self assert: printString last = '''add'''.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:35'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:29:45'!
 testRunGraphAddTwoInputs
 	| graph inputs inputValues add output session results |
 	graph _ self addGraphTwoInputsInt64.
@@ -1226,8 +1212,6 @@ testRunGraphAddTwoInputs
 	self deny: results first data isNull.
 	self assert: (results first data getHandle signedLongLongAt: 1) = 16r4242424242424242.
 
-	session close.
-	session delete.
 	graph delete.
 	results first delete.
 ! !
@@ -1239,7 +1223,7 @@ testRunGraphConst
 
 	self testSessionRunTargetOutputOnGraph: graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/5/2017 23:57:45'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:15'!
 testRunGraphMulOneInput
 	| graph input inputValue result mul output session |
 	graph _ self mulGraphOneInputInt64.
@@ -1255,14 +1239,13 @@ testRunGraphMulOneInput
 	self deny: result data isNull.
 	self assert: (result data getHandle signedLongLongAt: 1) = 16r4242424242424242.
 
-	session close.
-	session delete.
 	inputValue delete.
 	result delete.
 	input free.
-	output free.! !
+	output free.
+	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/5/2017 23:58:17'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:23'!
 testRunGraphMulTwoInputs
 	| graph inputs inputValues mul output session results |
 	graph _ self mulGraphTwoInputsInt64.
@@ -1287,29 +1270,39 @@ testRunGraphMulTwoInputs
 	self deny: results first data isNull.
 	self assert: (results first data getHandle signedLongLongAt: 1) = 16r4242424242424242.
 
-	session close.
-	session delete.
 	graph delete.
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:25'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:30:34'!
 testRunOperationArray
 	| graph operation session |
 	graph _ self constantFloatGraphFromDef.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
+	
 	self shouldnt: [session runOperations: (Array with: operation)] raise: Error.
-	session close.
-	session delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/23/2016 11:22:27'!
+	graph delete.! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:22:28'!
+testSessionFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles graph |
+	graph _ TF_Graph create.
+	handles _ (1 to: 11) collect: [:i |
+		Smalltalk garbageCollect.
+		(TF_Session onGraph: graph) getHandle].
+
+	self assert: (handles asSet size) < 11.
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:46'!
 testSessionOnEmptyGraph
 	| session |
 	session _ TF_Session onGraph: self emptyGraph.
 	self should: [session run] raise: Error.
-	session close.
-	session delete.! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:12:49'!
 testSessionOptionsSetTarget
@@ -1320,22 +1313,23 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/6/2017 00:04:29'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:57'!
 testSessionRunTarget
 	| graph operation session |
 	graph _ self constantFloatGraphFromDef.
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
+	
 	self shouldnt: [session runOperation: operation] raise: Error.
-	session close.
-	session delete.! !
+
+	graph delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/6/2017 00:06:16'!
 testSessionRunTargetOutput
 	^ self testSessionRunTargetOutputOnGraph: self constantInt64GraphFromDef.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 12/29/2016 16:00:14'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:31:16'!
 testSessionRunTargetOutputOnGraph: graph
 	| operation session output tensor |
 	session _ TF_Session onGraph: graph.
@@ -1347,10 +1341,10 @@ testSessionRunTargetOutputOnGraph: graph
 	self deny: tensor isNull.
 	self deny: tensor data isNull.
 	self assert: (tensor data getHandle signedLongLongAt: 1) = 16r4242424242424242.
-	session close.
-	session delete.
+
 	tensor delete.
-	output free.! !
+	output free.
+	graph delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:15'!
 testStatusCodes
@@ -1365,6 +1359,16 @@ testStatusCodes
 	self assert: status codeText = 'CANCELLED'.
 	self should: [status check] raise: Error.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/7/2017 20:21:25'!
+testStatusFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles |
+	handles _ (1 to: 11) collect: [:i |
+		Smalltalk garbageCollect.
+		TF_Status create getHandle].
+
+	self assert: (handles asSet size) < 11.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:26'!
 testStatusGetMessage
@@ -2494,6 +2498,13 @@ delete
 	status check.
 	handle _ nil! !
 
+!TF_Session methodsFor: 'release' stamp: 'gera 1/7/2017 20:31:42'!
+finalize
+	self isNull ifFalse: [self close].
+	self ignoreFinalization.
+	self delete.
+! !
+
 !TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
 run
 	| status |
@@ -2593,7 +2604,7 @@ runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 		outvalues free].
 	^ tensor! !
 
-!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 17:21:52'!
+!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:27:48'!
 onGraph: aTF_Graph
 	| options status answer |
 	options _ TF_SessionOptions create.
@@ -2601,6 +2612,7 @@ onGraph: aTF_Graph
 	answer _ TensorFlowCAPI current newSessionGraph: aTF_Graph options: options status: status.
 	options delete.
 	status check.
+	answer useFinalization.
 	^ answer! !
 
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:42:04'!
@@ -2698,10 +2710,10 @@ printOn: strm
 			space;
 			print: self message]! !
 
-!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:19:08'!
+!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:20:47'!
 create
 	|answer |
-	answer _ TensorFlowCAPI current newStatus.
+	answer _ self persistent.
 	answer useFinalization.
 	^ answer! !
 
