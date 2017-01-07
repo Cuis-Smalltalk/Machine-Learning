@@ -654,6 +654,16 @@ testAsStringGraphRunOn: tensor
 
 	^ result! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 04:51:34'!
+testAttrGetInt
+	| op graph |
+	graph _ self concatGraphInputList.
+	op _ graph operationNamed: 'concat'.
+	
+	self assert: (op intAt: 'N') = 2.
+	
+	graph delete! !
+
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/5/2017 20:39:37'!
 testBufferDataBytes
 	| buffer string data |
@@ -1698,6 +1708,13 @@ newStatus
 	<cdecl: TF_Status* 'TF_NewStatus' (void)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:24:06'!
+operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
+	<cdecl: void 'TF_OperationGetAttrInt' (TF_Operation* char* ulonglong* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:06'!
 operationDevice: aTF_Operation
 	<cdecl: char* 'TF_OperationDevice' (TF_Operation*)>
@@ -2242,6 +2259,16 @@ device
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
 input: indexInteger
 	^ TF_Input onOperation: self index: indexInteger! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 04:49:04'!
+intAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: 8.
+	self library operation: self attr: nameString asAsciiZ getInt64: value status: status.
+	status check.
+	^ value unsignedLongLongAt: 1
+! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
