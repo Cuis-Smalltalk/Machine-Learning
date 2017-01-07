@@ -1285,7 +1285,19 @@ testRunOperationArray
 
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:22:28'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:35:41'!
+testSessionDoubleCloseIsNotBad
+	| graph session |
+	graph _ TF_Graph create.
+	session _ TF_Session onGraph: graph.
+	session ignoreFinalization.
+	session close.
+	session close.
+	
+	session delete.
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:46:32'!
 testSessionFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
 	| handles graph tries |
@@ -2491,7 +2503,7 @@ close
 	self library closeSession: self status: status.
 	status check! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/3/2017 17:21:01'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/7/2017 20:47:12'!
 delete
 	| status |
 	status _ TF_Status create.
