@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 7 January 2017 at 9:00:50 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 8 January 2017 at 12:06:20 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 124!
 !requires: 'FFI' 1 18 nil!
@@ -1297,19 +1297,23 @@ testRunOperationArray
 
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:35:41'!
-testSessionDoubleCloseIsNotBad
-	| graph session |
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/8/2017 12:05:57'!
+testSessionDeletionDoesntDeleteGraphs
+	| session graph op |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
 	session ignoreFinalization.
 	session close.
-	session close.
-	
 	session delete.
-	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:46:32'!
+	self
+		shouldnt: [graph placeholder: 'a' type: TF_Tensor typeInt64]
+		raise: Error
+		description: 'The FFI call would crash if the graph was released by deleting the session'.
+	
+	graph delete.! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 21:28:51'!
 testSessionFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
 	| handles graph tries |
@@ -1320,7 +1324,8 @@ testSessionFinalizationReleasesExternalMemory
 		(TF_Session onGraph: graph) getHandle].
 
 	self assert: (handles asSet size) < tries.
-	graph delete! !
+	graph delete
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:46'!
 testSessionOnEmptyGraph
@@ -2520,7 +2525,7 @@ close
 	self library closeSession: self status: status.
 	status check! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/7/2017 20:47:12'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/3/2017 17:21:01'!
 delete
 	| status |
 	status _ TF_Status create.
