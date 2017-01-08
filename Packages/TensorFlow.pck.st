@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 8 January 2017 at 12:06:20 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 8 January 2017 at 12:08:54 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 124!
+!provides: 'TensorFlow' 1 125!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1297,15 +1297,19 @@ testRunOperationArray
 
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/8/2017 12:05:57'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/8/2017 12:08:48'!
 testSessionDeletionDoesntDeleteGraphs
-	| session graph op |
+	| session graph allocatedObjects |
 	graph _ TF_Graph create.
 	session _ TF_Session onGraph: graph.
 	session ignoreFinalization.
 	session close.
 	session delete.
 
+	" Allocate some external objects using the library, if the graph was released, we expect its space to be reused "
+	allocatedObjects _ OrderedCollection new: 10.
+	10 timesRepeat: [allocatedObjects add: (TF_Status create)].
+	
 	self
 		shouldnt: [graph placeholder: 'a' type: TF_Tensor typeInt64]
 		raise: Error
