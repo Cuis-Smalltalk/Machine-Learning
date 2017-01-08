@@ -2537,12 +2537,13 @@ delete
 	status check.
 	handle _ nil! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/7/2017 20:48:24'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/8/2017 12:01:56'!
 finalize
 	[
-		self isNull ifFalse: [self close].
 		self ignoreFinalization.
-		self delete] on: Error do: [Transcript newLine; nextPutAll: 'Error finalizing: '; show: self]! !
+		self isNull ifFalse: [self close].
+		self delete] on: Error do: [Transcript newLine; print: 'Error finalizing ';show: self].
+! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
 run
