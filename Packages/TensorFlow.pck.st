@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 8 January 2017 at 12:08:54 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 9 January 2017 at 11:11:05 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 125!
+!provides: 'TensorFlow' 1 126!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -850,6 +850,67 @@ testGraphDefinition
 	self assert: operations size = 2.
 	self assert: operations first = 'in1'.
 	self assert: operations second = 'in2'.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/9/2017 11:10:43'!
+testGraphDeletionDoesntBreakOperations
+	| graph in1 in2 add |
+	graph _ self addGraphTwoInputsInt64.
+	graph ignoreFinalization.
+	
+	in1 _ graph operationNamed: 'in1'.
+	in2 _ graph operationNamed: 'in2'.
+	add _ graph operationNamed: 'add'.
+
+	self assert: in1 name = 'in1'.
+	self assert: in2 name = 'in2'.
+	self assert: add name = 'add'.
+	
+	graph delete.
+	
+	self assert: false description: 'This test actually fails, and by failing it corrupts external memory and leads to a crash. This means when a TF_Graph is deleted, all the TF_Operations composing it are also deleted, hence pointers held to them (from Smalltalk or otherwise) become invalid'.
+	
+	self assert: in1 name = 'in1'.
+	self assert: in2 name = 'in2'.
+	self assert: add name = 'add'.
+	
+	graph _ self mulGraphTwoInputsInt64.
+	graph ignoreFinalization.
+	graph delete.
+
+	self assert: in1 name = 'in1'.
+	self assert: in2 name = 'in2'.
+	self assert: add name = 'add'.! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/8/2017 22:59:05'!
+testGraphDeletionDoesntBreakSessions
+	| graph inputs inputValues add output session results |
+	graph _ self addGraphTwoInputsInt64.
+	graph ignoreFinalization.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 16r2021222021222021)
+		with: (TF_Tensor fromInt64: 16r2221202221202221).
+	add _ graph operationNamed: 'add'.
+	output _ add output: 0.
+	session _ TF_Session onGraph: graph.
+	graph delete.
+	
+	results _ session
+		runOperations: (Array with: add)
+		inputs: inputs
+		values: inputValues
+		outputs: (Array with: output).
+	
+	self deny: results isNull.
+	self deny: results first isNull.
+	self deny: results first data isNull.
+	self assert: (results first data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+
+	results first delete.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/7/2017 21:00:14'!
