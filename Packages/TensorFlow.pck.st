@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 9 January 2017 at 11:11:05 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 9 January 2017 at 12:10:42 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 126!
+!provides: 'TensorFlow' 1 128!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2801,10 +2801,10 @@ isOk
 message
 	^ self library message: self! !
 
-!TF_Status methodsFor: 'printing' stamp: 'gera 1/6/2017 00:20:22'!
+!TF_Status methodsFor: 'printing' stamp: 'gera 1/9/2017 11:15:35'!
 printOn: strm
 	super printOn: strm.
-	handle isNull ifFalse: [
+	self isNull ifFalse: [
 		strm
 			space;
 			print: self code;
