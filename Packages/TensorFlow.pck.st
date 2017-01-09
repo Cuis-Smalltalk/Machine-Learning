@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 9 January 2017 at 12:10:42 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 9 January 2017 at 7:10:49 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 128!
+!provides: 'TensorFlow' 1 129!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -882,7 +882,7 @@ testGraphDeletionDoesntBreakOperations
 	self assert: in2 name = 'in2'.
 	self assert: add name = 'add'.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/8/2017 22:59:05'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/9/2017 19:10:33'!
 testGraphDeletionDoesntBreakSessions
 	| graph inputs inputValues add output session results |
 	graph _ self addGraphTwoInputsInt64.
@@ -898,7 +898,11 @@ testGraphDeletionDoesntBreakSessions
 	output _ add output: 0.
 	session _ TF_Session onGraph: graph.
 	graph delete.
-	
+
+	graph _ self addGraphTwoInputsInt64.
+	graph ignoreFinalization.
+	graph delete.
+		
 	results _ session
 		runOperations: (Array with: add)
 		inputs: inputs
