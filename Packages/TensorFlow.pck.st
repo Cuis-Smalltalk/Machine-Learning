@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 11:01:22 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 8:17:53 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 137!
+!provides: 'TensorFlow' 1 138!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -706,6 +706,16 @@ testAttrGetInt
 	op _ graph operationNamed: 'concat'.
 	
 	self assert: (op intAt: 'N') = 2.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 16:43:43'!
+testAttrGetShape
+	| graph op |
+	graph _ TF_Graph create.
+	op _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	
+	self assert: (op shapeAt: 'shape') = #().
 	
 	graph delete! !
 
@@ -2006,6 +2016,13 @@ operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
 
 ! !
 
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 16:39:17'!
+operation: aTF_Operation attr: nameZString getShape: int64array size: maxSize status: status
+	<cdecl: void 'TF_OperationGetAttrShape' (TF_Operation* char* Int64Array* ulonglong TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 09:00:54'!
 operation: aTF_Operation attr: nameZString getString: valueString size: maxSize status: status
 	<cdecl: void 'TF_OperationGetAttrString' (TF_Operation* char* void* ulonglong TF_Status*)>
@@ -2624,6 +2641,24 @@ printOn: strm
 			print: self type;
 			space;
 			print: self name]! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 16:48:50'!
+shapeAt: nameString
+	| value status size answer |
+	size _ 100.
+	status _ TF_Status create.
+	value _ Int64Array externalNew: size.
+	1 to: size do: [:i | value at: i put: -2].
+	self library
+		operation: self
+		attr: nameString asAsciiZ
+		getShape: value
+		size: size
+		status: status.
+	answer _ (1 to: size) collect: [:i | value at: i].
+	value free. 		
+	status check.
+	^ answer upTo: -2! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:57'!
 stringAt: nameString
