@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 10:41:11 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 11:01:22 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 134!
+!provides: 'TensorFlow' 1 137!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -794,7 +794,7 @@ testAttrSetFloat
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 09:02:07'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 10:57:55'!
 testAttrSetString
 	| graph in op |
 	graph _ TF_Graph create.
@@ -802,6 +802,8 @@ testAttrSetString
 	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
 		description at: 'fill' putString: 'matanga'.
 		description addInput: (in output: 0)].
+	
+	Smalltalk garbageCollect.	" Force releasing the string, to see if the API makes a copy or not"
 	
 	self assert: (op stringAt: 'fill') = 'matanga'.
 	
