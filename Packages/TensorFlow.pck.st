@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 9:07:03 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 10:27:34 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 132!
+!provides: 'TensorFlow' 1 133!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -680,6 +680,22 @@ testAttrGetBoolTrue
 		description addInput: (in output: 0)].
 	
 	self assert: (op boolAt: 'signed_input') = true.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 10:27:21'!
+testAttrGetFloat
+	| graph in op |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeFloat.
+	op _ graph
+		newOperation: 'FakeQuantWithMinMaxArgs'
+		named: 'out'
+		described: [:description |
+			description addInput: (in output: 0)].
+	
+	self assert: (op floatAt: 'min') = -6.0.
+	self assert: (op floatAt: 'max') = 6.0.
 	
 	graph delete! !
 
@@ -1949,6 +1965,13 @@ operation: aTF_Operation attr: nameZString getBool: valueBoolPtr status: status
 
 ! !
 
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 10:21:45'!
+operation: aTF_Operation attr: nameZString getFloat: valueFloatPtr status: status
+	<cdecl: void 'TF_OperationGetAttrFloat' (TF_Operation* char* float* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:24:06'!
 operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
 	<cdecl: void 'TF_OperationGetAttrInt' (TF_Operation* char* ulonglong* TF_Status*)>
@@ -2528,6 +2551,16 @@ boolAt: nameString
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
 device
 	^ self library operationDevice: self! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 10:22:29'!
+floatAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: 8.
+	self library operation: self attr: nameString asAsciiZ getFloat: value status: status.
+	status check.
+	^ value floatAt: 1
+! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
 input: indexInteger
