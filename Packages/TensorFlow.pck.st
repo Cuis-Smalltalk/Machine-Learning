@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 12:55:37 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 9:07:03 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 131!
+!provides: 'TensorFlow' 1 132!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -693,6 +693,18 @@ testAttrGetInt
 	
 	graph delete! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 09:01:36'!
+testAttrGetString
+	| graph in op |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
+		description addInput: (in output: 0)].
+	
+	self assert: (op stringAt: 'fill') = ''.
+	
+	graph delete! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 05:04:23'!
 testAttrGetTensor
 	| op graph tensor |
@@ -743,6 +755,19 @@ testAttrSetBoolTrue
 		description addInput: (in output: 0)].
 	
 	self assert: (op boolAt: 'scientific') = true.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 09:02:07'!
+testAttrSetString
+	| graph in op |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
+		description at: 'fill' putString: 'matanga'.
+		description addInput: (in output: 0)].
+	
+	self assert: (op stringAt: 'fill') = 'matanga'.
 	
 	graph delete! !
 
@@ -1810,6 +1835,11 @@ description: aTF_OperationDescription set: aString toInt64: anInt
 	<cdecl: void 'TF_SetAttrInt' (TF_OperationDescription* char* ulonglong)>
 	^ self externalCallFailed.! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 08:45:47'!
+description: aTF_OperationDescription set: aString toString: anInt size: size
+	<cdecl: void 'TF_SetAttrString' (TF_OperationDescription* char* char* ulonglong)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
 description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
 	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
@@ -1922,6 +1952,13 @@ operation: aTF_Operation attr: nameZString getBool: valueBoolPtr status: status
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:24:06'!
 operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
 	<cdecl: void 'TF_OperationGetAttrInt' (TF_Operation* char* ulonglong* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 09:00:54'!
+operation: aTF_Operation attr: nameZString getString: valueString size: maxSize status: status
+	<cdecl: void 'TF_OperationGetAttrString' (TF_Operation* char* void* ulonglong TF_Status*)>
 	^ self externalCallFailed
 
 ! !
@@ -2528,6 +2565,17 @@ printOn: strm
 			space;
 			print: self name]! !
 
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:57'!
+stringAt: nameString
+	| value status size |
+	size _ 100.
+	status _ TF_Status create.
+	value _ ByteArray new: size.
+	self library operation: self attr: nameString asAsciiZ getString: value size: size status: status.
+	status check.
+	^ (value upTo: 0) asString
+! !
+
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:00:29'!
 tensorAt: nameString
 	| value status |
@@ -2596,6 +2644,18 @@ at: attribute putInt: value
 		description: self
 		set: attribute asAsciiZ
 		toInt64: value! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:32'!
+at: attribute putString: aString
+	| status |
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toString: aString asAsciiZ
+		size: aString size.
+	status check
+	! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:02'!
 at: attribute putTensor: aTF_Tensor
