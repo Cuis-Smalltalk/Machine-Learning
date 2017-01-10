@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 10:27:34 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 10:41:11 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 133!
+!provides: 'TensorFlow' 1 134!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -771,6 +771,26 @@ testAttrSetBoolTrue
 		description addInput: (in output: 0)].
 	
 	self assert: (op boolAt: 'scientific') = true.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 10:41:06'!
+testAttrSetFloat
+	| graph in op min max |
+	min _ -1234.5678e10.
+	max _ 12345678e-10 asFraction.
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeFloat.
+	op _ graph
+		newOperation: 'FakeQuantWithMinMaxArgs'
+		named: 'out'
+		described: [:description |
+			description at: 'min' putFloat: min.
+			description at: 'max' putFloat: max.
+			description addInput: (in output: 0)].
+	
+	self assert: ((op floatAt: 'min') closeTo: min).
+	self assert: ((op floatAt: 'max') closeTo: max).
 	
 	graph delete! !
 
@@ -1846,6 +1866,11 @@ description: aTF_OperationDescription set: aString toBool: anInt
 	<cdecl: void 'TF_SetAttrBool' (TF_OperationDescription* char* byte)>
 	^ self externalCallFailed.! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 10:32:25'!
+description: aTF_OperationDescription set: aString toFloat: valueFloat
+	<cdecl: void 'TF_SetAttrFloat' (TF_OperationDescription* char* float)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/30/2016 12:52:47'!
 description: aTF_OperationDescription set: aString toInt64: anInt
 	<cdecl: void 'TF_SetAttrInt' (TF_OperationDescription* char* ulonglong)>
@@ -2669,6 +2694,14 @@ at: attribute putBoolean: value
 		description: self
 		set: attribute asAsciiZ
 		toBool: value
+		! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 10:35:19'!
+at: attribute putFloat: value
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toFloat: value asFloat
 		! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:11:24'!
