@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 8:17:53 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 8:55:11 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 138!
+!provides: 'TensorFlow' 1 139!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -801,6 +801,21 @@ testAttrSetFloat
 	
 	self assert: ((op floatAt: 'min') closeTo: min).
 	self assert: ((op floatAt: 'max') closeTo: max).
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:52:43'!
+testAttrSetShape
+	| graph op |
+	graph _ TF_Graph create.
+	op _ graph
+		newOperation: 'Placeholder'
+		named: 'const'
+		described: [:description |
+			description at: 'shape' putShape: #(1 2 3 4).
+			description at: 'dtype' putType: TF_Tensor typeInt64].
+		
+	self assert: (op shapeAt: 'shape') = #(1 2 3 4).
 	
 	graph delete! !
 
@@ -1888,6 +1903,11 @@ description: aTF_OperationDescription set: aString toInt64: anInt
 	<cdecl: void 'TF_SetAttrInt' (TF_OperationDescription* char* ulonglong)>
 	^ self externalCallFailed.! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 20:51:14'!
+description: aTF_OperationDescription set: aString toShape: anInt64Array size: size
+	<cdecl: void 'TF_SetAttrShape' (TF_OperationDescription* char* Int64Array* ulonglong)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 08:45:47'!
 description: aTF_OperationDescription set: aString toString: anInt size: size
 	<cdecl: void 'TF_SetAttrString' (TF_OperationDescription* char* char* ulonglong)>
@@ -2747,6 +2767,19 @@ at: attribute putInt: value
 		description: self
 		set: attribute asAsciiZ
 		toInt64: value! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 20:54:59'!
+at: attribute putShape: anIntegerArray
+	| status value |
+	value _ Int64Array externalFromArray: anIntegerArray.
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toShape: value
+		size: anIntegerArray size.
+	value free.
+	status check.! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:32'!
 at: attribute putString: aString
