@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 9 January 2017 at 7:10:49 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 12:55:37 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 129!
+!provides: 'TensorFlow' 1 131!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -659,6 +659,30 @@ testAsStringGraphRunOn: tensor
 
 	^ result! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:11:26'!
+testAttrGetBoolFalse
+	| graph in op |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph asString: 'out' described: [:description |
+		description addInput: (in output: 0)].
+	
+	self assert: (op boolAt: 'scientific') = false.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:16:01'!
+testAttrGetBoolTrue
+	| graph in op |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph newOperation: 'QuantizeAndDequantize' named: 'out' described: [:description |
+		description addInput: (in output: 0)].
+	
+	self assert: (op boolAt: 'signed_input') = true.
+	
+	graph delete! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 04:51:34'!
 testAttrGetInt
 	| op graph |
@@ -690,6 +714,35 @@ testAttrGetType
 	op _ graph operationNamed: 'concat'.
 	
 	self assert: (op typeAt: 'T') = TF_Tensor typeInt64.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:54:37'!
+testAttrSetBoolFalse
+	| graph in op |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph
+		newOperation: 'QuantizeAndDequantize'
+		named: 'out'
+		described: [:description |
+			description at: 'signed_input' putBoolean: false.
+			description addInput: (in output: 0)].
+	
+	self assert: (op boolAt: 'signed_input') = false.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:55:30'!
+testAttrSetBoolTrue
+	| graph in op |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph asString: 'out' described: [:description |
+		description at: 'scientific' putBoolean: true.
+		description addInput: (in output: 0)].
+	
+	self assert: (op boolAt: 'scientific') = true.
 	
 	graph delete! !
 
@@ -1752,6 +1805,11 @@ description: aTF_OperationDescription addInputs: aTF_OutputArray size: anInteger
 	<cdecl: void 'TF_AddInputList' (TF_OperationDescription* TF_OutputArray* longlong)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/9/2017 19:53:21'!
+description: aTF_OperationDescription set: aString toBool: anInt
+	<cdecl: void 'TF_SetAttrBool' (TF_OperationDescription* char* byte)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/30/2016 12:52:47'!
 description: aTF_OperationDescription set: aString toInt64: anInt
 	<cdecl: void 'TF_SetAttrInt' (TF_OperationDescription* char* ulonglong)>
@@ -1858,6 +1916,13 @@ newSessionOptions
 newStatus
 	<cdecl: TF_Status* 'TF_NewStatus' (void)>
 	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/9/2017 19:45:05'!
+operation: aTF_Operation attr: nameZString getBool: valueBoolPtr status: status
+	<cdecl: void 'TF_OperationGetAttrBool' (TF_Operation* char* ulonglong* TF_Status*)>
+	^ self externalCallFailed
+
+! !
 
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:24:06'!
 operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
@@ -2418,6 +2483,16 @@ create
 InputsCount
 	^ self library operationNumInputs: self! !
 
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:44:59'!
+boolAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: 1.
+	self library operation: self attr: nameString asAsciiZ getBool: value status: status.
+	status check.
+	^ (value booleanAt: 1) 
+! !
+
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
 device
 	^ self library operationDevice: self! !
@@ -2511,6 +2586,14 @@ addInputs: anArrayOfTF_Output
 		size: anArrayOfTF_Output size.
 	] ensure: [inputs free].
 ! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:53:37'!
+at: attribute putBoolean: value
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toBool: value
+		! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:11:24'!
 at: attribute putInt: value
