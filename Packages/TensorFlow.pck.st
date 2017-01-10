@@ -792,11 +792,6 @@ testConcatGraphInputList
 	self should: [self concatGraphInputListWrongType] raise: Error.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 10:43:39'!
-testCreateFloatAsStringGraph
-	self floatAsStringGraph
-! !
-
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:22'!
 testCreateGraphAddTwoInputs
 	| graph |
