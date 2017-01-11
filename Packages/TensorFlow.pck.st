@@ -1844,11 +1844,11 @@ testTensorTypes
 	types pairsDo: [:name :value |
 		self assert: (TF_Tensor perform: (#type, name) asSymbol) = value]! !
 
-!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/6/2017 12:23:03'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/11/2017 14:12:47'!
 testVersion
 	| version |
 	version _ library version.
-	self assert: (#('0.11.head' '0.12.0' '0.12.head') includes: version)! !
+	self assert: (#('0.11.head' '0.12.0' '0.12.head' '1.0.0-alpha') includes: version)! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
