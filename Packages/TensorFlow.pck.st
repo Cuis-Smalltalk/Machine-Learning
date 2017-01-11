@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 9:01:35 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 11 January 2017 at 12:10:23 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 140!
+!provides: 'TensorFlow' 1 141!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -804,19 +804,26 @@ testAttrSetFloat
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:52:43'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 00:10:08'!
 testAttrSetShape
+	self testAttrSetShape: #().
+	self testAttrSetShape: #(16r1234567890ABCDEF).
+	self testAttrSetShape: #(1 2 3 4).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 00:09:22'!
+testAttrSetShape: anIntegerArray
 	| graph op |
 	graph _ TF_Graph create.
 	op _ graph
 		newOperation: 'Placeholder'
 		named: 'const'
 		described: [:description |
-			description at: 'shape' putShape: #(1 2 3 4).
+			description at: 'shape' putShape: anIntegerArray.
 			description at: 'dtype' putType: TF_Tensor typeInt64].
 		
-	self assert: (op shapeAt: 'shape') = #(1 2 3 4).
-	
+	self assert: (op shapeAt: 'shape') = anIntegerArray.
+
 	graph delete! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:59:12'!
