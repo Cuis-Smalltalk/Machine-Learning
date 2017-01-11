@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 8:55:11 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3024] on 10 January 2017 at 9:01:35 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 139!
+!provides: 'TensorFlow' 1 140!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -819,18 +819,28 @@ testAttrSetShape
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 10:57:55'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:59:12'!
 testAttrSetString
+	self testAttrSetString: '1'.
+	self testAttrSetString: '12'.
+	self testAttrSetString: '1234'.
+	self testAttrSetString: '1234567'.
+	self testAttrSetString: '12345678'.
+	self testAttrSetString: '123456789'.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:58:15'!
+testAttrSetString: aString
 	| graph in op |
 	graph _ TF_Graph create.
 	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
 	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
-		description at: 'fill' putString: 'matanga'.
+		description at: 'fill' putString: aString.
 		description addInput: (in output: 0)].
 	
 	Smalltalk garbageCollect.	" Force releasing the string, to see if the API makes a copy or not"
 	
-	self assert: (op stringAt: 'fill') = 'matanga'.
+	self assert: (op stringAt: 'fill') = aString.
 	
 	graph delete! !
 
@@ -2427,10 +2437,10 @@ fromFileNamed: aString
 	fileContents _ aString asFileEntry readStream contents.
 	^ self fromString: fileContents! !
 
-!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 05:08:50'!
+!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 1/10/2017 21:00:42'!
 fromString: aString
 	| answer |
-	answer _ TensorFlowCAPI current newBufferFromString: aString asAsciiZ size: aString size.
+	answer _ TensorFlowCAPI current newBufferFromString: aString size: aString size.
 	^ answer! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 05:21:30'!
@@ -2781,14 +2791,14 @@ at: attribute putShape: anIntegerArray
 	value free.
 	status check.! !
 
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:32'!
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 20:57:22'!
 at: attribute putString: aString
 	| status |
 	status _ TF_Status create.
 	self library
 		description: self
 		set: attribute asAsciiZ
-		toString: aString asAsciiZ
+		toString: aString
 		size: aString size.
 	status check
 	! !
