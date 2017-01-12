@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 11 January 2017 at 11:34:39 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 11 January 2017 at 11:38:36 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 143!
+!provides: 'TensorFlow' 1 144!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -814,12 +814,12 @@ testAttrSetFloat
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 00:10:08'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:38:13'!
 testAttrSetShape
 	self testAttrSetShape: #().
 	self testAttrSetShape: #(16r1234567890ABCDEF).
 	self testAttrSetShape: #(1 2 3 4).
-! !
+	self testAttrSetShape: (1 to: 200) asArray.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 00:09:22'!
 testAttrSetShape: anIntegerArray
@@ -2899,13 +2899,12 @@ printOn: strm
 			space;
 			print: self name]! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 16:48:50'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/11/2017 23:37:29'!
 shapeAt: nameString
 	| value status size answer |
-	size _ 100.
+	size _ (self attrMetadata: nameString) totalSize.
 	status _ TF_Status create.
 	value _ Int64Array externalNew: size.
-	1 to: size do: [:i | value at: i put: -2].
 	self library
 		operation: self
 		attr: nameString asAsciiZ
@@ -2915,7 +2914,7 @@ shapeAt: nameString
 	answer _ (1 to: size) collect: [:i | value at: i].
 	value free. 		
 	status check.
-	^ answer upTo: -2! !
+	^ answer! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:57'!
 stringAt: nameString
