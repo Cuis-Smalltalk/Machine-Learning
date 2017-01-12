@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 11 January 2017 at 11:38:36 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 12 January 2017 at 6:46:30 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 144!
+!provides: 'TensorFlow' 1 145!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2387,10 +2387,9 @@ fields
 	"self initialize"
 	^#()! !
 
-!TF_Structure class methodsFor: 'class initialization' stamp: 'gera 12/21/2016 02:54:06'!
+!TF_Structure class methodsFor: 'class initialization' stamp: 'gera 1/12/2017 18:44:14'!
 initialize
-	super initialize.
-	self defineFields! !
+	super initialize.! !
 
 !TF_Structure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:33:15'!
 pointerSize
@@ -2602,6 +2601,10 @@ fields
 		(totalSize 'longlong'))
 	! !
 
+!TF_AttrMetadata class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:45:15'!
+initialize
+	^super initialize! !
+
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
 	"This method was automatically generated. See TF_Buffer class>>fields."
@@ -2641,9 +2644,10 @@ length: anObject
 	"This method was automatically generated. See TF_Buffer class>>fields."
 	handle unsignedLongLongAt: 9 put: anObject! !
 
-!TF_Buffer class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:51:23'!
+!TF_Buffer class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:45:49'!
 fields
-	"self initialize"
+	"self initialize.
+	self defineFields"
 	^#(
 		(data 'void*')
 		(length 'ulonglong')
@@ -2831,7 +2835,7 @@ create
 InputsCount
 	^ self library operationNumInputs: self! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/11/2017 22:33:06'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/12/2017 18:46:27'!
 attrMetadata: nameString
 	| status answer |
 	status _ TF_Status create.
@@ -3083,9 +3087,10 @@ operation: anObject
 type
 	^ self library operationOutputType: self! !
 
-!TF_Output class methodsFor: 'field definition' stamp: 'gera 12/23/2016 10:17:51'!
+!TF_Output class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:46:11'!
 fields
-	"self initialize"
+	"self initialize.
+	self defineFields"
 	^#(
 		(operation 'TF_Operation*')
 		(index 'ulonglong'))
@@ -3575,3 +3580,4 @@ typeUInt16
 typeUInt8
 	^4! !
 TF_Structure initialize!
+TF_AttrMetadata initialize!
