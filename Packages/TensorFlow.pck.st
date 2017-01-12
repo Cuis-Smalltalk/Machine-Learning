@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 11 January 2017 at 12:10:23 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 11 January 2017 at 11:34:39 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 141!
+!provides: 'TensorFlow' 1 143!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -90,6 +90,16 @@ ExternalWordArray subclass: #TF_TensorPtrArray
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_TensorPtrArray class' category: #'TensorFlow-Kernel'!
 TF_TensorPtrArray class
+	instanceVariableNames: ''!
+
+!classDefinition: #TF_AttrMetadata category: #'TensorFlow-Kernel'!
+TF_Structure subclass: #TF_AttrMetadata
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TF_AttrMetadata class' category: #'TensorFlow-Kernel'!
+TF_AttrMetadata class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
@@ -957,6 +967,124 @@ testGetAllOps
 	ops _ library getAllOps.
 	self assert: (ops data fromCString includesSubString: 'tensor').
 	ops delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:22:59'!
+testGetAttrMetadataBoolean
+	| graph in op template metadata |
+	template _ '1234567890abc'.
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
+		description at: 'fill' putString: template.
+		description addInput: (in output: 0)].
+		
+	metadata _ op attrMetadata: 'scientific'.
+	self assert: metadata isBoolean.
+	self assert: metadata isList = false.
+
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:33:06'!
+testGetAttrMetadataFloat
+	| graph in op metadata |
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeFloat.
+	op _ graph
+		newOperation: 'FakeQuantWithMinMaxArgs'
+		named: 'out'
+		described: [:description |
+			description addInput: (in output: 0)].
+	
+	metadata _ op attrMetadata: 'min'.
+	self assert: metadata isFloat.
+	self assert: metadata isList = false.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:23:17'!
+testGetAttrMetadataInt
+	| graph in op template metadata |
+	template _ '1234567890abc'.
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
+		description at: 'fill' putString: template.
+		description addInput: (in output: 0)].
+		
+	metadata _ op attrMetadata: 'precision'.
+	self assert: metadata isInt.
+	self assert: metadata isList = false.
+
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:17:18'!
+testGetAttrMetadataShape
+	| graph op template metadata |
+	template _ #(1 2 3 4 5).
+	graph _ TF_Graph create.
+	op _ graph 
+		newOperation: 'Placeholder'
+		named: 'const'
+		described: [:description |
+			description at: 'shape' putShape: template.
+			description at: 'dtype' putType: TF_Tensor typeInt64].
+		
+	metadata _ op attrMetadata: 'shape'.
+	self assert: metadata isShape.
+	self assert: metadata isList = false.
+	self assert: metadata totalSize = template size.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:23:29'!
+testGetAttrMetadataString
+	| graph in op template metadata |
+	template _ '1234567890abc'.
+	graph _ TF_Graph create.
+	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
+	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
+		description at: 'fill' putString: template.
+		description addInput: (in output: 0)].
+		
+	self assert: (op stringAt: 'fill') = template.
+	
+	metadata _ op attrMetadata: 'fill'.
+	self assert: metadata isString.
+	self assert: metadata isList = false.
+	self assert: metadata totalSize = template size.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:29:47'!
+testGetAttrMetadataTensor
+	| graph op template metadata |
+	template _ #(1 2 3 4 5).
+	graph _ TF_Graph create.
+	op _ graph const: 'const' value: (TF_Tensor fromInt64Array: template).
+		
+	metadata _ op attrMetadata: 'value'.
+	self assert: metadata isTensor.
+	self assert: metadata isList = false.
+	
+	graph delete! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:23:39'!
+testGetAttrMetadataType
+	| graph op template metadata |
+	template _ #(1 2 3 4 5).
+	graph _ TF_Graph create.
+	op _ graph 
+		newOperation: 'Placeholder'
+		named: 'const'
+		described: [:description |
+			description at: 'shape' putShape: template.
+			description at: 'dtype' putType: TF_Tensor typeInt64].
+		
+	metadata _ op attrMetadata: 'dtype'.
+	self assert: metadata isType.
+	self assert: metadata isList = false.
+	
+	graph delete! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:17'!
 testGetOperationOnConstantGraph
@@ -2081,6 +2209,13 @@ operation: aTF_Operation attr: nameZString getType: valueLongPtr status: status
 
 ! !
 
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/11/2017 22:34:01'!
+operation: aTF_Operation getMetadataFor: nameZString status: status
+	<cdecl: TF_AttrMetadata 'TF_OperationGetAttrMetadata' (TF_Operation* char* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:06'!
 operationDevice: aTF_Operation
 	<cdecl: char* 'TF_OperationDevice' (TF_Operation*)>
@@ -2390,6 +2525,83 @@ new: unused
 elementClass
 	^TF_Tensor! !
 
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:07'!
+isBoolean
+	^ self type = 3! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:55'!
+isFloat
+	^ self type = 2! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:15:35'!
+isFunc
+	^ self type = 8! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:31'!
+isInt
+	^ self type = 1! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:41:49'!
+isList
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^self _isList \\ 256 ~= 0.! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:54'!
+isPlaceholder
+	^ self type = 7! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:27'!
+isShape
+	^ self type = 5! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:09'!
+isString
+	^ self type = 0
+! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:41'!
+isTensor
+	^ self type = 6! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:17'!
+isType
+	^ self type = 4! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:36'!
+listSize
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle signedLongLongAt: 9! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:40'!
+totalSize
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle signedLongLongAt: 25! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:42:04'!
+type
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^self _type \\ 256! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
+_isList
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle unsignedLongLongAt: 1! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
+_type
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle unsignedLongLongAt: 17! !
+
+!TF_AttrMetadata class methodsFor: 'field definition' stamp: 'gera 1/11/2017 22:43:56'!
+fields
+	"self initialize"
+	^#(
+		(_isList 'ulonglong')
+		(listSize 'longlong')
+		(_type 'ulonglong')
+		(totalSize 'longlong'))
+	! !
+
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
 data
 	"This method was automatically generated. See TF_Buffer class>>fields."
@@ -2618,6 +2830,14 @@ create
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
 InputsCount
 	^ self library operationNumInputs: self! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/11/2017 22:33:06'!
+attrMetadata: nameString
+	| status answer |
+	status _ TF_Status create.
+	answer _ self library operation: self getMetadataFor: nameString status: status.
+	status check.
+	^ answer! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:44:59'!
 boolAt: nameString
