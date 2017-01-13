@@ -292,9 +292,7 @@ testExternalFromArrayTensor
 	self assert: array first getHandle = t1 getHandle.
 	self assert: (array at: 2) getHandle = t2 getHandle.
 	] ensure: [
-		array free.
-		t1 delete.
-		t2 delete].! !
+		array free].! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:46:04'!
 testOperationArrayAtPut
@@ -384,13 +382,12 @@ testOutputArrayElementsOfRightClass
 		self assert: ((array at: index) isKindOf: TF_Output)].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:16:37'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:16:43'!
 testTensorArrayAtPut
 	| sample |
 	sample _ TF_Tensor externalNew.
 	
-	[self testArrayAtPutFor: TF_TensorPtrArray elementSample: sample]
-		ensure: [sample free]! !
+	self testArrayAtPutFor: TF_TensorPtrArray elementSample: sample.! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:16:40'!
 testTensorArrayElementsOfRightClass
@@ -1426,7 +1423,7 @@ testImportEmpty
 		graph delete] raise: Error.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:13:50'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:08'!
 testInt64AsStringGraph
 	| result tensor |
 	tensor _ TF_Tensor fromInt64: 101010101.
@@ -1434,10 +1431,9 @@ testInt64AsStringGraph
 	
 	self assert: result allStrings first equals: '101010101'.
 
-	tensor delete.
 	result delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:13:55'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:33'!
 testInt64rrayAsStringGraph
 	| result tensor strings template |
 	
@@ -1449,7 +1445,6 @@ testInt64rrayAsStringGraph
 	strings withIndexDo: [:value :index |
 		self assert: value equals: (template at: index) asString].
 	
-	tensor delete.
 	result delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:14:02'!
@@ -1582,10 +1577,12 @@ testNewSessionOptions
 	options delete.
 	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 12/28/2016 00:11:49'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 12:29:09'!
 testNewStatus
 	| status |
 	status _ TF_Status create.
+	status ignoreFinalization.
+	
 	self deny: status isNull.
 	status delete.
 	self assert: status isNull.! !
@@ -1612,7 +1609,7 @@ testOutputDims
 	graph delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:29:36'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:48'!
 testPlaceholderType: type
 	| graph var session result tensor abs |
 	graph _ TF_Graph create.
@@ -1630,7 +1627,7 @@ testPlaceholderType: type
 
 	graph delete.
 	result delete.
-	tensor delete.! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:21:34'!
 testPlaceholderTypes
@@ -1695,7 +1692,7 @@ testRunGraphConst
 
 	self testSessionRunTargetOutputOnGraph: graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 10:15:37'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 12:24:10'!
 testRunGraphMulOneInput
 	| graph input inputValue result mul output session |
 	graph _ self mulGraphOneInputInt64.
@@ -1711,7 +1708,6 @@ testRunGraphMulOneInput
 	self deny: result data isNull.
 	self assert: (result data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
 
-	inputValue delete.
 	result delete.
 	input free.
 	output free.
@@ -1862,7 +1858,7 @@ testSessionRunTargetOutput
 	^ self testSessionRunTargetOutputOnGraph: self constantInt64GraphFromDef.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 10:15:54'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 12:29:42'!
 testSessionRunTargetOutputOnGraph: graph
 	| operation session output tensor |
 	session _ TF_Session onGraph: graph.
@@ -1875,7 +1871,6 @@ testSessionRunTargetOutputOnGraph: graph
 	self deny: tensor data isNull.
 	self assert: (tensor data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
 
-	tensor delete.
 	output free.
 	graph delete.! !
 
@@ -2019,16 +2014,15 @@ testTensorByteSize
 
 	self assert: tensor byteSize equals: (8*2*3)! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:17:53'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:24:45'!
 testTensorData
 	| tensor |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
 		dimensions: #(2 3).
-	[	self assert: tensor numberOfDimensions equals: 2.
-		self deny: tensor data getHandle asInteger = 0.
-		self deny: tensor data getHandle isNil.
-	] ensure: [tensor delete].
+	self assert: tensor numberOfDimensions equals: 2.
+	self deny: tensor data getHandle asInteger = 0.
+	self deny: tensor data getHandle isNil.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:54'!
@@ -2047,7 +2041,7 @@ testTensorDimensions1D
 testTensorDimensions2D
 	^ self testTensorDimensions: #(1 4)! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:05'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:24:56'!
 testTensorDimensions: anArray
 	| tensor dimensions size |
 	tensor _ TF_Tensor
@@ -2062,7 +2056,7 @@ testTensorDimensions: anArray
 		ifFalse: [anArray product].
 	self assert: dimensions equals: anArray.
 	self assert: tensor size equals: size.
-	tensor delete.! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 11:16:18'!
 testTensorFinalizationReleasesExternalMemory
@@ -2077,7 +2071,7 @@ testTensorFinalizationReleasesExternalMemory
 
 	self assert: (handles asSet size) < size.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:11'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
 testTensorFromInt64Array
 	| tensor template values |
 	template _ #(16r1234567812345678 0 -12345678910111213).
@@ -2088,8 +2082,7 @@ testTensorFromInt64Array
 	self assert: tensor size equals: 3.
 	self assert: tensor byteSize equals: (3*8).
 	self assert: template equals: values.
-	
-	tensor delete.! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:18:17'!
 testTensorFromString
@@ -2110,24 +2103,24 @@ testTensorFromStringArray
 	
 	self assert: tensor allStrings equals: template.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:32'!
 testTensorNewScalar
 	| tensor |
 	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	tensor ignoreFinalization.
+	
 	self deny: tensor isNull.
 	tensor delete.
 	self assert: tensor isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:31'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:40'!
 testTensorType
 	| tensor |
 	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
 	self assert: tensor type equals: tensor class typeInt64.
-	tensor delete.
 
 	tensor _ TF_Tensor type: TF_Tensor typeFloat dimensions: #().
 	self assert: tensor type equals: tensor class typeFloat.
-	tensor delete.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:51'!
@@ -3084,7 +3077,7 @@ output: indexInteger
 outputsCount
 	^ self library operationNumOutputs: self! !
 
-!TF_Operation methodsFor: 'printing' stamp: 'gera 1/6/2017 00:20:40'!
+!TF_Operation methodsFor: 'printing' stamp: 'gera 1/13/2017 12:41:03'!
 printOn: strm
 	super printOn: strm.
 	handle isNull ifFalse: [
@@ -3745,7 +3738,7 @@ type: anInteger dimensions: anIntegerArray
 	^self type: anInteger dimensions: anIntegerArray bytesize: bytesize
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:42:22'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 12:16:17'!
 type: anInteger dimensions: anIntegerArray bytesize: bytesizeInteger
 	" I understand dimenssions are:
 		#()		-> Scalar
@@ -3763,6 +3756,7 @@ type: anInteger dimensions: anIntegerArray bytesize: bytesizeInteger
 		dimensions: externalized
 		dimensionsCount: anIntegerArray size
 		length: bytesizeInteger] ensure: [externalized free].
+	answer useFinalization.
 	^ answer
 ! !
 
