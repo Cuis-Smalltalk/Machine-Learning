@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 2:05:00 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 3:46:40 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 146!
+!provides: 'TensorFlow' 1 149!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1990,6 +1990,15 @@ testTensorFromInt64Array
 	
 	tensor delete.! !
 
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 03:36:14'!
+testTensorFromString
+	| tensor template |
+	template _ 'hola manola'.
+	
+	tensor _ TF_Tensor fromString: template.
+	
+	self assert: tensor allStrings first = template.! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
 testTensorNewScalar
 	| tensor |
@@ -3503,13 +3512,14 @@ fromInt64Array: values
 	self int64Array: values into: answer data getHandle.
 	^ answer! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:56:12'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:35:19'!
 fromString: aString
 	| answer bytesize |
 	bytesize _ TensorFlowCAPI current stringEncodedSize: aString.
-	bytesize _ bytesize + 8. "forcing a one element array"
-	answer _ self type: self typeString dimensions: #(1) bytesize: bytesize.
+	bytesize _ bytesize.
+	answer _ self type: self typeString dimensions: #() bytesize: bytesize.
 	answer data getHandle unsignedLongLongAt: 1 put: 0.
+	
 	TensorFlowCAPI current
 		stringEncode: aString
 		to: answer data getHandle + 8
@@ -3564,6 +3574,10 @@ sizeForType: anInteger
 
 
 	^ self shouldBeImplemented.! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:17:43'!
+sizeOfString: aString.
+	^ TensorFlowCAPI current stringEncodedSize: aString.! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:42:58'!
 type: anInteger dimensions: anIntegerArray
