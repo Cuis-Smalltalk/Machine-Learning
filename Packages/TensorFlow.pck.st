@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 12:46:19 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 12:50:51 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 161!
+!provides: 'TensorFlow' 1 162!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -382,10 +382,10 @@ testOutputArrayElementsOfRightClass
 		self assert: ((array at: index) isKindOf: TF_Output)].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:16:43'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:50:45'!
 testTensorArrayAtPut
 	| sample |
-	sample _ TF_Tensor externalNew.
+	sample _ TF_Tensor fromInt64: 16r12341234.
 	
 	self testArrayAtPutFor: TF_TensorPtrArray elementSample: sample.! !
 
