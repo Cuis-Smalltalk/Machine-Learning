@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 10:55:16 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 11:16:23 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 158!
+!provides: 'TensorFlow' 1 159!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -643,6 +643,30 @@ mulGraphTwoInputsInt64
 	mul1 _ graph mul: 'mul1' described: [:description |
 		description addInput: (const output: 0).
 		description addInput: (in1 output: 0)].
+	graph mul: 'mul2' described: [:description |
+		description addInput: (mul1 output: 0).
+		description addInput: (in2 output: 0)].
+	
+	^ graph! !
+
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/13/2017 11:12:16'!
+mulGraphTwoInputsInt64ConstTensorDeleted
+	| graph constant const in1 in2 mul1 |
+	graph _ TF_Graph create.
+	constant _ TF_Tensor fromInt64: 16r2121212121212121.
+	
+	in1 _ graph placeholder: 'in1' type: constant type.
+	in2 _ graph placeholder: 'in2' type: constant type.
+	const _ graph const: 'const' value: constant.
+
+	constant delete.	
+	constant _ TF_Tensor fromInt64: 16r2222222222222222.
+	constant delete.	
+
+	mul1 _ graph mul: 'mul1' described: [:description |
+		description addInput: (const output: 0).
+		description addInput: (in1 output: 0)].
+
 	graph mul: 'mul2' described: [:description |
 		description addInput: (mul1 output: 0).
 		description addInput: (in2 output: 0)].
@@ -1719,6 +1743,45 @@ testRunGraphMulTwoInputs
 	results first delete.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 11:14:35'!
+testRunGraphMulTwoInputsConstTensorDelete
+	| graph inputs inputValues mul output session results |
+	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+		
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 16r23) useFinalization
+		with: (TF_Tensor fromInt64: 16r24) useFinalization.
+
+	Smalltalk garbageCollect.
+	(TF_Tensor fromInt64: 16r1234123412341234) useFinalization.
+	Smalltalk garbageCollect.
+	
+	mul _ graph operationNamed: 'mul2'.
+	output _ mul output: 0.
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOperations: (Array with: mul)
+		inputs: inputs
+		values: inputValues
+		outputs: (Array with: output).
+	
+	self deny: results isNull.
+	self deny: results first isNull.
+	self deny: results first data isNull.
+	self assert: (results first data getHandle signedLongLongAt: 1) equals: 16rF0F0F0F0F0F0E6C.
+
+	graph delete.
+	results first delete.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 11:15:09'!
+testRunGraphMulTwoInputsConstTensorDeleteManyTimes
+	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDelete]! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:30:34'!
 testRunOperationArray
 	| graph operation session |
@@ -1998,11 +2061,11 @@ testTensorDimensions: anArray
 	self assert: tensor size equals: size.
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:49:04'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 11:16:18'!
 testTensorFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
 	| handles template size |
-	size _ 100.
+	size _ 20.
 	template _ {String new: 10. String new: 100. String new: 1000}.
 	
 	handles _ (1 to: size) collect: [:i |
@@ -3512,7 +3575,7 @@ data
 dataBytes
 	^self data getHandle structAt: 1 length: self byteSize! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 10:43:49'!
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 11:15:59'!
 delete
 	self ignoreFinalization.
 	self library deleteTensor: self.
@@ -3527,7 +3590,7 @@ dimensions
 		answer nextPut: (self sizeOn: i-1)].
 	^ answer contents! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 10:31:59'!
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 11:15:56'!
 finalize
 	self delete! !
 
