@@ -282,7 +282,7 @@ testExternalFromArrayOutput
 	] ensure: [
 		array free].! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 17:54:53'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:16:32'!
 testExternalFromArrayTensor
 	| t1 t2 array |
 	t1 _ TF_Tensor fromInt64: 16r8070605040302010.
@@ -296,13 +296,16 @@ testExternalFromArrayTensor
 		t1 delete.
 		t2 delete].! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:15:41'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:46:04'!
 testOperationArrayAtPut
-	| sample |
-	sample _ TF_Operation externalNew.
+	| graph sample |
+	graph _ TF_Graph create.
+	sample _ graph placeholder: 'var' type: TF_Tensor typeInt64.
 	
-	[self testArrayAtPutFor: TF_OperationPtrArray elementSample: sample]
-		ensure: [sample free]! !
+	self testArrayAtPutFor: TF_OperationPtrArray elementSample: sample.
+
+	graph delete.
+! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:15:43'!
 testOperationArrayElementsOfRightClass
