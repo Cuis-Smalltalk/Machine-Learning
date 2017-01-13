@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 4:07:05 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 4:16:08 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 152!
+!provides: 'TensorFlow' 1 153!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -956,9 +956,9 @@ testDecodeCSVGraphCreate
 		
 	self decodeCSVGraphDefaults: defaults.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:00:12'!
-testDecodeCSVGraphRun
-	| defaults graph output records session results values rows |
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:12:40'!
+testDecodeCSVGraphRunCSV: csvLines
+	| defaults graph output records session results values |
 	defaults _ {
 		TF_Tensor fromInt64Array: #(-1).
 		TF_Tensor fromInt64Array: #(-1).
@@ -968,7 +968,7 @@ testDecodeCSVGraphRun
 	graph _ self decodeCSVGraphDefaults: defaults.
 	records _ (graph operationNamed: 'records') input: 0.
 	output _ graph operationNamed: 'output'.
-	values _ TF_Tensor fromStringArray: #('11111111111,22222222,33333333,44444444').
+	values _ TF_Tensor fromStringArray: csvLines.
 	
 	session _ TF_Session onGraph: graph.
 	results _ session
@@ -983,8 +983,30 @@ testDecodeCSVGraphRun
 		
 	graph delete.
 	
-	rows _ (1 to: 4) collect: [:i |
+	^ (1 to: 4) collect: [:i |
 		(results at: i) allInt64s].
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:15:33'!
+testDecodeCSVGraphRunManyLines
+	| rows |
+	rows _ self testDecodeCSVGraphRunCSV:
+	'1,2,3,4
+	 11,22,33,44
+	 111,222,333,444
+	 1111,2222,3333,4444' lines.
+	
+	
+	self assert: rows first = #(1 11 111 1111).
+	self assert: rows second = #(2 22 222 2222).
+	self assert: rows third = #(3 33 333 3333).
+	self assert: rows fourth = #(4 44 444 4444).
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:14:14'!
+testDecodeCSVGraphRunOneLine
+	| rows |
+	rows _ self testDecodeCSVGraphRunCSV: '11111111111,22222222,33333333,44444444' lines.
 	
 	self assert: rows first = #(11111111111).
 	self assert: rows second = #(22222222).
