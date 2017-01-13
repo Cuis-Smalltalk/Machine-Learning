@@ -580,6 +580,24 @@ constantInt64GraphDef
 constantInt64GraphFromDef
 	^ TF_Graph fromString: self constantInt64GraphDef! !
 
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/13/2017 01:28:16'!
+decodeCSVGraphDefaults: anArrayOfTF_Tensors
+	| graph records defaults |
+	
+	graph _ TF_Graph create.
+	records _ (graph placeholder: 'records' type: TF_Tensor typeString) output: 0.
+	defaults _ Array new: anArrayOfTF_Tensors size.
+	
+	anArrayOfTF_Tensors withIndexDo: [:each :index |
+		| one |
+		one _ (graph const: 'default',index printString value: each) output: 0.
+		defaults at: index put: one].
+	graph newOperation: 'DecodeCSV' named: 'output' described: [:description |
+		description addInput: records.
+		description addInputs: defaults].
+	
+	^ graph! !
+
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/22/2016 02:20:25'!
 emptyGraph
 	^ TF_Graph fromString: self emptyGraphDef.
@@ -926,6 +944,53 @@ testCreateGraphMulOneInput
 
 	graph delete.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 01:29:13'!
+testDecodeCSVGraphCreate
+	| defaults |
+	defaults _ {
+		TF_Tensor fromInt64Array: #(-1).
+		TF_Tensor fromInt64Array: #(-1).
+		TF_Tensor fromInt64Array: #(-1).
+		TF_Tensor fromInt64Array: #(-1)}.
+		
+	self decodeCSVGraphDefaults: defaults.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 02:04:51'!
+testDecodeCSVGraphRun
+	| defaults graph output records session results values rows |
+	defaults _ {
+		TF_Tensor fromInt64Array: #(-1).
+		TF_Tensor fromInt64Array: #(-1).
+		TF_Tensor fromInt64Array: #(-1).
+		TF_Tensor fromInt64Array: #(-1)}.
+		
+	graph _ self decodeCSVGraphDefaults: defaults.
+	records _ (graph operationNamed: 'records') input: 0.
+	output _ graph operationNamed: 'output'.
+	values _ TF_Tensor fromString: '11111111111,22222222,33333333,44444444'.
+	
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOperations: {output}
+		inputs: {records}
+		values: {values}
+		outputs: {
+			(output output: 0).
+			(output output: 1).
+			(output output: 2).
+			(output output: 3)}.
+		
+	graph delete.
+	
+	rows _ (1 to: 4) collect: [:i |
+		(results at: i) allInt64s].
+	
+	self assert: rows first = #(11111111111).
+	self assert: rows second = #(22222222).
+	self assert: rows third = #(33333333).
+	self assert: rows fourth = #(44444444).
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/22/2016 00:58:57'!
 testExternalizeString
