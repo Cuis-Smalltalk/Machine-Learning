@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 4:04:48 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 4:07:05 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 152!
 !requires: 'FFI' 1 18 nil!
@@ -956,7 +956,7 @@ testDecodeCSVGraphCreate
 		
 	self decodeCSVGraphDefaults: defaults.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 02:04:51'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:00:12'!
 testDecodeCSVGraphRun
 	| defaults graph output records session results values rows |
 	defaults _ {
@@ -968,7 +968,7 @@ testDecodeCSVGraphRun
 	graph _ self decodeCSVGraphDefaults: defaults.
 	records _ (graph operationNamed: 'records') input: 0.
 	output _ graph operationNamed: 'output'.
-	values _ TF_Tensor fromString: '11111111111,22222222,33333333,44444444'.
+	values _ TF_Tensor fromStringArray: #('11111111111,22222222,33333333,44444444').
 	
 	session _ TF_Session onGraph: graph.
 	results _ session
@@ -1999,6 +1999,15 @@ testTensorFromString
 	
 	self assert: tensor dataBytes first = template size.
 	self assert: tensor dataBytes allButFirst asString = template.! !
+
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 03:39:10'!
+testTensorFromStringArray
+	| tensor template |
+	template _ #('hola manola' 'te traje una lola' 'pamela' 'que pandulce!!').
+	
+	tensor _ TF_Tensor fromStringArray: template.
+	
+	self assert: tensor allStrings = template.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
 testTensorNewScalar
@@ -3525,6 +3534,35 @@ fromString: aString
 		to: answer data getHandle
 		size: bytesize.
 	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 04:04:42'!
+fromStringArray: aStringArray
+	| answer sizes offsets offsetSize bytesize |
+	sizes _ aStringArray collect: [:each | self sizeOfString: each].
+	offsetSize _ self sizeForType: self typeInt64.
+	bytesize _ offsetSize * aStringArray size + sizes sum.
+	offsets _ OrderedCollection new: sizes size.
+	
+	sizes inject: 0 into: [:prev :each |
+		offsets add: prev.
+		each + prev].
+	
+	answer _ self
+		type: self typeString
+		dimensions: {aStringArray size}
+		bytesize: bytesize.
+		
+	self int64Array: offsets into: answer data getHandle.	
+	
+	aStringArray withIndexDo: [:each :index |
+		| offset |
+		offset _ offsetSize * aStringArray size + (offsets at: index).
+		TensorFlowCAPI current
+			stringEncode: each
+			to: answer data getHandle + offset
+			size: bytesize - offset].
+	^ answer
+! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:21:11'!
 int64Array: values into: anExternalAddressOrByteArray
