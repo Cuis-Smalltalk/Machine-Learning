@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 10:19:12 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 10:43:54 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 155!
+!provides: 'TensorFlow' 1 157!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2812,14 +2812,14 @@ definition
 	status check.
 	^ buffer dataBytes asString! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:41:55'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:43:04'!
 delete
+	self ignoreFinalization.
 	self library deleteGraph: self.
 	handle _ nil! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/7/2017 20:58:47'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
 finalize
-	self ignoreFinalization.
 	self delete! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
@@ -3221,21 +3221,29 @@ close
 	self library closeSession: self status: status.
 	status check! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/3/2017 17:21:01'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/13/2017 10:42:30'!
 delete
 	| status |
+	self ignoreFinalization.
 	status _ TF_Status create.
-	self library deleteSession: self status: status.
+	self library
+		deleteSession: self
+		status: status.
 	status check.
-	handle _ nil! !
+	handle _ nil.
+! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/8/2017 12:01:56'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/13/2017 10:40:47'!
 finalize
 	[
-		self ignoreFinalization.
-		self isNull ifFalse: [self close].
-		self delete] on: Error do: [Transcript newLine; print: 'Error finalizing ';show: self].
-! !
+	self isNull ifFalse: [ self close ].
+	self delete ]
+		on: Error
+		do: [
+			Transcript
+				newLine;
+				print: 'Error finalizing ';
+				show: self ].! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
 run
@@ -3417,10 +3425,8 @@ delete
 	self library deleteStatus: self.
 	handle _ nil.! !
 
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:02:31'!
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:31:44'!
 finalize
-	"I am an executor (a copy) of an ExternalAddress that was just garbage collected.
-	I must finalize. my mission is to free memory"
 	handle isNull ifTrue: [^self].
 	self delete! !
 
@@ -3493,8 +3499,9 @@ data
 dataBytes
 	^self data getHandle structAt: 1 length: self byteSize! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'gera 12/26/2016 10:44:32'!
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 10:43:49'!
 delete
+	self ignoreFinalization.
 	self library deleteTensor: self.
 	handle _ nil! !
 
@@ -3506,6 +3513,10 @@ dimensions
 	1 to: count do: [:i |
 		answer nextPut: (self sizeOn: i-1)].
 	^ answer contents! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 10:31:59'!
+finalize
+	self delete! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
 numberOfDimensions
