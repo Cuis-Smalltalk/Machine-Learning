@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 1:14:20 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 7:58:28 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 164!
+!provides: 'TensorFlow' 1 166!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -439,6 +439,22 @@ asStringGraphType: type
 	graph asString: 'out' described: [:description |
 		description addInput: (in output: 0)].
 	^ graph! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:53:12'!
+assertDimensionsOf: aMultidimensionalTensor is: anInteger
+	| dimensions |
+	dimensions _ TF_Tensor dimensionsOf: aMultidimensionalTensor.
+	self
+		assert: dimensions = anInteger
+		description: 'The dimension is ', dimensions printString, ' and should have been ', anInteger printString! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:48:59'!
+assertRankOf: aMultidimensionalTensor is: anInteger
+	| rank |
+	rank _ TF_Tensor rankOf: aMultidimensionalTensor.
+	self
+		assert: rank = anInteger
+		description: 'The rank is ', rank printString, ' and should have been ', anInteger printString! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:57'!
 concatGraphInputList
@@ -1034,6 +1050,13 @@ testDecodeCSVGraphRunOneLine
 	self assert: cols third equals: #(33333333).
 	self assert: cols fourth equals: #(44444444).
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
+testDimensions
+	self assertDimensionsOf: -13123213 is: #().
+	self assertDimensionsOf: #(123 123 123 123) is: #(4).
+	self assertDimensionsOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: #(4 3).
+	self assertDimensionsOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: #(3 3 1).! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/13/2017 10:10:56'!
 testExternalizeString
@@ -1652,6 +1675,13 @@ testPrintOn
 	self assert: printString fifth equals: '''Add'''.
 	self assert: printString last equals: '''add'''.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:50:59'!
+testRanks
+	self assertRankOf: -13123213 is: 0.
+	self assertRankOf: #(123 123 123 123) is: 1.
+	self assertRankOf: #((1 2 3) (4 5 6) (7 8 9)) is: 2.
+	self assertRankOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: 3.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:15:32'!
 testRunGraphAddTwoInputs
@@ -3600,6 +3630,12 @@ sizeOn: dimension
 type
 	^self library tensorType: self.! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 19:55:11'!
+dimensionsOf: aMultidimensionalTensor
+	^ aMultidimensionalTensor isCollection
+		ifTrue: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]
+		ifFalse: [#()].! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
 fromInt32: value
 	| answer |
@@ -3668,6 +3704,12 @@ int64Array: values into: anExternalAddressOrByteArray
 	values withIndexDo: [:value :index |
 		anExternalAddressOrByteArray signedLongLongAt: index-1*8 + 1 put: value].
 ! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 19:45:52'!
+rankOf: aMultidimensionalTensor
+	^ aMultidimensionalTensor isCollection
+		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
+		ifFalse: [0].! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/2/2017 23:30:33'!
 sizeForType: anInteger
