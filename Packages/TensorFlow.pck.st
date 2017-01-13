@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 11:16:23 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 11:18:29 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 159!
+!provides: 'TensorFlow' 1 160!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1743,8 +1743,8 @@ testRunGraphMulTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 11:14:35'!
-testRunGraphMulTwoInputsConstTensorDelete
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 11:18:12'!
+testRunGraphMulTwoInputsConstTensorDeleted
 	| graph inputs inputValues mul output session results |
 	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
 	
@@ -1778,9 +1778,9 @@ testRunGraphMulTwoInputsConstTensorDelete
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 11:15:09'!
-testRunGraphMulTwoInputsConstTensorDeleteManyTimes
-	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDelete]! !
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 11:18:24'!
+testRunGraphMulTwoInputsConstTensorDeletedManyTimes
+	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDeleted]! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:30:34'!
 testRunOperationArray
