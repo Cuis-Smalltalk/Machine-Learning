@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 4:16:08 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 4:18:32 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 153!
+!provides: 'TensorFlow' 1 154!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -987,31 +987,31 @@ testDecodeCSVGraphRunCSV: csvLines
 		(results at: i) allInt64s].
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:15:33'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:18:31'!
 testDecodeCSVGraphRunManyLines
-	| rows |
-	rows _ self testDecodeCSVGraphRunCSV:
+	| cols |
+	cols _ self testDecodeCSVGraphRunCSV:
 	'1,2,3,4
 	 11,22,33,44
 	 111,222,333,444
 	 1111,2222,3333,4444' lines.
 	
 	
-	self assert: rows first = #(1 11 111 1111).
-	self assert: rows second = #(2 22 222 2222).
-	self assert: rows third = #(3 33 333 3333).
-	self assert: rows fourth = #(4 44 444 4444).
+	self assert: cols first = #(1 11 111 1111).
+	self assert: cols second = #(2 22 222 2222).
+	self assert: cols third = #(3 33 333 3333).
+	self assert: cols fourth = #(4 44 444 4444).
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:14:14'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:18:23'!
 testDecodeCSVGraphRunOneLine
-	| rows |
-	rows _ self testDecodeCSVGraphRunCSV: '11111111111,22222222,33333333,44444444' lines.
+	| cols |
+	cols _ self testDecodeCSVGraphRunCSV: '11111111111,22222222,33333333,44444444' lines.
 	
-	self assert: rows first = #(11111111111).
-	self assert: rows second = #(22222222).
-	self assert: rows third = #(33333333).
-	self assert: rows fourth = #(44444444).
+	self assert: cols first = #(11111111111).
+	self assert: cols second = #(22222222).
+	self assert: cols third = #(33333333).
+	self assert: cols fourth = #(44444444).
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/22/2016 00:58:57'!
