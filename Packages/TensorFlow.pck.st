@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 4:18:32 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 10:19:12 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 154!
+!provides: 'TensorFlow' 1 155!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -687,7 +687,7 @@ testAsStringGraphRunOn: tensor
 
 	^ result! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:11:26'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:01'!
 testAttrGetBoolFalse
 	| graph in op |
 	graph _ TF_Graph create.
@@ -695,11 +695,11 @@ testAttrGetBoolFalse
 	op _ graph asString: 'out' described: [:description |
 		description addInput: (in output: 0)].
 	
-	self assert: (op boolAt: 'scientific') = false.
+	self assert: (op boolAt: 'scientific') equals: false.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:16:01'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:10'!
 testAttrGetBoolTrue
 	| graph in op |
 	graph _ TF_Graph create.
@@ -707,11 +707,11 @@ testAttrGetBoolTrue
 	op _ graph newOperation: 'QuantizeAndDequantize' named: 'out' described: [:description |
 		description addInput: (in output: 0)].
 	
-	self assert: (op boolAt: 'signed_input') = true.
+	self assert: (op boolAt: 'signed_input') equals: true.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 10:27:21'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:29'!
 testAttrGetFloat
 	| graph in op |
 	graph _ TF_Graph create.
@@ -722,32 +722,32 @@ testAttrGetFloat
 		described: [:description |
 			description addInput: (in output: 0)].
 	
-	self assert: (op floatAt: 'min') = -6.0.
-	self assert: (op floatAt: 'max') = 6.0.
+	self assert: (op floatAt: 'min') equals: -6.0.
+	self assert: (op floatAt: 'max') equals: 6.0.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 04:51:34'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:33'!
 testAttrGetInt
 	| op graph |
 	graph _ self concatGraphInputList.
 	op _ graph operationNamed: 'concat'.
 	
-	self assert: (op intAt: 'N') = 2.
+	self assert: (op intAt: 'N') equals: 2.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 16:43:43'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:36'!
 testAttrGetShape
 	| graph op |
 	graph _ TF_Graph create.
 	op _ graph placeholder: 'in' type: TF_Tensor typeDouble.
 	
-	self assert: (op shapeAt: 'shape') = #().
+	self assert: (op shapeAt: 'shape') equals: #().
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 09:01:36'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:41'!
 testAttrGetString
 	| graph in op |
 	graph _ TF_Graph create.
@@ -755,11 +755,11 @@ testAttrGetString
 	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
 		description addInput: (in output: 0)].
 	
-	self assert: (op stringAt: 'fill') = ''.
+	self assert: (op stringAt: 'fill') equals: ''.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 05:04:23'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:53'!
 testAttrGetTensor
 	| op graph tensor |
 	graph _ self constantInt64Graph.
@@ -767,23 +767,23 @@ testAttrGetTensor
 
 	tensor _ op tensorAt: 'value'.
 	
-	self assert: tensor type = TF_Tensor typeInt64.
-	self assert: tensor dimensions = #().
-	self assert: tensor allInt64s = #(16r4242424242424242).
+	self assert: tensor type equals: TF_Tensor typeInt64.
+	self assert: tensor dimensions equals: #().
+	self assert: tensor allInt64s equals: #(16r4242424242424242).
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 04:55:36'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:03'!
 testAttrGetType
 	| op graph |
 	graph _ self concatGraphInputList.
 	op _ graph operationNamed: 'concat'.
 	
-	self assert: (op typeAt: 'T') = TF_Tensor typeInt64.
+	self assert: (op typeAt: 'T') equals: TF_Tensor typeInt64.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:54:37'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:09'!
 testAttrSetBoolFalse
 	| graph in op |
 	graph _ TF_Graph create.
@@ -795,11 +795,11 @@ testAttrSetBoolFalse
 			description at: 'signed_input' putBoolean: false.
 			description addInput: (in output: 0)].
 	
-	self assert: (op boolAt: 'signed_input') = false.
+	self assert: (op boolAt: 'signed_input') equals: false.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 00:55:30'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:12'!
 testAttrSetBoolTrue
 	| graph in op |
 	graph _ TF_Graph create.
@@ -808,7 +808,7 @@ testAttrSetBoolTrue
 		description at: 'scientific' putBoolean: true.
 		description addInput: (in output: 0)].
 	
-	self assert: (op boolAt: 'scientific') = true.
+	self assert: (op boolAt: 'scientific') equals: true.
 	
 	graph delete! !
 
@@ -839,7 +839,7 @@ testAttrSetShape
 	self testAttrSetShape: #(1 2 3 4).
 	self testAttrSetShape: (1 to: 200) asArray.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 00:09:22'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:21'!
 testAttrSetShape: anIntegerArray
 	| graph op |
 	graph _ TF_Graph create.
@@ -850,7 +850,7 @@ testAttrSetShape: anIntegerArray
 			description at: 'shape' putShape: anIntegerArray.
 			description at: 'dtype' putType: TF_Tensor typeInt64].
 		
-	self assert: (op shapeAt: 'shape') = anIntegerArray.
+	self assert: (op shapeAt: 'shape') equals: anIntegerArray.
 
 	graph delete! !
 
@@ -864,7 +864,7 @@ testAttrSetString
 	self testAttrSetString: '123456789'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:58:15'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:32'!
 testAttrSetString: aString
 	| graph in op |
 	graph _ TF_Graph create.
@@ -875,23 +875,23 @@ testAttrSetString: aString
 	
 	Smalltalk garbageCollect.	" Force releasing the string, to see if the API makes a copy or not"
 	
-	self assert: (op stringAt: 'fill') = aString.
+	self assert: (op stringAt: 'fill') equals: aString.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/5/2017 20:39:37'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:20'!
 testBufferDataBytes
 	| buffer string data |
 	string _ ' hola manola'.
 	buffer _ TF_Buffer fromString: string.
 
 	data _ buffer dataBytes.
-	self assert: string = data asString.
+	self assert: string equals: data asString.
 	
 	buffer delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/7/2017 05:10:10'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:24'!
 testBufferNoNeedExternalize
 	| buffer string data |
 	string _ ' hola manola'.
@@ -901,7 +901,7 @@ testBufferNoNeedExternalize
 	Smalltalk garbageCollect.
 	
 	data _ buffer dataBytes.
-	self assert: string = data asString.
+	self assert: string equals: data asString.
 	
 	buffer delete.
 ! !
@@ -931,7 +931,7 @@ testCreateGraphAddTwoInputs
 	graph _ self addGraphTwoInputsInt64.
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:57:41'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:10:32'!
 testCreateGraphMulOneInput
 	| graph input mul |
 	graph _ self mulGraphOneInputInt64.
@@ -939,8 +939,8 @@ testCreateGraphMulOneInput
 	self shouldnt: [input _ graph operationNamed: 'in'] raise: Error.
 	self shouldnt: [mul _ graph operationNamed: 'mul'] raise: Error.
 	
-	self assert: input name = 'in'.
-	self assert: mul name = 'mul'.
+	self assert: input name equals: 'in'.
+	self assert: mul name equals: 'mul'.
 
 	graph delete.
 ! !
@@ -987,7 +987,7 @@ testDecodeCSVGraphRunCSV: csvLines
 		(results at: i) allInt64s].
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:18:31'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:06:38'!
 testDecodeCSVGraphRunManyLines
 	| cols |
 	cols _ self testDecodeCSVGraphRunCSV:
@@ -997,31 +997,31 @@ testDecodeCSVGraphRunManyLines
 	 1111,2222,3333,4444' lines.
 	
 	
-	self assert: cols first = #(1 11 111 1111).
-	self assert: cols second = #(2 22 222 2222).
-	self assert: cols third = #(3 33 333 3333).
-	self assert: cols fourth = #(4 44 444 4444).
+	self assert: cols first equals: #(1 11 111 1111).
+	self assert: cols second equals: #(2 22 222 2222).
+	self assert: cols third equals: #(3 33 333 3333).
+	self assert: cols fourth equals: #(4 44 444 4444).
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:18:23'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:10:47'!
 testDecodeCSVGraphRunOneLine
 	| cols |
 	cols _ self testDecodeCSVGraphRunCSV: '11111111111,22222222,33333333,44444444' lines.
 	
-	self assert: cols first = #(11111111111).
-	self assert: cols second = #(22222222).
-	self assert: cols third = #(33333333).
-	self assert: cols fourth = #(44444444).
+	self assert: cols first equals: #(11111111111).
+	self assert: cols second equals: #(22222222).
+	self assert: cols third equals: #(33333333).
+	self assert: cols fourth equals: #(44444444).
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/22/2016 00:58:57'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/13/2017 10:10:56'!
 testExternalizeString
 	| original copy |
 	original _ 'hola manola'.
 	copy _ library externalizeString: original.
 	original withIndexDo: [:each :index |
-		self assert: each asciiValue = (copy byteAt: index)].
-	self assert: (copy byteAt: original size + 1) = 0.
+		self assert: each asciiValue equals: (copy byteAt: index)].
+	self assert: (copy byteAt: original size + 1) equals: 0.
 	copy free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 10:43:49'!
@@ -1029,7 +1029,7 @@ testFloatAsStringGraphCreate
 	self floatAsStringGraph
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 14:50:07'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:07'!
 testFloatAsStringGraphRun
 	| result str expected |
 	
@@ -1040,10 +1040,10 @@ testFloatAsStringGraphRun
 	self deny: result data isNull.
 	str _ result dataBytes.
 	
-	self assert: 8+1+ expected size = str size.
-	self assert: (str unsignedLongLongAt: 1) = 0.
-	self assert: (str at: 9) = expected size.
-	self assert: (str copyFrom: 10 count: expected size) asString = expected.
+	self assert: 8+1+ expected size equals: str size.
+	self assert: (str unsignedLongLongAt: 1) equals: 0.
+	self assert: (str at: 9) equals: expected size.
+	self assert: (str copyFrom: 10 count: expected size) asString equals: expected.
 	
 	result delete.
 ! !
@@ -1055,7 +1055,7 @@ testGetAllOps
 	self assert: (ops data fromCString includesSubString: 'tensor').
 	ops delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:22:59'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:20'!
 testGetAttrMetadataBoolean
 	| graph in op template metadata |
 	template _ '1234567890abc'.
@@ -1067,11 +1067,11 @@ testGetAttrMetadataBoolean
 		
 	metadata _ op attrMetadata: 'scientific'.
 	self assert: metadata isBoolean.
-	self assert: metadata isList = false.
+	self assert: metadata isList equals: false.
 
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:33:06'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:25'!
 testGetAttrMetadataFloat
 	| graph in op metadata |
 	graph _ TF_Graph create.
@@ -1084,11 +1084,11 @@ testGetAttrMetadataFloat
 	
 	metadata _ op attrMetadata: 'min'.
 	self assert: metadata isFloat.
-	self assert: metadata isList = false.
+	self assert: metadata isList equals: false.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:23:17'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:30'!
 testGetAttrMetadataInt
 	| graph in op template metadata |
 	template _ '1234567890abc'.
@@ -1100,11 +1100,11 @@ testGetAttrMetadataInt
 		
 	metadata _ op attrMetadata: 'precision'.
 	self assert: metadata isInt.
-	self assert: metadata isList = false.
+	self assert: metadata isList equals: false.
 
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:17:18'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:38'!
 testGetAttrMetadataShape
 	| graph op template metadata |
 	template _ #(1 2 3 4 5).
@@ -1118,12 +1118,12 @@ testGetAttrMetadataShape
 		
 	metadata _ op attrMetadata: 'shape'.
 	self assert: metadata isShape.
-	self assert: metadata isList = false.
-	self assert: metadata totalSize = template size.
+	self assert: metadata isList equals: false.
+	self assert: metadata totalSize equals: template size.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:23:29'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:48'!
 testGetAttrMetadataString
 	| graph in op template metadata |
 	template _ '1234567890abc'.
@@ -1133,16 +1133,16 @@ testGetAttrMetadataString
 		description at: 'fill' putString: template.
 		description addInput: (in output: 0)].
 		
-	self assert: (op stringAt: 'fill') = template.
+	self assert: (op stringAt: 'fill') equals: template.
 	
 	metadata _ op attrMetadata: 'fill'.
 	self assert: metadata isString.
-	self assert: metadata isList = false.
-	self assert: metadata totalSize = template size.
+	self assert: metadata isList equals: false.
+	self assert: metadata totalSize equals: template size.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:29:47'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:52'!
 testGetAttrMetadataTensor
 	| graph op template metadata |
 	template _ #(1 2 3 4 5).
@@ -1151,11 +1151,11 @@ testGetAttrMetadataTensor
 		
 	metadata _ op attrMetadata: 'value'.
 	self assert: metadata isTensor.
-	self assert: metadata isList = false.
+	self assert: metadata isList equals: false.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:23:39'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:56'!
 testGetAttrMetadataType
 	| graph op template metadata |
 	template _ #(1 2 3 4 5).
@@ -1169,19 +1169,19 @@ testGetAttrMetadataType
 		
 	metadata _ op attrMetadata: 'dtype'.
 	self assert: metadata isType.
-	self assert: metadata isList = false.
+	self assert: metadata isList equals: false.
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:17'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:12:06'!
 testGetOperationOnConstantGraph
 	| graph op |
 	graph _ self constantFloatGraphFromDef.
 	self shouldnt: [op _ graph operationNamed: 'a'] raise: Error.
-	self assert: op name = 'a'.
-	self assert: op type = 'Const'.
-	self assert: op InputsCount = 0.
-	self assert: op outputsCount = 1.! !
+	self assert: op name equals: 'a'.
+	self assert: op type equals: 'Const'.
+	self assert: op InputsCount equals: 0.
+	self assert: op outputsCount equals: 1.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/22/2016 03:44:19'!
 testGetOperationOnEmptyGraph
@@ -1189,38 +1189,38 @@ testGetOperationOnEmptyGraph
 	graph _ self emptyGraph.
 	self should: [graph operationNamed: 'something'] raise: Error! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:36:36'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:12:12'!
 testGraph: aTF_Graph outputType: anInteger
 	| operation output |
 	operation _ aTF_Graph operationNamed: 'a'.
 	output _ operation output: 0.
-	self assert: output type == anInteger.
+	self assert: output type equals: anInteger.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:00:30'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:12:23'!
 testGraphCreationConst
 	| graph operation |
 	graph _ self constantInt64Graph.
 	
 	operation _ graph operationNamed: 'a'.
-	self assert: operation type = 'Const'.
-	self assert: operation name = 'a'.
-	self assert: operation InputsCount = 0.
-	self assert: operation outputsCount = 1.
+	self assert: operation type equals: 'Const'.
+	self assert: operation name equals: 'a'.
+	self assert: operation InputsCount equals: 0.
+	self assert: operation outputsCount equals: 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:03'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:12:31'!
 testGraphDefinition
 	| definition operations |
 	definition _ self mulGraphTwoInputsInt64 definition.
 	operations _ (TF_Graph fromString: definition) allVariables.
 		
-	self assert: operations size = 2.
-	self assert: operations first = 'in1'.
-	self assert: operations second = 'in2'.
+	self assert: operations size equals: 2.
+	self assert: operations first equals: 'in1'.
+	self assert: operations second equals: 'in2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/9/2017 11:10:43'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:12:48'!
 testGraphDeletionDoesntBreakOperations
 	| graph in1 in2 add |
 	graph _ self addGraphTwoInputsInt64.
@@ -1230,25 +1230,25 @@ testGraphDeletionDoesntBreakOperations
 	in2 _ graph operationNamed: 'in2'.
 	add _ graph operationNamed: 'add'.
 
-	self assert: in1 name = 'in1'.
-	self assert: in2 name = 'in2'.
-	self assert: add name = 'add'.
+	self assert: in1 name equals: 'in1'.
+	self assert: in2 name equals: 'in2'.
+	self assert: add name equals: 'add'.
 	
 	graph delete.
 	
 	self assert: false description: 'This test actually fails, and by failing it corrupts external memory and leads to a crash. This means when a TF_Graph is deleted, all the TF_Operations composing it are also deleted, hence pointers held to them (from Smalltalk or otherwise) become invalid'.
 	
-	self assert: in1 name = 'in1'.
-	self assert: in2 name = 'in2'.
-	self assert: add name = 'add'.
+	self assert: in1 name equals: 'in1'.
+	self assert: in2 name equals: 'in2'.
+	self assert: add name equals: 'add'.
 	
 	graph _ self mulGraphTwoInputsInt64.
 	graph ignoreFinalization.
 	graph delete.
 
-	self assert: in1 name = 'in1'.
-	self assert: in2 name = 'in2'.
-	self assert: add name = 'add'.! !
+	self assert: in1 name equals: 'in1'.
+	self assert: in2 name equals: 'in2'.
+	self assert: add name equals: 'add'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/9/2017 19:10:33'!
 testGraphDeletionDoesntBreakSessions
@@ -1297,37 +1297,37 @@ testGraphFinalizationReleasesExternalMemory
 	self assert: (handles asSet size) < tries.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:06'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:07'!
 testGraphOperationAt
 	| graph operation context |
 	graph _ self mulGraphTwoInputsInt64.
 	context _ graph newOperationIteratorContext.
 	
 	operation _ graph operationAt: context.
-	self assert: operation name = 'in1'.
-	self assert: operation type = 'Placeholder'.
+	self assert: operation name equals: 'in1'.
+	self assert: operation type equals: 'Placeholder'.
 
 	operation _ graph operationAt: context.
-	self assert: operation name = 'in2'.
-	self assert: operation type = 'Placeholder'.
+	self assert: operation name equals: 'in2'.
+	self assert: operation type equals: 'Placeholder'.
 
 	operation _ graph operationAt: context.
-	self assert: operation name = 'const'.
-	self assert: operation type = 'Const'.
+	self assert: operation name equals: 'const'.
+	self assert: operation type equals: 'Const'.
 
 	operation _ graph operationAt: context.
-	self assert: operation name = 'mul1'.
-	self assert: operation type = 'Mul'.
+	self assert: operation name equals: 'mul1'.
+	self assert: operation type equals: 'Mul'.
 
 	operation _ graph operationAt: context.
-	self assert: operation name = 'mul2'.
-	self assert: operation type = 'Mul'.
+	self assert: operation name equals: 'mul2'.
+	self assert: operation type equals: 'Mul'.
 
 	operation _ graph operationAt: context.
 	self assert: operation isNull.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:09'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:21'!
 testGraphOperationsDo
 	| graph operations |
 	graph _ self mulGraphTwoInputsInt64.
@@ -1336,32 +1336,32 @@ testGraphOperationsDo
 	graph operationsDo: [:op |
 		operations add: op name].
 	
-	self assert: operations size = 5.
-	self assert: operations first = 'in1'.
-	self assert: operations second = 'in2'.
-	self assert: operations third = 'const'.
-	self assert: operations fourth = 'mul1'.
-	self assert: operations fifth = 'mul2'.
+	self assert: operations size equals: 5.
+	self assert: operations first equals: 'in1'.
+	self assert: operations second equals: 'in2'.
+	self assert: operations third equals: 'const'.
+	self assert: operations fourth equals: 'mul1'.
+	self assert: operations fifth equals: 'mul2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:12'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:32'!
 testGraphOperationsSelect
 	| operations |
 	operations _ self mulGraphTwoInputsInt64 allVariables.
 		
-	self assert: operations size = 2.
-	self assert: operations first = 'in1'.
-	self assert: operations second = 'in2'.
+	self assert: operations size equals: 2.
+	self assert: operations first equals: 'in1'.
+	self assert: operations second equals: 'in2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/5/2017 23:58:15'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:43'!
 testGraphOperationsSelectEmpty
 	| graph operations |
 	graph _ self mulGraphTwoInputsInt64.
 	
 	operations _ graph operationsSelect: [:op | false].
 	
-	self assert: operations size = 0.
+	self assert: operations size equals: 0.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
@@ -1399,18 +1399,18 @@ testImportEmpty
 		graph delete] raise: Error.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:51:50'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:13:50'!
 testInt64AsStringGraph
 	| result tensor |
 	tensor _ TF_Tensor fromInt64: 101010101.
 	result _ self testAsStringGraphRunOn: tensor.
 	
-	self assert: result allStrings first = '101010101'.
+	self assert: result allStrings first equals: '101010101'.
 
 	tensor delete.
 	result delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 17:56:05'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:13:55'!
 testInt64rrayAsStringGraph
 	| result tensor strings template |
 	
@@ -1420,12 +1420,12 @@ testInt64rrayAsStringGraph
 	strings _ result allStrings.
 	
 	strings withIndexDo: [:value :index |
-		self assert: value = (template at: index) asString].
+		self assert: value equals: (template at: index) asString].
 	
 	tensor delete.
 	result delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/28/2016 00:07:27'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:14:02'!
 testNewBufferFromFileNamed
 	| buffer string data temporaryFile |
 	string _ ' hola manola'.
@@ -1436,25 +1436,25 @@ testNewBufferFromFileNamed
 	temporaryFile asFileEntry delete.
 	
 	self deny: buffer isNull.
-	self assert: buffer length == string size.
+	self assert: buffer length equals: string size.
 	
 	data _ buffer data fromCString first: string size.
-	self assert: string = data.
+	self assert: string equals: data.
 	
 	buffer delete.
 	self assert: buffer isNull.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 12/28/2016 00:07:45'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:14:07'!
 testNewBufferFromString
 	| buffer string data |
 	string _ ' hola manola'.
 	buffer _ TF_Buffer fromString: string.
 	self deny: buffer isNull.
-	self assert: buffer length == string size.
+	self assert: buffer length equals: string size.
 	
 	data _ buffer data fromCString first: string size.
-	self assert: string = data.
+	self assert: string equals: data.
 	
 	buffer delete.
 	self assert: buffer isNull.! !
@@ -1483,7 +1483,7 @@ testNewOperationDescription
 	self deny: description isNull.
 	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 02:12:07'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:14:47'!
 testNewOperationMul
 	| graph operation a b |
 	graph _ TF_Graph create.
@@ -1496,19 +1496,19 @@ testNewOperationMul
 			description addInputFromOutput: 0 of: a.
 			description addInputFromOutput: 0 of: b].
 
-	self assert: operation type = 'Mul'.
-	self assert: operation name = 'aMultiplication'.
-	self assert: operation InputsCount = 2.
-	self assert: operation outputsCount = 1.
+	self assert: operation type equals: 'Mul'.
+	self assert: operation name equals: 'aMultiplication'.
+	self assert: operation InputsCount equals: 2.
+	self assert: operation outputsCount equals: 1.
 	
 	operation _ graph operationNamed: 'aMultiplication'.
-	self assert: operation type = 'Mul'.
-	self assert: operation name = 'aMultiplication'.
-	self assert: operation InputsCount = 2.
-	self assert: operation outputsCount = 1.
+	self assert: operation type equals: 'Mul'.
+	self assert: operation name equals: 'aMultiplication'.
+	self assert: operation InputsCount equals: 2.
+	self assert: operation outputsCount equals: 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 01:53:15'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:14:59'!
 testNewOperationPlaceholder
 	| graph operation |
 	graph _ TF_Graph create.
@@ -1516,16 +1516,16 @@ testNewOperationPlaceholder
 		operation _ graph placeholder: 'aPlaceholder' type: TF_Tensor typeInt64.
 	] raise: Error.
 	
-	self assert: operation type = 'Placeholder'.
-	self assert: operation name = 'aPlaceholder'.
-	self assert: operation InputsCount = 0.
-	self assert: operation outputsCount = 1.
+	self assert: operation type equals: 'Placeholder'.
+	self assert: operation name equals: 'aPlaceholder'.
+	self assert: operation InputsCount equals: 0.
+	self assert: operation outputsCount equals: 1.
 	
 	operation _ graph operationNamed: 'aPlaceholder'.
-	self assert: operation type = 'Placeholder'.
-	self assert: operation name = 'aPlaceholder'.
-	self assert: operation InputsCount = 0.
-	self assert: operation outputsCount = 1.
+	self assert: operation type equals: 'Placeholder'.
+	self assert: operation name equals: 'aPlaceholder'.
+	self assert: operation InputsCount equals: 0.
+	self assert: operation outputsCount equals: 1.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:11:32'!
@@ -1575,13 +1575,13 @@ testOperationOutputTypeInt32
 testOperationOutputTypeInt64
 	^self testGraph: self constantInt64GraphFromDef outputType: TF_Tensor typeInt64! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/6/2017 00:06:30'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:15:08'!
 testOutputDims
 	| graph operation output |
 	graph _ self constantInt64GraphFromDef.
 	operation _ graph operationNamed: 'a'.
 	output _ operation output: 0.
-	self assert: (graph outputDimenssionsCount: output) = 0.
+	self assert: (graph outputDimenssionsCount: output) equals: 0.
 	graph delete.
 	output free.! !
 
@@ -1612,27 +1612,27 @@ testPlaceholderTypes
 	self testPlaceholderType: TF_Tensor typeFloat.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:31'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:15:18'!
 testPrintOn
 	| graph printString |
 	graph _ self addGraphTwoInputsInt64.
 
 	printString _ (graph operationNamed: 'in1') printString substrings.
-	self assert: printString second = 'TF_Operation'.
-	self assert: printString third = '@'.
+	self assert: printString second equals: 'TF_Operation'.
+	self assert: printString third equals: '@'.
 	self assert: (printString fourth beginsWith: '16r').
-	self assert: printString fifth = '''Placeholder'''.
-	self assert: printString last = '''in1'''.
+	self assert: printString fifth equals: '''Placeholder'''.
+	self assert: printString last equals: '''in1'''.
 
 	printString _ (graph operationNamed: 'add') printString substrings.
-	self assert: printString second = 'TF_Operation'.
-	self assert: printString third = '@'.
+	self assert: printString second equals: 'TF_Operation'.
+	self assert: printString third equals: '@'.
 	self assert: (printString fourth beginsWith: '16r').
-	self assert: printString fifth = '''Add'''.
-	self assert: printString last = '''add'''.
+	self assert: printString fifth equals: '''Add'''.
+	self assert: printString last equals: '''add'''.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:29:45'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:15:32'!
 testRunGraphAddTwoInputs
 	| graph inputs inputValues add output session results |
 	graph _ self addGraphTwoInputsInt64.
@@ -1655,7 +1655,7 @@ testRunGraphAddTwoInputs
 	self deny: results isNull.
 	self deny: results first isNull.
 	self deny: results first data isNull.
-	self assert: (results first data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+	self assert: (results first data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
 
 	graph delete.
 	results first delete.
@@ -1668,7 +1668,7 @@ testRunGraphConst
 
 	self testSessionRunTargetOutputOnGraph: graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:15'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 10:15:37'!
 testRunGraphMulOneInput
 	| graph input inputValue result mul output session |
 	graph _ self mulGraphOneInputInt64.
@@ -1682,7 +1682,7 @@ testRunGraphMulOneInput
 	
 	self deny: result isNull.
 	self deny: result data isNull.
-	self assert: (result data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+	self assert: (result data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
 
 	inputValue delete.
 	result delete.
@@ -1690,7 +1690,7 @@ testRunGraphMulOneInput
 	output free.
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:23'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 10:15:44'!
 testRunGraphMulTwoInputs
 	| graph inputs inputValues mul output session results |
 	graph _ self mulGraphTwoInputsInt64.
@@ -1713,7 +1713,7 @@ testRunGraphMulTwoInputs
 	self deny: results isNull.
 	self deny: results first isNull.
 	self deny: results first data isNull.
-	self assert: (results first data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+	self assert: (results first data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
 
 	graph delete.
 	results first delete.
@@ -1796,7 +1796,7 @@ testSessionRunTargetOutput
 	^ self testSessionRunTargetOutputOnGraph: self constantInt64GraphFromDef.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:31:16'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 10:15:54'!
 testSessionRunTargetOutputOnGraph: graph
 	| operation session output tensor |
 	session _ TF_Session onGraph: graph.
@@ -1807,23 +1807,23 @@ testSessionRunTargetOutputOnGraph: graph
 	
 	self deny: tensor isNull.
 	self deny: tensor data isNull.
-	self assert: (tensor data getHandle signedLongLongAt: 1) = 16r4242424242424242.
+	self assert: (tensor data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
 
 	tensor delete.
 	output free.
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:15'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 10:16:01'!
 testStatusCodes
 	| status  |
 	status _ TF_Status create.
 	
 	self assert: status isOk.
-	self assert: status codeText = 'OK'.
+	self assert: status codeText equals: 'OK'.
 	self shouldnt: [status check] raise: Error.
 	
 	status code: 1 message: 'You cancelled it!!'.
-	self assert: status codeText = 'CANCELLED'.
+	self assert: status codeText equals: 'CANCELLED'.
 	self should: [status check] raise: Error.
 ! !
 
@@ -1837,34 +1837,34 @@ testStatusFinalizationReleasesExternalMemory
 
 	self assert: (handles asSet size) < 11.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:26'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 10:16:12'!
 testStatusGetMessage
 	| status message |
 	status _ TF_Status create.
 	
 	status code: 1 message: 'All is one'.
 	message _ status message.
-	self assert: message = 'All is one'.
+	self assert: message equals: 'All is one'.
 
 	status code: 7 message: 'Something is very seven'.
 	message _ status message.
-	self assert: message = 'Something is very seven'.
+	self assert: message equals: 'Something is very seven'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/4/2017 00:30:32'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 10:16:21'!
 testStatusSetGetCode
 	| status code |
 	status _ TF_Status create.
 	status code: 1 message: ''.
 	code _ status code.
-	self assert: code = 1.
+	self assert: code equals: 1.
 
 	status code: 2 message: ''.
 	code _ status code.
-	self assert: code = 2.
+	self assert: code equals: 2.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/5/2017 01:47:45'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:16:37'!
 testStringDecode
 	| size string encoded decoded status |
 	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
@@ -1881,10 +1881,10 @@ testStringDecode
 	decoded _ library stringDecode: encoded.
 
 	self deny: decoded = (string, '@').
-	self assert: decoded = string.
+	self assert: decoded equals: string.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/5/2017 03:22:45'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:16:53'!
 testStringEncode
 	| size string encoded encodedSize |
 	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
@@ -1894,12 +1894,12 @@ testStringEncode
 	encoded _ ByteArray new: size+20.
 	encodedSize _ library stringEncode: string to: encoded.
 	
-	self assert: encodedSize = size.
-	self assert: (encoded byteAt: 1) = string size.
-	self assert: (encoded structAt: 2 length: string size) asString = string.
+	self assert: encodedSize equals: size.
+	self assert: (encoded byteAt: 1) equals: string size.
+	self assert: (encoded structAt: 2 length: string size) asString equals: string.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/5/2017 03:21:54'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:17:11'!
 testStringEncodeExternal
 	| size string encoded encodedSize status |
 	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
@@ -1912,26 +1912,26 @@ testStringEncodeExternal
 	encodedSize _ library stringEncode: string len: string size destination: encoded len: size + 20 status: status.
 
 	status check.
-	self assert: encodedSize = size.
-	self assert: (encoded unsignedByteAt: 1) = string size.
-	self assert: (encoded structAt: 2 length: string size) asString = string.
+	self assert: encodedSize equals: size.
+	self assert: (encoded unsignedByteAt: 1) equals: string size.
+	self assert: (encoded structAt: 2 length: string size) asString equals: string.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/3/2017 09:43:15'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:17:31'!
 testStringSize
-	self assert: (library primStringEncodedSize: 0) = (0+1).
-	self assert: (library primStringEncodedSize: 127) = (127+1).
-	self assert: (library primStringEncodedSize: 128) = (128+2).
-	self assert: (library primStringEncodedSize: 127*127) = (127*127+2).
-	self assert: (library primStringEncodedSize: 127*127+123) = (127*127+123+2).
-	self assert: (library primStringEncodedSize: 127*127*127) = (127*127*127+3).
+	self assert: (library primStringEncodedSize: 0) equals: (0+1).
+	self assert: (library primStringEncodedSize: 127) equals: (127+1).
+	self assert: (library primStringEncodedSize: 128) equals: (128+2).
+	self assert: (library primStringEncodedSize: 127*127) equals: (127*127+2).
+	self assert: (library primStringEncodedSize: 127*127+123) equals: (127*127+123+2).
+	self assert: (library primStringEncodedSize: 127*127*127) equals: (127*127*127+3).
 
-	self assert: (library stringEncodedSize: '') = (0+1).
-	self assert: (library stringEncodedSize: (String new: 127)) = (127+1).
-	self assert: (library stringEncodedSize: (String new: 128)) = (128+2).
+	self assert: (library stringEncodedSize: '') equals: (0+1).
+	self assert: (library stringEncodedSize: (String new: 127)) equals: (127+1).
+	self assert: (library stringEncodedSize: (String new: 128)) equals: (128+2).
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 14:56:51'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:17:38'!
 testTensorAllStrings
 	| result strings expected |
 	
@@ -1939,27 +1939,27 @@ testTensorAllStrings
 	result _ self runFloatAsStringGraph.
 	strings _ result allStrings.
 	
-	self assert: strings = expected.
+	self assert: strings equals: expected.
 	
 	result delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/5/2017 23:36:44'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:17:42'!
 testTensorByteSize
 	| tensor |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
 		dimensions: #(2 3).
 
-	self assert: tensor byteSize = (8*2*3)! !
+	self assert: tensor byteSize equals: (8*2*3)! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 19:08:15'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:17:53'!
 testTensorData
 	| tensor |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
 		dimensions: #(2 3).
-	[	self assert: tensor numberOfDimensions = 2.
+	[	self assert: tensor numberOfDimensions equals: 2.
 		self deny: tensor data getHandle asInteger = 0.
 		self deny: tensor data getHandle isNil.
 	] ensure: [tensor delete].
@@ -1981,55 +1981,55 @@ testTensorDimensions1D
 testTensorDimensions2D
 	^ self testTensorDimensions: #(1 4)! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 14:42:34'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:05'!
 testTensorDimensions: anArray
 	| tensor dimensions size |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
 		dimensions: anArray.
-	self assert: tensor numberOfDimensions = anArray size.
+	self assert: tensor numberOfDimensions equals: anArray size.
 	anArray withIndexDo: [:each :index |
-		self assert: (tensor sizeOn: index - 1) = (anArray at: index)].
+		self assert: (tensor sizeOn: index - 1) equals: (anArray at: index)].
 	dimensions _ tensor dimensions.
 	size _ anArray isEmpty
 		ifTrue: [1]
 		ifFalse: [anArray product].
-	self assert: dimensions = anArray.
-	self assert: tensor size = size.
+	self assert: dimensions equals: anArray.
+	self assert: tensor size equals: size.
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/6/2017 15:31:51'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:11'!
 testTensorFromInt64Array
 	| tensor template values |
 	template _ #(16r1234567812345678 0 -12345678910111213).
 	tensor _ TF_Tensor fromInt64Array: template.
 	values _ tensor allInt64s.
 	
-	self assert: tensor dimensions = #(3).
-	self assert: tensor size = 3.
-	self assert: tensor byteSize = (3*8).
-	self assert: template = values.
+	self assert: tensor dimensions equals: #(3).
+	self assert: tensor size equals: 3.
+	self assert: tensor byteSize equals: (3*8).
+	self assert: template equals: values.
 	
 	tensor delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 03:59:31'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:18:17'!
 testTensorFromString
 	| tensor template |
 	template _ 'hola manola'.
 	
 	tensor _ TF_Tensor fromString: template.
 	
-	self assert: tensor dataBytes first = template size.
-	self assert: tensor dataBytes allButFirst asString = template.! !
+	self assert: tensor dataBytes first equals: template size.
+	self assert: tensor dataBytes allButFirst asString equals: template.! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 03:39:10'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:18:23'!
 testTensorFromStringArray
 	| tensor template |
 	template _ #('hola manola' 'te traje una lola' 'pamela' 'que pandulce!!').
 	
 	tensor _ TF_Tensor fromStringArray: template.
 	
-	self assert: tensor allStrings = template.! !
+	self assert: tensor allStrings equals: template.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/28/2016 00:13:25'!
 testTensorNewScalar
@@ -2039,19 +2039,19 @@ testTensorNewScalar
 	tensor delete.
 	self assert: tensor isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/27/2016 11:55:58'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:31'!
 testTensorType
 	| tensor |
 	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
-	self assert: tensor type == tensor class typeInt64.
+	self assert: tensor type equals: tensor class typeInt64.
 	tensor delete.
 
 	tensor _ TF_Tensor type: TF_Tensor typeFloat dimensions: #().
-	self assert: tensor type == tensor class typeFloat.
+	self assert: tensor type equals: tensor class typeFloat.
 	tensor delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/2/2017 19:50:32'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:51'!
 testTensorTypes
 	| types |
 	types _ #(
@@ -2076,7 +2076,7 @@ testTensorTypes
 		Half 19
 		Resource 20).
 	types pairsDo: [:name :value |
-		self assert: (TF_Tensor perform: (#type, name) asSymbol) = value]! !
+		self assert: (TF_Tensor perform: (#type, name) asSymbol) equals: value]! !
 
 !TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/11/2017 14:12:47'!
 testVersion
