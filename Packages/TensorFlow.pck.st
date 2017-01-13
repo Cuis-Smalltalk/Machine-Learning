@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 11:18:29 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 12:46:19 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 160!
+!provides: 'TensorFlow' 1 161!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -237,7 +237,7 @@ testArray: anExternalWordArraySubclass sampleElement: anObject
 		self assert: ((array at: index) isKindOf: anObject class)].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:07'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:17:48'!
 testArrayAtPutFor: anExternalWordArraySubclass elementSample: anObject
 	| array size one  |
 	size _ 4.
@@ -245,17 +245,17 @@ testArrayAtPutFor: anExternalWordArraySubclass elementSample: anObject
 	one _ array first.
 	
 	array first: anObject.
-	self assert: array first = anObject.
+	self assert: array first equals: anObject.
 	self assert: (array first isKindOf: anObject class).
 	array first: one.
-	self assert: array first = one.
+	self assert: array first equals: one.
 		
 	1 to: size do: [:index |
 		array at: index put: anObject.
-		self assert: (array at: index) = anObject.
+		self assert: (array at: index) equals: anObject.
 		self assert: ((array at: index) isKindOf: anObject class).
 		array at: index put: one.
-		self assert: (array at: index) = one.
+		self assert: (array at: index) equals: one.
 	]
 	! !
 
