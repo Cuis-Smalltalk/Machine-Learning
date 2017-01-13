@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 12:50:51 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 1:14:20 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 162!
+!provides: 'TensorFlow' 1 164!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -259,40 +259,38 @@ testArrayAtPutFor: anExternalWordArraySubclass elementSample: anObject
 	]
 	! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 17:49:24'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 13:08:20'!
 testExternalFromArrayOperation
 	| op1 op2 array |
 	op1 _ TF_Operation fromHandle: (ExternalAddress new + 11111).
 	op2 _ TF_Operation fromHandle: (ExternalAddress new + 22222).
 	array _ TF_OperationPtrArray externalFromArray: (Array with: op1 with: op2).
-	[
+
 	self assert: array first getHandle = op1 getHandle.
 	self assert: (array at: 2) getHandle = op2 getHandle.
-	] ensure: [array free].! !
+! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 17:57:33'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 13:08:25'!
 testExternalFromArrayOutput
 	| o1 o2 array |
 	o1 _ TF_Output new index: 16r8070605040302010.
 	o2 _ TF_Output new index: 16rFEDCBA9876543210.
 	array _ TF_OutputArray externalFromArray: (Array with: o1 with: o2).
-	[
+
 	self assert: array first index = o1 index.
 	self assert: (array at: 2) index = o2 index.
-	] ensure: [
-		array free].! !
+! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:16:32'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 13:08:14'!
 testExternalFromArrayTensor
 	| t1 t2 array |
 	t1 _ TF_Tensor fromInt64: 16r8070605040302010.
 	t2 _ TF_Tensor fromInt64: 16rFEDCBA9876543210.
 	array _ TF_TensorPtrArray externalFromArray: (Array with: t1 with: t2).
-	[
+	
 	self assert: array first getHandle = t1 getHandle.
 	self assert: (array at: 2) getHandle = t2 getHandle.
-	] ensure: [
-		array free].! !
+	! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:46:04'!
 testOperationArrayAtPut
@@ -399,7 +397,7 @@ testUIn64ArrayfromArray
 	self testUIn64ArrayfromArray: #(16r12345678 2 16r76543210 4 16rDEADBEAF 6 16rFFFFFFFF).
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 18:11:45'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 13:08:30'!
 testUIn64ArrayfromArray: template
 	| array |
 	array _ Int64Array externalFromArray: template.
@@ -407,8 +405,7 @@ testUIn64ArrayfromArray: template
 	template withIndexDo: [:each :index |
 		self assert: ((template at: index) = (array at: index))
 	].
-
-	array free.! !
+! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 18:13:43'!
 testUInt64ArrayAtPut
@@ -2637,9 +2634,12 @@ externalFromArray: anArray
 externalNew
 	^ self shouldNotImplement! !
 
-!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:10'!
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 13:11:46'!
 externalNew: count
-	^self fromHandle: (ExternalAddress allocate: self byteSize * count)! !
+	| address answer |
+	address _ ExternalAddress gcallocate: self byteSize * count.
+	answer _ self fromHandle: address.
+	^ answer! !
 
 !ExternalWordArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
 fields
@@ -3087,20 +3087,21 @@ printOn: strm
 			space;
 			print: self name]! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/11/2017 23:37:29'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/13/2017 13:14:12'!
 shapeAt: nameString
 	| value status size answer |
 	size _ (self attrMetadata: nameString) totalSize.
 	status _ TF_Status create.
 	value _ Int64Array externalNew: size.
+	
 	self library
 		operation: self
 		attr: nameString asAsciiZ
 		getShape: value
 		size: size
 		status: status.
+		
 	answer _ (1 to: size) collect: [:i | value at: i].
-	value free. 		
 	status check.
 	^ answer! !
 
@@ -3158,16 +3159,14 @@ addInputFromOutput: indexInteger of: aTF_Operation
 		addInput: input
 	] ensure: [input free]! !
 
-!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/2/2017 12:36:18'!
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/13/2017 13:08:59'!
 addInputs: anArrayOfTF_Output
 	| inputs |
 	inputs _ TF_OutputArray externalFromArray: anArrayOfTF_Output.
-	[self library
+	self library
 		description: self
 		addInputs: inputs
-		size: anArrayOfTF_Output size.
-	] ensure: [inputs free].
-! !
+		size: anArrayOfTF_Output size.! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:53:37'!
 at: attribute putBoolean: value
@@ -3192,7 +3191,7 @@ at: attribute putInt: value
 		set: attribute asAsciiZ
 		toInt64: value! !
 
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 20:54:59'!
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/13/2017 13:09:06'!
 at: attribute putShape: anIntegerArray
 	| status value |
 	value _ Int64Array externalFromArray: anIntegerArray.
@@ -3202,7 +3201,6 @@ at: attribute putShape: anIntegerArray
 		set: attribute asAsciiZ
 		toShape: value
 		size: anIntegerArray size.
-	value free.
 	status check.! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 20:57:22'!
@@ -3334,7 +3332,7 @@ run
 runOperation: aTF_Operation
 	^self runOperations: (Array with: aTF_Operation)! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:16:45'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:09:21'!
 runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output: outTF_Output
 	| inputs invalues operations outputs outvalues tensor |
 	inputs _ Array with: inTF_OutputOrInput.
@@ -3342,41 +3340,39 @@ runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output:
 	outputs _ Array with: outTF_Output.
 	operations _ Array with: aTF_Operation.
 	
-	[	outvalues _ self runOperations: operations inputs: inputs values: invalues outputs: outputs.
-		tensor _ outvalues first]
-	ensure: [
-		outvalues free].
+	outvalues _ self runOperations: operations inputs: inputs values: invalues outputs: outputs.
+	tensor _ outvalues first.
 	^ tensor
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 16:06:49'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:09:51'!
 runOperation: aTF_Operation output: aTF_Output
 	| operations  answer outputs |
 	operations _ TF_OperationPtrArray externalNew: 1.
 	outputs _ TF_OutputArray externalNew: 1.
 	outputs first: aTF_Output.
-	[	operations first: aTF_Operation.	
-		answer _ self runOperations: operations outputs: outputs size: 1
-	] ensure: [
-		outputs free.
-		operations free].
+	
+	operations first: aTF_Operation.	
+	answer _ self runOperations: operations outputs: outputs size: 1.
+
 	^ answer! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:35'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:00'!
 runOperations: anArrayOfTF_Operations
 	| status operations |
 	status _ TF_Status create.
 	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTF_Operations.
-	[self library
+	
+	self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
 		outputs: nil values: nil count: 0
 		targets: operations count: anArrayOfTF_Operations size
 		metadata: nil status: status.
-	status check] ensure: [
-		operations free].! !
+	status check
+	! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:40'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:39'!
 runOperations: anArrayOfTF_Operations inputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
 	| operations inputs invalues outputs outvalues status |
 	status _ TF_Status create.
@@ -3386,34 +3382,32 @@ runOperations: anArrayOfTF_Operations inputs: inArrayOfTF_Outputs values: inArra
 	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
 	outvalues _ TF_TensorPtrArray new: outArrayOfTF_Outputs size.
 	
-	[self library
+	self library
 		runSession: self options: nil
 		inputs: inputs values: invalues count: inArrayOfTF_Outputs size
 		outputs: outputs values: outvalues count: outArrayOfTF_Outputs size
 		targets: operations count: anArrayOfTF_Operations size
 		metadata: nil status: status.
-	status check] ensure: [
-		operations free.
-		invalues free.
-		inputs free.
-		outputs free].
+		
+	status check.
 	^ outvalues
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:44'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:35'!
 runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 	| status outvalues tensor |
 	status _ TF_Status create.
 	outvalues _ TF_TensorPtrArray new: anInteger.
-	[self library
+	
+	self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
 		outputs: aTF_OutputArray values: outvalues count: anInteger
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
+		
 	tensor _ outvalues first.
-	status check] ensure: [
-		outvalues free].
+	status check.
 	^ tensor! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:27:48'!
@@ -3738,7 +3732,7 @@ type: anInteger dimensions: anIntegerArray
 	^self type: anInteger dimensions: anIntegerArray bytesize: bytesize
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 12:16:17'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 13:10:55'!
 type: anInteger dimensions: anIntegerArray bytesize: bytesizeInteger
 	" I understand dimenssions are:
 		#()		-> Scalar
@@ -3751,11 +3745,12 @@ type: anInteger dimensions: anIntegerArray bytesize: bytesizeInteger
 	| externalized answer |
 	externalized _ Int64Array externalFromArray: anIntegerArray.
 		
-	[answer _ TensorFlowCAPI current
+	answer _ TensorFlowCAPI current
 		allocateTensorType: anInteger
 		dimensions: externalized
 		dimensionsCount: anIntegerArray size
-		length: bytesizeInteger] ensure: [externalized free].
+		length: bytesizeInteger.
+	
 	answer useFinalization.
 	^ answer
 ! !
