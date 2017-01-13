@@ -3496,12 +3496,11 @@ fromInt64: value
 	answer data getHandle signedLongLongAt: 1 put: value.
 	^ answer! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/6/2017 15:24:39'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:21:48'!
 fromInt64Array: values
 	| answer |
 	answer _ self type: self typeInt64 dimensions: {values size}.
-	values withIndexDo: [:value :index |
-		answer data getHandle signedLongLongAt: index-1*8 + 1 put: value].
+	self int64Array: values into: answer data getHandle.
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:56:12'!
@@ -3516,6 +3515,12 @@ fromString: aString
 		to: answer data getHandle + 8
 		size: bytesize.
 	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:21:11'!
+int64Array: values into: anExternalAddressOrByteArray
+	values withIndexDo: [:value :index |
+		anExternalAddressOrByteArray signedLongLongAt: index-1*8 + 1 put: value].
+! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/2/2017 23:30:33'!
 sizeForType: anInteger
