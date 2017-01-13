@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 12 January 2017 at 6:46:30 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 2:05:00 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 145!
+!provides: 'TensorFlow' 1 146!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2317,11 +2317,17 @@ stringEncode: srcString len: srcLen destination: dstString len: dstLen status: s
 	^ self externalCallFailed
 ! !
 
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/4/2017 19:02:26'!
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/13/2017 01:50:35'!
 stringEncode: src to: dst
+	^ self stringEncode: src to: dst size: dst size
+
+! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/13/2017 01:50:12'!
+stringEncode: src to: dst size: dstSize
 	| status answer |
 	status _ TF_Status create.
-	answer _ self stringEncode: src len: src size destination: dst len: dst size status: status.
+	answer _ self stringEncode: src len: src size destination: dst len: dstSize status: status.
 	status check.
 	^ answer
 ! !
@@ -3433,6 +3439,19 @@ fromInt64Array: values
 		answer data getHandle signedLongLongAt: index-1*8 + 1 put: value].
 	^ answer! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:56:12'!
+fromString: aString
+	| answer bytesize |
+	bytesize _ TensorFlowCAPI current stringEncodedSize: aString.
+	bytesize _ bytesize + 8. "forcing a one element array"
+	answer _ self type: self typeString dimensions: #(1) bytesize: bytesize.
+	answer data getHandle unsignedLongLongAt: 1 put: 0.
+	TensorFlowCAPI current
+		stringEncode: aString
+		to: answer data getHandle + 8
+		size: bytesize.
+	^ answer! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/2/2017 23:30:33'!
 sizeForType: anInteger
 	anInteger = self typeFloat ifTrue: [^8].
@@ -3476,7 +3495,7 @@ sizeForType: anInteger
 
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/27/2016 19:13:03'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:42:58'!
 type: anInteger dimensions: anIntegerArray
 	" I understand dimenssions are:
 		#()		-> Scalar
@@ -3486,17 +3505,30 @@ type: anInteger dimensions: anIntegerArray
 		etc.
 	"
 		
-	| externalized answer byteSize elementSize |
-	externalized _ Int64Array externalFromArray: anIntegerArray.
+	| bytesize elementSize |
 	elementSize _ self sizeForType: anInteger.
-	byteSize _ anIntegerArray inject: elementSize into: [:prev :each | prev * each].
-	self assert: byteSize ~= 0.
+	bytesize _ anIntegerArray inject: elementSize into: [:prev :each | prev * each].
+	^self type: anInteger dimensions: anIntegerArray bytesize: bytesize
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:42:22'!
+type: anInteger dimensions: anIntegerArray bytesize: bytesizeInteger
+	" I understand dimenssions are:
+		#()		-> Scalar
+		#(7)		-> Unidimensional array of 7 elements
+		#(7 4)		-> 7x4 elements matrix
+		#(2 5 9)	-> 2x5x9 elements cube
+		etc.
+	"
+		
+	| externalized answer |
+	externalized _ Int64Array externalFromArray: anIntegerArray.
 		
 	[answer _ TensorFlowCAPI current
 		allocateTensorType: anInteger
 		dimensions: externalized
 		dimensionsCount: anIntegerArray size
-		length: byteSize] ensure: [externalized free].
+		length: bytesizeInteger] ensure: [externalized free].
 	^ answer
 ! !
 
