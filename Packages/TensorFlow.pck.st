@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 10:43:54 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 13 January 2017 at 10:55:16 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 157!
+!provides: 'TensorFlow' 1 158!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1997,6 +1997,19 @@ testTensorDimensions: anArray
 	self assert: dimensions equals: anArray.
 	self assert: tensor size equals: size.
 	tensor delete.! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:49:04'!
+testTensorFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles template size |
+	size _ 100.
+	template _ {String new: 10. String new: 100. String new: 1000}.
+	
+	handles _ (1 to: size) collect: [:i |
+		Smalltalk garbageCollect.
+		(TF_Tensor fromStringArray: template) useFinalization getHandle].
+
+	self assert: (handles asSet size) < size.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:11'!
 testTensorFromInt64Array
