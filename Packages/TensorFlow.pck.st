@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 14 January 2017 at 12:25:17 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 15 January 2017 at 6:28:14 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 167!
+!provides: 'TensorFlow' 1 168!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -210,6 +210,16 @@ TF_Structure subclass: #TF_Tensor
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TF_Tensor class' category: #'TensorFlow-Kernel'!
 TF_Tensor class
+	instanceVariableNames: ''!
+
+!classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
+Object subclass: #NearestNeighbor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'NearestNeighbor class' category: #'TensorFlow-Examples'!
+NearestNeighbor class
 	instanceVariableNames: ''!
 
 
@@ -2117,6 +2127,22 @@ testTensorFinalizationReleasesExternalMemory
 
 	self assert: (handles asSet size) < size.! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'jb 1/15/2017 18:26:51'!
+testTensorFromFloatArray
+	| tensor template values eps joint |
+	template _ #(1.23456 0.0 -1.234567).
+	tensor _ TF_Tensor fromFloatArray: template.
+	values _ tensor allFloats.
+	
+	eps _ 0.00005.
+	
+	self assert: tensor dimensions equals: #(3).
+	self assert: tensor size equals: 3.
+	self assert: tensor byteSize equals: (3*4).
+	joint _ template @ values.
+	joint do:[:point| self assert: (point x - point y) abs < eps]
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
 testTensorFromInt64Array
 	| tensor template values |
@@ -2730,7 +2756,7 @@ elementAtOffset: byteOffset
 elementAtOffset: byteOffset put: anExternalStructure
 	handle structAt: byteOffset put: anExternalStructure getHandle length: 16.! !
 
-!TF_OutputArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:48'!
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:50:48'!
 elementClass
 	^TF_Output! !
 
@@ -3574,15 +3600,30 @@ create
 persistent
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 15:32:08'!
-allInt64s
-	| total answer data |
+!TF_Tensor methodsFor: 'converting' stamp: 'jb 1/15/2017 18:07:40'!
+allFloats
+	| total answer data byteSize |
 	total _ self size.
 	answer _ WriteStream on: (Array new: total).
 	data _ self data getHandle.
+	byteSize _ self class sizeForType: self class typeFloat.
 	1 to: total do: [:i |
 		| value |
-		value _ data signedLongLongAt: i-1*8+1..
+		value _ data floatAt: i-1*byteSize+1.
+		answer nextPut: value].
+	
+	^ answer contents! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'jb 1/15/2017 18:02:38'!
+allInt64s
+	| total answer data byteSize |
+	total _ self size.
+	answer _ WriteStream on: (Array new: total).
+	data _ self data getHandle.
+	byteSize _ self class sizeForType: self class typeInt64.
+	1 to: total do: [:i |
+		| value |
+		value _ data signedLongLongAt: i-1*byteSize+1..
 		answer nextPut: value].
 	
 	^ answer contents! !
@@ -3662,6 +3703,21 @@ elementsOfTensor: aMultidimensionalTensor do: oneArgBlock
 				self elementsOfTensor: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 18:00:10'!
+floatArray: values into: anExternalAddressOrByteArray
+	| size |
+	size _ self sizeForType: self typeFloat.
+	values withIndexDo: [:value :index |
+		anExternalAddressOrByteArray floatAt: index-1*size + 1 put: value].
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 17:36:36'!
+fromFloatArray: values
+	| answer |
+	answer _ self type: self typeFloat dimensions: {values size}.
+	self floatArray: values into: answer data getHandle.
+	^ answer! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
 fromInt32: value
 	| answer |
@@ -3725,10 +3781,12 @@ fromStringArray: aStringArray
 	^ answer
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:21:11'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 18:00:51'!
 int64Array: values into: anExternalAddressOrByteArray
+	| size |
+	size _ self sizeForType: self typeInt64.
 	values withIndexDo: [:value :index |
-		anExternalAddressOrByteArray signedLongLongAt: index-1*8 + 1 put: value].
+		anExternalAddressOrByteArray signedLongLongAt: index-1*size + 1 put: value].
 ! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 19:45:52'!
@@ -3737,9 +3795,9 @@ rankOf: aMultidimensionalTensor
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/2/2017 23:30:33'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 17:55:27'!
 sizeForType: anInteger
-	anInteger = self typeFloat ifTrue: [^8].
+	anInteger = self typeFloat ifTrue: [^4].
 	anInteger = self typeInt64 ifTrue: [^8].
 	anInteger = self typeInt32 ifTrue: [^4].
 
@@ -3902,5 +3960,80 @@ typeUInt16
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:40'!
 typeUInt8
 	^4! !
+
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:46:40'!
+decodeCSV: csvLines GraphRun: description
+	|  graph output records session results values answer |
+		
+	graph _ self decodeCSVGraphDefaults: description.
+	records _ (graph operationNamed: 'records') input: 0.
+	output _ graph operationNamed: 'output'.
+	values _ TF_Tensor fromStringArray: csvLines.
+	
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOperations: {output}
+		inputs: {records}
+		values: {values}
+		outputs: {
+			(output output: 0).
+			(output output: 1).
+			(output output: 2).
+			(output output: 3).
+			(output output: 4)}.
+		
+	graph delete.
+	
+	answer _ (1 to: 4) asOrderedCollection collect: [:i |
+		(results at: i) allFloats].
+	^ answer add: (results at: 5) allInt64s; yourself.! !
+
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:19:41'!
+decodeCSVGraphDefaults: anArrayOfTF_Tensors
+	| graph records defaults |
+	
+	graph _ TF_Graph create.
+	records _ (graph placeholder: 'records' type: TF_Tensor typeString) output: 0.
+	defaults _ Array new: anArrayOfTF_Tensors size.
+	
+	anArrayOfTF_Tensors withIndexDo: [:each :index |
+		| one |
+		one _ (graph const: 'default',index printString value: each) output: 0.
+		defaults at: index put: one].
+	graph newOperation: 'DecodeCSV' named: 'output' described: [:description |
+		description addInput: records.
+		description addInputs: defaults].
+	
+	^ graph! !
+
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:38:16'!
+irisDescription
+	^{TF_Tensor fromFloatArray: #(-1.0).
+		TF_Tensor fromFloatArray: #(-1.0).
+		TF_Tensor fromFloatArray: #(-1.0).
+		TF_Tensor fromFloatArray: #(-1.0).
+		TF_Tensor fromInt64Array: #(-1)}! !
+
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/14/2017 10:57:06'!
+irisFile
+	^ 'Machine-Learning/datasets/iris.csv' asFileEntry readStream.! !
+
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:14:18'!
+testingAndTrainingFrom: stream
+	| p random testing training lines |
+	lines _ stream upToEnd lines.
+	p _ 0.7.
+	training _ OrderedCollection new.
+	testing _ OrderedCollection new.
+	random _ Random  new.
+	lines collect:[:line| | collection | collection _ random next < p ifTrue:[training] ifFalse:[testing].
+							collection add: line].
+	^ {training. testing}
+						
+! !
+
+!NearestNeighbor class methodsFor: 'as yet unclassified' stamp: 'jb 1/14/2017 10:57:37'!
+irisFile
+	^ 'Machine-Learning/datasets/iris.csv' asFileEntry readStream.! !
 TF_Structure initialize!
 TF_AttrMetadata initialize!
