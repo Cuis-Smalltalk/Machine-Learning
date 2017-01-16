@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 15 January 2017 at 6:28:14 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 15 January 2017 at 11:14:12 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 168!
 !requires: 'FFI' 1 18 nil!
@@ -4006,6 +4006,21 @@ decodeCSVGraphDefaults: anArrayOfTF_Tensors
 	
 	^ graph! !
 
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 22:47:46'!
+extractTensor: multiArray
+	| answer flatten |
+	answer _ TF_Tensor
+		type: TF_Tensor typeFloat
+		dimensions: {multiArray size - 1. multiArray first size}.
+	flatten _ OrderedCollection new.
+	multiArray allButLast do: [ :col |
+		col do: [ :x |
+			flatten add: x ]].
+	TF_Tensor
+		floatArray: flatten
+		into: answer data getHandle.
+	^ answer.! !
+
 !NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:38:16'!
 irisDescription
 	^{TF_Tensor fromFloatArray: #(-1.0).
@@ -4018,19 +4033,86 @@ irisDescription
 irisFile
 	^ 'Machine-Learning/datasets/iris.csv' asFileEntry readStream.! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:14:18'!
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 23:13:06'!
+run
+	| stream lines tr te outputTr outputTe covariatesTr covariatesTe predictions size |
+	stream _ self irisFile.
+	stream nextLine.
+	lines _ self testingAndTrainingFrom: stream.
+	tr _ lines at: 1.
+	te _ lines at: 2.
+	outputTr _ self
+		decodeCSV: tr
+		GraphRun: self irisDescription.
+	outputTe _ self
+		decodeCSV: te
+		GraphRun: self irisDescription.
+	covariatesTr _ self extractTensor: outputTr.
+	size _ outputTe first size.
+	predictions _ (1 to: size) collect: [ :i | | covariates index predicted results trueValue |
+		covariates _ outputTe collect:[:col| {col at: i}].
+		covariatesTe _ self extractTensor: covariates.
+		results _ self
+			runGraphUsing: covariatesTr
+			and: covariatesTe.
+		index _ results first + 1.
+		trueValue _ covariates fifth first.
+		predicted _ outputTr fifth at: index.
+		trueValue = predicted
+			ifTrue: [ 1 ]
+			ifFalse: [ 0 ]].
+	^ predictions.! !
+
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 22:57:42'!
+runGraphUsing: training and: testing
+	| graph tr te neg add session result abs axis outputs axisValue distance prediction results |
+	graph _ TF_Graph create.
+	tr _ graph placeholder: 'tr' type: TF_Tensor typeFloat.
+	te _ graph placeholder: 'te' type: TF_Tensor typeFloat.
+	axisValue _ TF_Tensor fromInt32: 0.
+	axis _ graph const: 'axis' value: axisValue.
+	neg _ graph newOperation: 'Neg' named: 'neg' described: [:description |
+		description addInput: (te output: 0)].
+	add _ graph add: 'add' described:[:description| 
+		description addInput: (neg output: 0).
+		description addInput: (tr output: 0).
+		].
+	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description|
+		description addInput: (add output: 0)].
+	distance _ graph newOperation: 'Sum' named: 'distance' described: [:description|
+		description addInput: (abs output: 0).
+		description addInput: (axis output: 0).].
+	
+	prediction _ graph newOperation: 'ArgMin' named: 'argmin' described:[:description|
+		description addInput: (distance output: 0).
+		description addInput: (axis output: 0)].
+	
+	session _ TF_Session onGraph: graph.
+	outputs _ {prediction output: 0}.
+	
+	results _ session
+		runOperations: {prediction}
+		inputs: (Array with: (tr input: 0) with: (te input: 0))
+		values: (Array with: training with: testing)
+		outputs: outputs.
+	result _ results at: 1.
+	^result allInt64s ! !
+
+!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 19:13:00'!
 testingAndTrainingFrom: stream
 	| p random testing training lines |
 	lines _ stream upToEnd lines.
 	p _ 0.7.
 	training _ OrderedCollection new.
 	testing _ OrderedCollection new.
-	random _ Random  new.
-	lines collect:[:line| | collection | collection _ random next < p ifTrue:[training] ifFalse:[testing].
-							collection add: line].
-	^ {training. testing}
-						
-! !
+	random _ Random new.
+	lines collect: [ :line | | collection |
+		line isEmpty ifFalse: [
+			collection _ random next < p
+				ifTrue: [ training ]
+				ifFalse: [ testing ].
+			collection add: line ]].
+	^ {training. testing}.! !
 
 !NearestNeighbor class methodsFor: 'as yet unclassified' stamp: 'jb 1/14/2017 10:57:37'!
 irisFile
