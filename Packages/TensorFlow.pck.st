@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 15 January 2017 at 11:14:12 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 15 January 2017 at 11:34:55 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 168!
+!provides: 'TensorFlow' 1 169!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3961,8 +3961,8 @@ typeUInt16
 typeUInt8
 	^4! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:46:40'!
-decodeCSV: csvLines GraphRun: description
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
+decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
 		
 	graph _ self decodeCSVGraphDefaults: description.
@@ -3988,7 +3988,7 @@ decodeCSV: csvLines GraphRun: description
 		(results at: i) allFloats].
 	^ answer add: (results at: 5) allInt64s; yourself.! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:19:41'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 17:19:41'!
 decodeCSVGraphDefaults: anArrayOfTF_Tensors
 	| graph records defaults |
 	
@@ -4006,7 +4006,7 @@ decodeCSVGraphDefaults: anArrayOfTF_Tensors
 	
 	^ graph! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 22:47:46'!
+!NearestNeighbor methodsFor: 'private' stamp: 'jb 1/15/2017 22:47:46'!
 extractTensor: multiArray
 	| answer flatten |
 	answer _ TF_Tensor
@@ -4021,7 +4021,7 @@ extractTensor: multiArray
 		into: answer data getHandle.
 	^ answer.! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 17:38:16'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 17:38:16'!
 irisDescription
 	^{TF_Tensor fromFloatArray: #(-1.0).
 		TF_Tensor fromFloatArray: #(-1.0).
@@ -4029,41 +4029,45 @@ irisDescription
 		TF_Tensor fromFloatArray: #(-1.0).
 		TF_Tensor fromInt64Array: #(-1)}! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/14/2017 10:57:06'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/14/2017 10:57:06'!
 irisFile
 	^ 'Machine-Learning/datasets/iris.csv' asFileEntry readStream.! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 23:13:06'!
-run
-	| stream lines tr te outputTr outputTe covariatesTr covariatesTe predictions size |
+!NearestNeighbor methodsFor: 'initialization' stamp: 'jb 1/15/2017 23:28:54'!
+loadDataSet
+	| dataSet description stream |
 	stream _ self irisFile.
 	stream nextLine.
-	lines _ self testingAndTrainingFrom: stream.
-	tr _ lines at: 1.
-	te _ lines at: 2.
-	outputTr _ self
-		decodeCSV: tr
-		GraphRun: self irisDescription.
-	outputTe _ self
-		decodeCSV: te
-		GraphRun: self irisDescription.
-	covariatesTr _ self extractTensor: outputTr.
-	size _ outputTe first size.
+	dataSet _ self testingAndTrainingFrom: stream.
+	description _ self irisDescription.
+	^ dataSet collect: [ :csv |
+		self
+			decodeCSV: csv
+			graphRun: description ].! !
+
+!NearestNeighbor methodsFor: 'running' stamp: 'jb 1/15/2017 23:31:05'!
+run
+	| covariatesTr covariatesTe predictions size dataset testing training |
+	dataset _ self loadDataSet.
+	training _ dataset first.
+	testing _ dataset second.
+	covariatesTr _ self extractTensor: training.
+	size _ testing first size.
 	predictions _ (1 to: size) collect: [ :i | | covariates index predicted results trueValue |
-		covariates _ outputTe collect:[:col| {col at: i}].
+		covariates _ testing collect:[:col| {col at: i}].
 		covariatesTe _ self extractTensor: covariates.
 		results _ self
 			runGraphUsing: covariatesTr
 			and: covariatesTe.
 		index _ results first + 1.
 		trueValue _ covariates fifth first.
-		predicted _ outputTr fifth at: index.
+		predicted _ training fifth at: index.
 		trueValue = predicted
 			ifTrue: [ 1 ]
 			ifFalse: [ 0 ]].
 	^ predictions.! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 22:57:42'!
+!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/15/2017 22:57:42'!
 runGraphUsing: training and: testing
 	| graph tr te neg add session result abs axis outputs axisValue distance prediction results |
 	graph _ TF_Graph create.
@@ -4098,7 +4102,7 @@ runGraphUsing: training and: testing
 	result _ results at: 1.
 	^result allInt64s ! !
 
-!NearestNeighbor methodsFor: 'as yet unclassified' stamp: 'jb 1/15/2017 19:13:00'!
+!NearestNeighbor methodsFor: 'sampling' stamp: 'jb 1/15/2017 19:13:00'!
 testingAndTrainingFrom: stream
 	| p random testing training lines |
 	lines _ stream upToEnd lines.
