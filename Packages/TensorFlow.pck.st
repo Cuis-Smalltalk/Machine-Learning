@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 16 January 2017 at 11:12:45 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 16 January 2017 at 11:16:40 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 172!
+!provides: 'TensorFlow' 1 173!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4023,10 +4023,11 @@ extractTensor: multiArray
 initialize
 	self initializeGraph! !
 
-!NearestNeighbor methodsFor: 'graph' stamp: 'gera 1/16/2017 23:08:59'!
+!NearestNeighbor methodsFor: 'graph' stamp: 'gera 1/16/2017 23:15:48'!
 initializeGraph
 	| tr te neg add abs axis axisValue distance |
-	graph _ TF_Graph create.
+	graph _ TF_Graph create useFinalization.
+	
 	tr _ graph placeholder: 'tr' type: TF_Tensor typeFloat.
 	te _ graph placeholder: 'te' type: TF_Tensor typeFloat.
 	axisValue _ TF_Tensor fromInt32: 0.
