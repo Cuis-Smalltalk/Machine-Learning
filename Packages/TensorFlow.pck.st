@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3035] on 16 January 2017 at 10:18:49 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3035] on 16 January 2017 at 10:43:06 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 174!
+!provides: 'TensorFlow' 1 175!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
@@ -4075,20 +4075,20 @@ extractTensor: multiArray
 initialize
 	self initializeGraph! !
 
-!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/16/2017 22:15:31'!
+!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/16/2017 22:42:34'!
 initializeGraph
-	| tr te neg add abs axis axisValue distance |
+	| neg add abs axis axisValue distance testing training |
 	graph _ TF_Graph create useFinalization.
 	
-	tr _ graph placeholder: 'tr' type: TF_Tensor typeFloat.
-	te _ graph placeholder: 'te' type: TF_Tensor typeFloat.
+	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
+	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
 	axisValue _ TF_Tensor fromInt32: 0.
 	axis _ graph const: 'axis' value: axisValue.
 	neg _ graph newOperation: 'Neg' named: 'neg' described: [:description |
-		description addInput: (te output: 0)].
+		description addInput: (testing output: 0)].
 	add _ graph add: 'add' described:[:description| 
 		description addInput: (neg output: 0).
-		description addInput: (tr output: 0).
+		description addInput: (training output: 0).
 		].
 	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description|
 		description addInput: (add output: 0)].
@@ -4101,7 +4101,7 @@ initializeGraph
 		description addInput: (axis output: 0)].
 	
 	outputs _ {prediction output: 0}.
-	inputs _ {tr input: 0. te input: 0}.! !
+	inputs _ {training input: 0. testing input: 0}.! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 17:38:16'!
 irisDescription
