@@ -1,17 +1,7 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3035] on 16 January 2017 at 10:43:06 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 17 January 2017 at 4:36:04 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 175!
+!provides: 'TensorFlow' 1 176!
 !requires: 'FFI' 1 18 nil!
-!classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
-TestCase subclass: #TensorFlowExamplesTest
-	instanceVariableNames: 'nn'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Examples'!
-!classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
-TensorFlowExamplesTest class
-	instanceVariableNames: ''!
-
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
 	instanceVariableNames: 'library'
@@ -30,6 +20,16 @@ TestCase subclass: #TensorFlowCAPITest
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TensorFlowCAPITest class' category: #'TensorFlow-Kernel'!
 TensorFlowCAPITest class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
+TestCase subclass: #TensorFlowExamplesTest
+	instanceVariableNames: 'nn'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
+TensorFlowExamplesTest class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowCAPI category: #'TensorFlow-Kernel'!
@@ -245,48 +245,6 @@ useFinalization
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
 	^self, Character null asString! !
-
-!TensorFlowExamplesTest methodsFor: 'initialization' stamp: 'jb 1/16/2017 22:05:43'!
-setUp
-	nn _ NearestNeighbor new.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'jb 1/16/2017 22:05:03'!
-tensorFrom: points
-	| dimensions transposed |
-	dimensions _ points first size.
-	transposed _ OrderedCollection new.
-	(1 to: dimensions) do: [ :i |
-		transposed add: OrderedCollection new ].
-	points do: [ :point |
-		point withIndexDo: [ :value :coordinate |
-			(transposed at: coordinate) add: value ]].
-	^ nn extractTensor: transposed.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'jb 1/16/2017 22:18:28'!
-testNearesNehbor
-	| first second third closest references tensorReference tensors |
-	first _ {0. 0. 0. 0. 0}.
-	second _ {1. 1. 3. 4. 2}.
-	third _ {8. 1. 3. 4. 2}.
-	references _ Array
-		with: first
-		with: second
-		with: third.
-	tensorReference _ self tensorFrom: references.
-	tensors _ references collect: [ :point |
-		self tensorFrom: {point} ].
-	closest _ nn
-		runGraphUsing: tensorReference
-		and: tensors first.
-	self assert: closest + 1 equals: {1}.
-	closest _ nn
-		runGraphUsing: tensorReference
-		and: tensors second.
-	self assert: closest + 1 equals: {2}.
-	closest _ nn
-		runGraphUsing: tensorReference
-		and: tensors third.
-	self assert: closest + 1 equals: {3}.! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -2277,6 +2235,48 @@ testVersion
 	| version |
 	version _ library version.
 	self assert: (#('0.11.head' '0.12.0' '0.12.head' '1.0.0-alpha') includes: version)! !
+
+!TensorFlowExamplesTest methodsFor: 'initialization' stamp: 'jb 1/16/2017 22:05:43'!
+setUp
+	nn _ NearestNeighbor new.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'jb 1/16/2017 22:05:03'!
+tensorFrom: points
+	| dimensions transposed |
+	dimensions _ points first size.
+	transposed _ OrderedCollection new.
+	(1 to: dimensions) do: [ :i |
+		transposed add: OrderedCollection new ].
+	points do: [ :point |
+		point withIndexDo: [ :value :coordinate |
+			(transposed at: coordinate) add: value ]].
+	^ nn extractTensor: transposed.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/17/2017 16:35:58'!
+testNearesNeighbor
+	| first second third closest references tensorReference tensors |
+	first _ {0. 0. 0. 0. 0}.
+	second _ {1. 1. 3. 4. 2}.
+	third _ {8. 1. 3. 4. 2}.
+	references _ Array
+		with: first
+		with: second
+		with: third.
+	tensorReference _ self tensorFrom: references.
+	tensors _ references collect: [ :point |
+		self tensorFrom: {point} ].
+	closest _ nn
+		runGraphUsing: tensorReference
+		and: tensors first.
+	self assert: closest + 1 equals: {1}.
+	closest _ nn
+		runGraphUsing: tensorReference
+		and: tensors second.
+	self assert: closest + 1 equals: {2}.
+	closest _ nn
+		runGraphUsing: tensorReference
+		and: tensors third.
+	self assert: closest + 1 equals: {3}.! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
