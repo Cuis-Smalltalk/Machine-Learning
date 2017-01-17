@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 17 January 2017 at 7:07:14 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 17 January 2017 at 7:10:04 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 177!
+!provides: 'TensorFlow' 1 178!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3740,7 +3740,7 @@ sizeOn: dimension
 type
 	^self library tensorType: self.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 19:55:11'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:55:11'!
 dimensionsOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
 		ifTrue: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]
@@ -3753,7 +3753,7 @@ elementsOf: aMultidimensionalTensor do: oneArgBlock
 				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 18:00:10'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 18:00:10'!
 floatArray: values into: anExternalAddressOrByteArray
 	| size |
 	size _ self sizeForType: self typeFloat.
@@ -3761,7 +3761,7 @@ floatArray: values into: anExternalAddressOrByteArray
 		anExternalAddressOrByteArray floatAt: index-1*size + 1 put: value].
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 17:36:36'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 17:36:36'!
 fromFloatArray: values
 	| answer |
 	answer _ self type: self typeFloat dimensions: {values size}.
@@ -3831,7 +3831,7 @@ fromStringArray: aStringArray
 	^ answer
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 18:00:51'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 18:00:51'!
 int64Array: values into: anExternalAddressOrByteArray
 	| size |
 	size _ self sizeForType: self typeInt64.
@@ -3839,13 +3839,13 @@ int64Array: values into: anExternalAddressOrByteArray
 		anExternalAddressOrByteArray signedLongLongAt: index-1*size + 1 put: value].
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 19:45:52'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:45:52'!
 rankOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 17:55:27'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 17:55:27'!
 sizeForType: anInteger
 	anInteger = self typeFloat ifTrue: [^4].
 	anInteger = self typeInt64 ifTrue: [^8].
@@ -3888,7 +3888,7 @@ sizeForType: anInteger
 
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:17:43'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 03:17:43'!
 sizeOfString: aString.
 	^ TensorFlowCAPI current stringEncodedSize: aString.! !
 
