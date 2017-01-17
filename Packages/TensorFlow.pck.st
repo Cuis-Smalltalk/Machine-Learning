@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 17 January 2017 at 4:36:04 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 17 January 2017 at 7:07:14 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 176!
+!provides: 'TensorFlow' 1 177!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1078,23 +1078,23 @@ testDimensions
 	self assertDimensionsOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: #(4 3).
 	self assertDimensionsOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: #(3 3 1).! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/14/2017 12:09:40'!
-testElementsOfTensor: aTensor sum: aNumber
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/17/2017 18:58:04'!
+testElementsOf: aTensor sum: aNumber
 	| sum |
 	sum _ 0.
-	TF_Tensor elementsOfTensor: aTensor do: [:each |
+	TF_Tensor elementsOf: aTensor do: [:each |
 		sum _ sum + each].
 	
 	self assert: sum equals: aNumber! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/14/2017 12:24:48'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/17/2017 18:58:20'!
 testElementsOfTensorDoIteratesAll
-	self testElementsOfTensor: -13123213 sum: -13123213.
-	self testElementsOfTensor: #(123 123 123 123) sum: 123*4.
-	self testElementsOfTensor: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) sum: 12*13/2.
-	self testElementsOfTensor: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) sum: 9*10/2.
+	self testElementsOf: -13123213 sum: -13123213.
+	self testElementsOf: #(123 123 123 123) sum: 123*4.
+	self testElementsOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) sum: 12*13/2.
+	self testElementsOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) sum: 9*10/2.
 	self
-		testElementsOfTensor: #(((1 100) (2 100) (3 100)) ((4 100) (5 100) (6 100)) ((7 100) (8 100) (9 100)))
+		testElementsOf: #(((1 100) (2 100) (3 100)) ((4 100) (5 100) (6 100)) ((7 100) (8 100) (9 100)))
 		sum: 9*10/2+(100*9).! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/13/2017 10:10:56'!
@@ -3746,11 +3746,11 @@ dimensionsOf: aMultidimensionalTensor
 		ifTrue: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]
 		ifFalse: [#()].! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/14/2017 12:12:15'!
-elementsOfTensor: aMultidimensionalTensor do: oneArgBlock
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
+elementsOf: aMultidimensionalTensor do: oneArgBlock
 	^ aMultidimensionalTensor isCollection
 		ifTrue: [aMultidimensionalTensor do: [:each |
-				self elementsOfTensor: each do: oneArgBlock]]
+				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'jb 1/15/2017 18:00:10'!
