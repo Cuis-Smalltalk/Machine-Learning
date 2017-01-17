@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 16 January 2017 at 10:47:34 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 16 January 2017 at 11:12:45 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 170!
+!provides: 'TensorFlow' 1 172!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -214,7 +214,7 @@ TF_Tensor class
 
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
 Object subclass: #NearestNeighbor
-	instanceVariableNames: ''
+	instanceVariableNames: 'graph inputs outputs prediction'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -4019,6 +4019,37 @@ extractTensor: multiArray
 		into: answer data getHandle.
 	^ answer.! !
 
+!NearestNeighbor methodsFor: 'initialization' stamp: 'gera 1/16/2017 23:11:54'!
+initialize
+	self initializeGraph! !
+
+!NearestNeighbor methodsFor: 'graph' stamp: 'gera 1/16/2017 23:08:59'!
+initializeGraph
+	| tr te neg add abs axis axisValue distance |
+	graph _ TF_Graph create.
+	tr _ graph placeholder: 'tr' type: TF_Tensor typeFloat.
+	te _ graph placeholder: 'te' type: TF_Tensor typeFloat.
+	axisValue _ TF_Tensor fromInt32: 0.
+	axis _ graph const: 'axis' value: axisValue.
+	neg _ graph newOperation: 'Neg' named: 'neg' described: [:description |
+		description addInput: (te output: 0)].
+	add _ graph add: 'add' described:[:description| 
+		description addInput: (neg output: 0).
+		description addInput: (tr output: 0).
+		].
+	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description|
+		description addInput: (add output: 0)].
+	distance _ graph newOperation: 'Sum' named: 'distance' described: [:description|
+		description addInput: (abs output: 0).
+		description addInput: (axis output: 0).].
+	
+	prediction _ graph newOperation: 'ArgMin' named: 'argmin' described:[:description|
+		description addInput: (distance output: 0).
+		description addInput: (axis output: 0)].
+	
+	outputs _ {prediction output: 0}.
+	inputs _ {tr input: 0. te input: 0}.! !
+
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 17:38:16'!
 irisDescription
 	^{TF_Tensor fromFloatArray: #(-1.0).
@@ -4065,38 +4096,19 @@ run
 			ifFalse: [ 0 ]].
 	^ predictions.! !
 
-!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/15/2017 22:57:42'!
+!NearestNeighbor methodsFor: 'graph' stamp: 'gera 1/16/2017 23:08:29'!
 runGraphUsing: training and: testing
-	| graph tr te neg add session result abs axis outputs axisValue distance prediction results |
-	graph _ TF_Graph create.
-	tr _ graph placeholder: 'tr' type: TF_Tensor typeFloat.
-	te _ graph placeholder: 'te' type: TF_Tensor typeFloat.
-	axisValue _ TF_Tensor fromInt32: 0.
-	axis _ graph const: 'axis' value: axisValue.
-	neg _ graph newOperation: 'Neg' named: 'neg' described: [:description |
-		description addInput: (te output: 0)].
-	add _ graph add: 'add' described:[:description| 
-		description addInput: (neg output: 0).
-		description addInput: (tr output: 0).
-		].
-	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description|
-		description addInput: (add output: 0)].
-	distance _ graph newOperation: 'Sum' named: 'distance' described: [:description|
-		description addInput: (abs output: 0).
-		description addInput: (axis output: 0).].
-	
-	prediction _ graph newOperation: 'ArgMin' named: 'argmin' described:[:description|
-		description addInput: (distance output: 0).
-		description addInput: (axis output: 0)].
-	
+	| result results session |
+	self initializeGraph.
+		
 	session _ TF_Session onGraph: graph.
-	outputs _ {prediction output: 0}.
 	
 	results _ session
 		runOperations: {prediction}
-		inputs: (Array with: (tr input: 0) with: (te input: 0))
-		values: (Array with: training with: testing)
+		inputs: inputs
+		values: {training. testing}
 		outputs: outputs.
+		
 	result _ results at: 1.
 	^result allInt64s ! !
 
@@ -4116,8 +4128,12 @@ testingAndTrainingFrom: stream
 			collection add: line ]].
 	^ {training. testing}.! !
 
-!NearestNeighbor class methodsFor: 'as yet unclassified' stamp: 'jb 1/14/2017 10:57:37'!
+!NearestNeighbor class methodsFor: 'as yet unclassified' stamp: 'gera 1/16/2017 23:00:53'!
 irisFile
-	^ 'Machine-Learning/datasets/iris.csv' asFileEntry readStream.! !
+	^ '../Machine-Learning/datasets/iris.csv' asFileEntry readStream.! !
+
+!NearestNeighbor class methodsFor: 'instance creation' stamp: 'gera 1/16/2017 23:12:43'!
+new
+	^ super new initialize! !
 TF_Structure initialize!
 TF_AttrMetadata initialize!
