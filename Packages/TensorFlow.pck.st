@@ -4059,9 +4059,9 @@ irisDescription
 		TF_Tensor fromFloatArray: #(-1.0).
 		TF_Tensor fromInt64Array: #(-1)}! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/14/2017 10:57:06'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/16/2017 23:00:14'!
 irisFile
-	^ 'Machine-Learning/datasets/iris.csv' asFileEntry readStream.! !
+	^ self class irisFile! !
 
 !NearestNeighbor methodsFor: 'initialization' stamp: 'jb 1/15/2017 23:28:54'!
 loadDataSet
