@@ -1,7 +1,17 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 16 January 2017 at 11:16:40 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3035] on 16 January 2017 at 10:18:49 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 173!
+!provides: 'TensorFlow' 1 174!
 !requires: 'FFI' 1 18 nil!
+!classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
+TestCase subclass: #TensorFlowExamplesTest
+	instanceVariableNames: 'nn'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
+TensorFlowExamplesTest class
+	instanceVariableNames: ''!
+
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
 	instanceVariableNames: 'library'
@@ -235,6 +245,48 @@ useFinalization
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
 	^self, Character null asString! !
+
+!TensorFlowExamplesTest methodsFor: 'initialization' stamp: 'jb 1/16/2017 22:05:43'!
+setUp
+	nn _ NearestNeighbor new.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'jb 1/16/2017 22:05:03'!
+tensorFrom: points
+	| dimensions transposed |
+	dimensions _ points first size.
+	transposed _ OrderedCollection new.
+	(1 to: dimensions) do: [ :i |
+		transposed add: OrderedCollection new ].
+	points do: [ :point |
+		point withIndexDo: [ :value :coordinate |
+			(transposed at: coordinate) add: value ]].
+	^ nn extractTensor: transposed.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'jb 1/16/2017 22:18:28'!
+testNearesNehbor
+	| first second third closest references tensorReference tensors |
+	first _ {0. 0. 0. 0. 0}.
+	second _ {1. 1. 3. 4. 2}.
+	third _ {8. 1. 3. 4. 2}.
+	references _ Array
+		with: first
+		with: second
+		with: third.
+	tensorReference _ self tensorFrom: references.
+	tensors _ references collect: [ :point |
+		self tensorFrom: {point} ].
+	closest _ nn
+		runGraphUsing: tensorReference
+		and: tensors first.
+	self assert: closest + 1 equals: {1}.
+	closest _ nn
+		runGraphUsing: tensorReference
+		and: tensors second.
+	self assert: closest + 1 equals: {2}.
+	closest _ nn
+		runGraphUsing: tensorReference
+		and: tensors third.
+	self assert: closest + 1 equals: {3}.! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -4023,7 +4075,7 @@ extractTensor: multiArray
 initialize
 	self initializeGraph! !
 
-!NearestNeighbor methodsFor: 'graph' stamp: 'gera 1/16/2017 23:15:48'!
+!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/16/2017 22:15:31'!
 initializeGraph
 	| tr te neg add abs axis axisValue distance |
 	graph _ TF_Graph create useFinalization.
@@ -4097,11 +4149,9 @@ run
 			ifFalse: [ 0 ]].
 	^ predictions.! !
 
-!NearestNeighbor methodsFor: 'graph' stamp: 'gera 1/16/2017 23:08:29'!
+!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/16/2017 22:15:40'!
 runGraphUsing: training and: testing
-	| result results session |
-	self initializeGraph.
-		
+	| result results session |	
 	session _ TF_Session onGraph: graph.
 	
 	results _ session
@@ -4111,7 +4161,7 @@ runGraphUsing: training and: testing
 		outputs: outputs.
 		
 	result _ results at: 1.
-	^result allInt64s ! !
+	^result allInt64s! !
 
 !NearestNeighbor methodsFor: 'sampling' stamp: 'jb 1/15/2017 19:13:00'!
 testingAndTrainingFrom: stream
