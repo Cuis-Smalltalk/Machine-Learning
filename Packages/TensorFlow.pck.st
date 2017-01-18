@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 3:20:01 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 3:22:19 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 185!
+!provides: 'TensorFlow' 1 186!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2228,6 +2228,24 @@ testTensorFromFloats2x2
 	#(-1.1 -2.1 -1.2 -2.2) with: values do: [:reference :value |
 		self assert: (reference closeTo: value)]
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:22:01'!
+testTensorFromFloats2x2SameElementsOrder
+	| tensor template values constTensor consts |
+	template _ #(
+		(-1.1 -2.1)
+		(-1.2 -2.2)).
+		
+	tensor _ TF_Tensor fromFloats: template.
+	values _ tensor allFloats.
+	tensor delete.
+	
+	constTensor _ self get2x2FloatFromGraphDef.
+	consts _ constTensor allFloats.
+	constTensor delete.
+	
+	consts with: values do: [:const :value |
+		self assert: (const closeTo: value)].! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
 testTensorFromInt64Array
