@@ -2208,12 +2208,12 @@ testTensorFromFloats
 		self assert: (point x closeTo: point y)]
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:57:12'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:14:08'!
 testTensorFromFloats2x2
 	| tensor template values |
 	template _ #(
-		(-1.1 -1.2)
-		(-2.1 -2.2)).
+		(-1.1 -2.1)
+		(-1.2 -2.2)).
 		
 	tensor _ TF_Tensor fromFloats: template.
 	values _ tensor allFloats.
@@ -2222,7 +2222,7 @@ testTensorFromFloats2x2
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (4*4).
 	
-	#(-1.1 -1.2 -2.1 -2.2) @ values do: [:point |
+	#(-1.1 -2.1 -1.2 -2.2) @ values do: [:point |
 		self assert: (point x closeTo: point y)]
 ! !
 
