@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 3:16:51 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 3:20:01 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 184!
+!provides: 'TensorFlow' 1 185!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1173,11 +1173,12 @@ testFloatAsStringGraphRun
 	result delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:13:35'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:19:54'!
 testGet2x2FloatFromGraphDef
 	| templates consts |
 	templates _ #(-1.1 -2.1 -1.2 -2.2).
 	consts _ self get2x2FloatFromGraphDef allFloats.
+	
 	templates with: consts do: [:temp :const |
 		self assert: (temp closeTo: const)]! !
 
@@ -2208,7 +2209,7 @@ testTensorFromFloats
 		self assert: (point x closeTo: point y)]
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:14:08'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:19:32'!
 testTensorFromFloats2x2
 	| tensor template values |
 	template _ #(
@@ -2222,8 +2223,10 @@ testTensorFromFloats2x2
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (4*4).
 	
-	#(-1.1 -2.1 -1.2 -2.2) @ values do: [:point |
-		self assert: (point x closeTo: point y)]
+	tensor delete.
+	
+	#(-1.1 -2.1 -1.2 -2.2) with: values do: [:reference :value |
+		self assert: (reference closeTo: value)]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
