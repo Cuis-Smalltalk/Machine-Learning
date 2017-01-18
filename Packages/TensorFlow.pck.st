@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 12:58:20 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 1:01:22 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 182!
+!provides: 'TensorFlow' 1 183!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2152,20 +2152,6 @@ testTensorFinalizationReleasesExternalMemory
 
 	self assert: (handles asSet size) < size.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:35:44'!
-testTensorFromFloatArray
-	| tensor template values |
-	template _ #(1.23456 0.0 -1.234567).
-	tensor _ TF_Tensor fromFloatArray: template.
-	values _ tensor allFloats.
-		
-	self assert: tensor dimensions equals: #(3).
-	self assert: tensor size equals: 3.
-	self assert: tensor byteSize equals: (3*4).
-	template @ values do: [:point |
-		self assert: (point x closeTo: point y)]
-! !
-
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
 testTensorFromFloats
 	| tensor template values |
@@ -3811,13 +3797,6 @@ floatArray: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 17:36:36'!
-fromFloatArray: values
-	| answer |
-	answer _ self type: self typeFloat dimensions: {values size}.
-	self floatArray: values into: answer data getHandle.
-	^ answer! !
-
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:18:02'!
 fromFloats: values
 	| answer dimensions size count |
@@ -4176,12 +4155,12 @@ initializeGraph
 	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 17:38:16'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/18/2017 01:00:47'!
 irisDescription
-	^{TF_Tensor fromFloatArray: #(-1.0).
-		TF_Tensor fromFloatArray: #(-1.0).
-		TF_Tensor fromFloatArray: #(-1.0).
-		TF_Tensor fromFloatArray: #(-1.0).
+	^{TF_Tensor fromFloats: #(-1.0).
+		TF_Tensor fromFloats: #(-1.0).
+		TF_Tensor fromFloats: #(-1.0).
+		TF_Tensor fromFloats: #(-1.0).
 		TF_Tensor fromInt64Array: #(-1)}! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/16/2017 23:00:14'!
