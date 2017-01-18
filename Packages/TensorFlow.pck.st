@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 12:05:58 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 12:32:25 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 179!
+!provides: 'TensorFlow' 1 180!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3768,12 +3768,15 @@ elementsOf: aMultidimensionalTensor do: oneArgBlock
 				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 18:00:10'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:21:04'!
 floatArray: values into: anExternalAddressOrByteArray
-	| size |
+	| size index |
 	size _ self sizeForType: self typeFloat.
-	values withIndexDo: [:value :index |
-		anExternalAddressOrByteArray floatAt: index-1*size + 1 put: value].
+	
+	index _ 0.
+	self elementsOf: values do: [:value |
+		anExternalAddressOrByteArray floatAt: index*size + 1 put: value.
+		index _ index + 1].
 ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 17:36:36'!
@@ -3846,12 +3849,16 @@ fromStringArray: aStringArray
 	^ answer
 ! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 18:00:51'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:32:18'!
 int64Array: values into: anExternalAddressOrByteArray
-	| size |
+	| size index |
+
 	size _ self sizeForType: self typeInt64.
-	values withIndexDo: [:value :index |
-		anExternalAddressOrByteArray signedLongLongAt: index-1*size + 1 put: value].
+	
+	index _ 0.
+	self elementsOf: values do: [:value |
+		anExternalAddressOrByteArray signedLongLongAt: index*size + 1 put: value.
+		index _ index + 1].
 ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:45:52'!
