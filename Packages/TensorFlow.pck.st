@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 12:32:25 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 12:36:27 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 180!
+!provides: 'TensorFlow' 1 181!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2152,9 +2152,9 @@ testTensorFinalizationReleasesExternalMemory
 
 	self assert: (handles asSet size) < size.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/16/2017 22:46:34'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:35:44'!
 testTensorFromFloatArray
-	| tensor template values joint |
+	| tensor template values |
 	template _ #(1.23456 0.0 -1.234567).
 	tensor _ TF_Tensor fromFloatArray: template.
 	values _ tensor allFloats.
@@ -2162,8 +2162,22 @@ testTensorFromFloatArray
 	self assert: tensor dimensions equals: #(3).
 	self assert: tensor size equals: 3.
 	self assert: tensor byteSize equals: (3*4).
-	joint _ template @ values.
-	joint do: [:point| self assert: (point x closeTo: point y)]
+	template @ values do: [:point |
+		self assert: (point x closeTo: point y)]
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
+testTensorFromFloats
+	| tensor template values |
+	template _ #(1.23456 0.0 -1.234567).
+	tensor _ TF_Tensor fromFloats: template.
+	values _ tensor allFloats.
+		
+	self assert: tensor dimensions equals: #(3).
+	self assert: tensor size equals: 3.
+	self assert: tensor byteSize equals: (3*4).
+	template @ values do: [:point |
+		self assert: (point x closeTo: point y)]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
@@ -3783,6 +3797,19 @@ floatArray: values into: anExternalAddressOrByteArray
 fromFloatArray: values
 	| answer |
 	answer _ self type: self typeFloat dimensions: {values size}.
+	self floatArray: values into: answer data getHandle.
+	^ answer! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:18:02'!
+fromFloats: values
+	| answer dimensions size count |
+	size _ self sizeOf: values.
+	dimensions _ self dimensionsOf: values.
+	count _ dimensions fold: [:a :b | a * b].
+	count = size ifFalse: [
+		self error: 'Inferred size and real size don''t match.'].
+	
+	answer _ self type: self typeFloat dimensions: dimensions.
 	self floatArray: values into: answer data getHandle.
 	^ answer! !
 
