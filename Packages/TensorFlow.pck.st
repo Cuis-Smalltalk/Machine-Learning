@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 1:01:22 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 3:16:51 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 183!
+!provides: 'TensorFlow' 1 184!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -556,6 +556,26 @@ concatGraphInputListWrongType
 	concat.
 	^ graph! !
 
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/18/2017 00:50:25'!
+constant2x2FloatGraphDef
+	" This GraphDef corresponds to simple Graph, defined as
+	
+		a = tf.constant([[-1.1, -2.1],[-1.2,-2.2]], name='a')
+		
+	 saved as ProtoBuf "
+	^ #[
+		 16r0A 16r42 16r0A 16r01 16r61 16r12 16r05 16r43 16r6F 16r6E 16r73 16r74 16r2A 16r29 16r0A 16r05
+		 16r76 16r61 16r6C 16r75 16r65 16r12 16r20 16r42 16r1E 16r08 16r01 16r12 16r08 16r12 16r02 16r08
+		 16r02 16r12 16r02 16r08 16r02 16r22 16r10 16rCD 16rCC 16r8C 16rBF 16r66 16r66 16r06 16rC0 16r9A
+		 16r99 16r99 16rBF 16rCD 16rCC 16r0C 16rC0 16r2A 16r0B 16r0A 16r05 16r64 16r74 16r79 16r70 16r65
+		 16r12 16r02 16r30 16r01 16r0A 16r0C 16r0A 16r04 16r69 16r6E 16r69 16r74 16r12 16r04 16r4E 16r6F
+		 16r4F 16r70 16r22 16r02 16r08 16r11
+	] asString! !
+
+!TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/18/2017 00:51:13'!
+constant2x2FloatGraphFromDef
+	^ TF_Graph fromString: self constant2x2FloatGraphDef! !
+
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 12/26/2016 10:58:56'!
 constantFloatGraphDef
 	" This GraphDef corresponds to simple Graph, defined as
@@ -657,6 +677,20 @@ floatAsStringGraph
 	graph asString: 'output' described: [:description |
 		description addInput: (const output: 0)].
 	^ graph! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:07:29'!
+get2x2FloatFromGraphDef
+	| graph session const result |
+	graph _ self constant2x2FloatGraphFromDef.
+	graph useFinalization.
+	
+	const _ graph operationNamed: 'a'.
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: const
+		output: (const output: 0).
+	
+	^ result! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:57:31'!
 mulGraphOneInputInt64
@@ -1138,6 +1172,14 @@ testFloatAsStringGraphRun
 	
 	result delete.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:13:35'!
+testGet2x2FloatFromGraphDef
+	| templates consts |
+	templates _ #(-1.1 -2.1 -1.2 -2.2).
+	consts _ self get2x2FloatFromGraphDef allFloats.
+	templates with: consts do: [:temp :const |
+		self assert: (temp closeTo: const)]! !
 
 !TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:31'!
 testGetAllOps
