@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 17 January 2017 at 7:10:04 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 12:05:58 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 178!
+!provides: 'TensorFlow' 1 179!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -475,6 +475,14 @@ assertRankOf: aMultidimensionalTensor is: anInteger
 	self
 		assert: rank = anInteger
 		description: 'The rank is ', rank printString, ' and should have been ', anInteger printString! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:03:38'!
+assertSizeOf: aMultidimensionalTensor is: anInteger
+	| size |
+	size _ TF_Tensor sizeOf: aMultidimensionalTensor.
+	self
+		assert: size = anInteger
+		description: 'The size is ', size printString, ' and should have been ', anInteger printString! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:57'!
 concatGraphInputList
@@ -1939,6 +1947,13 @@ testSessionRunTargetOutputOnGraph: graph
 
 	output free.
 	graph delete.! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:05:31'!
+testSizes
+	self assertSizeOf: -13123213 is: 1.
+	self assertSizeOf: #(123 123 123 123) is: 4.
+	self assertSizeOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: 4*3.
+	self assertSizeOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: 3*3*1.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 10:16:01'!
 testStatusCodes
@@ -3887,6 +3902,12 @@ sizeForType: anInteger
 
 
 	^ self shouldBeImplemented.! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:02:29'!
+sizeOf: aMultidimensionalTensor
+	^ aMultidimensionalTensor isCollection
+		ifTrue: [aMultidimensionalTensor sum: [:each | self sizeOf: each]]
+		ifFalse: [1].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 03:17:43'!
 sizeOfString: aString.
