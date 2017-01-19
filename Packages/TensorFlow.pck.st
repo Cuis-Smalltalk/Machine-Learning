@@ -144,7 +144,7 @@ TF_ImportGraphDefOptions class
 
 !classDefinition: #TF_Operation category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Operation
-	instanceVariableNames: ''
+	instanceVariableNames: 'graph'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
