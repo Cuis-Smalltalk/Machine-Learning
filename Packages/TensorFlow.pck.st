@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 3:22:19 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 10:07:37 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 186!
+!provides: 'TensorFlow' 1 187!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3034,9 +3034,10 @@ deallocator: anObject
 	"This method was automatically generated. See TF_Buffer class>>fields."
 	handle longPointerAt: 17 put: anObject getHandle.! !
 
-!TF_Buffer methodsFor: 'release' stamp: 'gera 12/22/2016 00:41:49'!
+!TF_Buffer methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:20'!
 delete
-	self library deleteBuffer: self.
+	self isNull ifFalse: [
+		self library deleteBuffer: self].
 	handle _ nil! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
@@ -3105,10 +3106,11 @@ definition
 	status check.
 	^ buffer dataBytes asString! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:43:04'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:45:55'!
 delete
 	self ignoreFinalization.
-	self library deleteGraph: self.
+	self isNull ifFalse: [
+		self library deleteGraph: self].
 	handle _ nil! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
@@ -3227,9 +3229,10 @@ fromFileNamed: aString
 fromString: aString
 	^ self create importString: aString! !
 
-!TF_ImportGraphDefOptions methodsFor: 'release' stamp: 'gera 12/22/2016 01:14:43'!
+!TF_ImportGraphDefOptions methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:56'!
 delete
-	self library deleteImportGraphDefOptions: self.
+	self isNull ifFalse: [
+		self library deleteImportGraphDefOptions: self].
 	handle _ nil! !
 
 !TF_ImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
@@ -3512,14 +3515,15 @@ close
 	self library closeSession: self status: status.
 	status check! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/13/2017 10:42:30'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/19/2017 09:47:09'!
 delete
 	| status |
 	self ignoreFinalization.
 	status _ TF_Status create.
-	self library
-		deleteSession: self
-		status: status.
+	self isNull ifFalse: [
+		self library
+			deleteSession: self
+			status: status].
 	status check.
 	handle _ nil.
 ! !
@@ -3642,9 +3646,10 @@ onGraph: aTF_Graph
 	answer useFinalization.
 	^ answer! !
 
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 00:42:04'!
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:47:17'!
 delete
-	self library deleteSessionOptions: self.
+	self isNull ifFalse: [
+		self library deleteSessionOptions: self].
 	handle _ nil! !
 
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:37:00'!
@@ -3706,10 +3711,11 @@ codeTexts
   'UNAUTHENTICATED' "16"
 )! !
 
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/7/2017 20:18:56'!
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:47:23'!
 delete
 	self ignoreFinalization.
-	self library deleteStatus: self.
+	self isNull ifFalse: [
+		self library deleteStatus: self].
 	handle _ nil.! !
 
 !TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:31:44'!
@@ -3801,10 +3807,11 @@ data
 dataBytes
 	^self data getHandle structAt: 1 length: self byteSize! !
 
-!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 11:15:59'!
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/19/2017 09:45:31'!
 delete
 	self ignoreFinalization.
-	self library deleteTensor: self.
+	self isNull ifFalse: [
+		self library deleteTensor: self].
 	handle _ nil! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 12:41:46'!
