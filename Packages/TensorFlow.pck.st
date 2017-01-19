@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 10:14:08 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 10:35:32 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 188!
+!provides: 'TensorFlow' 1 190!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2474,6 +2474,11 @@ finishOperation: aTF_OperationDescription status: aTF_Status
 	<cdecl: TF_Operation* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
 	^ self externalCallFailed.! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/19/2017 10:33:08'!
+finishOperationAsVoid: aTF_OperationDescription status: aTF_Status
+	<cdecl: void* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/26/2016 13:13:55'!
 forGraph: aTF_Graph outputDims: aTF_Output status: aTF_Status
 	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
@@ -3454,13 +3459,14 @@ at: attribute putType: value
 		set: attribute asAsciiZ
 		toType: value! !
 
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/3/2017 18:34:17'!
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:32:37'!
 finish
 	| answer status |
 	status _ TF_Status create.
 	answer _ self library
-		finishOperation: self
-		status: status.
+		finishOperationAsVoid: self
+  		status: status.
+	answer _ TF_Operation fromHandle: answer getHandle.
 	handle _ nil.
 	status check.
 	^ answer.! !
