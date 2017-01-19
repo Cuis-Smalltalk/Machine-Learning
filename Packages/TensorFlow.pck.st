@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 January 2017 at 11:21:03 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 January 2017 at 11:44:13 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 187!
+!provides: 'TensorFlow' 1 188!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -230,6 +230,16 @@ Object subclass: #NearestNeighbor
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'NearestNeighbor class' category: #'TensorFlow-Examples'!
 NearestNeighbor class
+	instanceVariableNames: ''!
+
+!classDefinition: #OLSExample category: #'TensorFlow-Examples'!
+Object subclass: #OLSExample
+	instanceVariableNames: 'graph inputs outputs operation'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'OLSExample class' category: #'TensorFlow-Examples'!
+OLSExample class
 	instanceVariableNames: ''!
 
 
@@ -2374,6 +2384,29 @@ testNearesNeighbor
 		and: tensors third.
 	self assert: closest + 1 equals: {3}.! !
 
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'JB 1/18/2017 23:43:04'!
+testOLS
+	|ols x y betas |
+	ols _ OLSExample new.
+	x _ TF_Tensor fromFloats: 	{{1.  2.  3}.
+        									{6.  7.  8}.
+        									{ 4.  5.  6}.
+        									{ 9.  2.  3}.
+        									{1. 10.  2}}.
+
+	y _ TF_Tensor fromFloats: 	{{14}.
+        									{44}.
+        									{32}.
+        									{22}.
+        									{27}}.
+	betas _ ols runGraphUsing: x and: y.
+	self assert: (betas first closeTo: 1);
+		assert: (betas second closeTo: 2);
+		assert: (betas third closeTo: 3)
+	
+		
+! !
+
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
 	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
@@ -4286,5 +4319,58 @@ irisFile
 !NearestNeighbor class methodsFor: 'instance creation' stamp: 'gera 1/16/2017 23:12:43'!
 new
 	^ super new initialize! !
+
+!OLSExample methodsFor: 'as yet unclassified' stamp: 'JB 1/18/2017 23:24:48'!
+initialize
+	self initializeGraph! !
+
+!OLSExample methodsFor: 'as yet unclassified' stamp: 'JB 1/18/2017 23:37:35'!
+initializeGraph
+	
+	| x xtx y xty inverse result |
+	graph _ TF_Graph create useFinalization.
+	
+	x _ graph placeholder: 'x' type: TF_Tensor typeFloat.
+	y _ graph placeholder: 'y' type: TF_Tensor typeFloat.
+	
+	xtx _ graph newOperation: 'MatMul' named:'xTx' described:[:description|
+		description addInput: (x output: 0).
+		description addInput: (x output: 0).
+		description at: 'transpose_a' putBoolean: true.
+		].
+	
+	inverse _ graph newOperation: 'MatrixInverse' named:'inv' described:[:description|
+		description addInput: (xtx output: 0)].
+	
+	xty _ graph newOperation: 'MatMul' named:'xTy' described:[:description|
+		description addInput: (x output: 0).
+		description addInput: (y output: 0).
+		description at: 'transpose_a' putBoolean: true.
+		].
+	
+	result _ graph newOperation: 'MatMul' named:'result' described:[:description|
+		description addInput: (inverse output: 0).
+		description addInput: (xty output: 0).
+		].
+	
+	operation  _ result.
+	
+	outputs _ {operation output: 0}.
+	inputs _ {x input: 0. y input: 0}.! !
+
+!OLSExample methodsFor: 'as yet unclassified' stamp: 'JB 1/18/2017 23:41:01'!
+runGraphUsing: x and: y
+	| results session result |	
+	session _ TF_Session onGraph: graph.
+	
+	results _ session
+		runOperations: {operation }
+		inputs: inputs
+		values: {x. y}
+		outputs: outputs.
+		
+	  result _ results at: 1.
+	^ result allFloats
+	! !
 TF_Structure initialize!
 TF_AttrMetadata initialize!
