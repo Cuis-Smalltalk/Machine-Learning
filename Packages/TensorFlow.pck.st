@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:11:17 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:14:52 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 193!
+!provides: 'TensorFlow' 1 194!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3397,11 +3397,9 @@ intAt: nameString
 name
 	^ self library operationName: self! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 10:41:12'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
 negated
-	^ graph newOperation: 'Neg' named: 'neg' described: [:description |
-		description addInput: (self output: 0)].
-	! !
+	^ self unaryOp: 'Neg'! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
 output: indexInteger
@@ -3473,6 +3471,14 @@ typeAt: nameString
 	status check.
 	^ value unsignedLongLongAt: 1
 ! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:13:54'!
+unaryOp: aString
+	| name |
+	name _ aString,'_',graph operationsCount printString.
+	^ graph newOperation: aString named: name described: [:description |
+		description addInput: (self output: 0)].
+	! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
