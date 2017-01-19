@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 January 2017 at 11:44:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 January 2017 at 11:01:39 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 188!
+!provides: 'TensorFlow' 1 189!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -222,9 +222,39 @@ TF_Structure subclass: #TF_Tensor
 TF_Tensor class
 	instanceVariableNames: ''!
 
+!classDefinition: #ExamplePlan category: #'TensorFlow-Examples'!
+Object subclass: #ExamplePlan
+	instanceVariableNames: 'graph inputs outputs operation'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'ExamplePlan class' category: #'TensorFlow-Examples'!
+ExamplePlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #ExampleNearestNeighborPlan category: #'TensorFlow-Examples'!
+ExamplePlan subclass: #ExampleNearestNeighborPlan
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'ExampleNearestNeighborPlan class' category: #'TensorFlow-Examples'!
+ExampleNearestNeighborPlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #ExampleOLSPlan category: #'TensorFlow-Examples'!
+ExamplePlan subclass: #ExampleOLSPlan
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'ExampleOLSPlan class' category: #'TensorFlow-Examples'!
+ExampleOLSPlan class
+	instanceVariableNames: ''!
+
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
 Object subclass: #NearestNeighbor
-	instanceVariableNames: 'graph inputs outputs prediction'
+	instanceVariableNames: 'plan'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -234,7 +264,7 @@ NearestNeighbor class
 
 !classDefinition: #OLSExample category: #'TensorFlow-Examples'!
 Object subclass: #OLSExample
-	instanceVariableNames: 'graph inputs outputs operation'
+	instanceVariableNames: 'plan'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -2358,9 +2388,10 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/17/2017 16:35:58'!
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/19/2017 10:53:43'!
 testNearesNeighbor
-	| first second third closest references tensorReference tensors |
+	| first second third closest references tensorReference tensors plan predictor |
+	plan _ ExampleNearestNeighborPlan  new.
 	first _ {0. 0. 0. 0. 0}.
 	second _ {1. 1. 3. 4. 2}.
 	third _ {8. 1. 3. 4. 2}.
@@ -2371,20 +2402,17 @@ testNearesNeighbor
 	tensorReference _ self tensorFrom: references.
 	tensors _ references collect: [ :point |
 		self tensorFrom: {point} ].
-	closest _ nn
-		runGraphUsing: tensorReference
-		and: tensors first.
-	self assert: closest + 1 equals: {1}.
-	closest _ nn
-		runGraphUsing: tensorReference
-		and: tensors second.
-	self assert: closest + 1 equals: {2}.
-	closest _ nn
-		runGraphUsing: tensorReference
-		and: tensors third.
-	self assert: closest + 1 equals: {3}.! !
+	predictor _ [:unknown | | result | 
+		result _ plan predict: unknown from: tensorReference.
+		result first].
+	closest _ predictor value: tensors first.
+	self assert: closest  equals: 1.
+	closest _ predictor value:  tensors second.
+	self assert: closest equals: 2.
+	closest _ predictor value:  tensors third.
+	self assert: closest  equals: 3.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'JB 1/18/2017 23:43:04'!
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'JB 1/19/2017 10:32:57'!
 testOLS
 	|ols x y betas |
 	ols _ OLSExample new.
@@ -2399,7 +2427,7 @@ testOLS
         									{32}.
         									{22}.
         									{27}}.
-	betas _ ols runGraphUsing: x and: y.
+	betas _ ols regress: x on: y.
 	self assert: (betas first closeTo: 1);
 		assert: (betas second closeTo: 2);
 		assert: (betas third closeTo: 3)
@@ -4159,6 +4187,101 @@ typeUInt16
 typeUInt8
 	^4! !
 
+!ExamplePlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:23:20'!
+initialize
+	self initializeGraph! !
+
+!ExamplePlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:23:46'!
+initializeGraph
+	graph _ TF_Graph create useFinalization.
+	! !
+
+!ExamplePlan methodsFor: 'running' stamp: 'JB 1/19/2017 10:24:33'!
+runAt: point
+	| results session result |	
+	session _ TF_Session onGraph: graph.
+	
+	results _ session
+		runOperations: {operation }
+		inputs: inputs
+		values: {point x.  point y}
+		outputs: outputs.
+		
+	  result _ results at: 1.
+	^ result
+	! !
+
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:34:53'!
+initializeGraph
+	| neg add abs axis axisValue distance testing training prediction |
+	super initializeGraph.
+	
+	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
+	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
+	axisValue _ TF_Tensor fromInt32: 0.
+	axis _ graph const: 'axis' value: axisValue.
+	neg _ graph newOperation: 'Neg' named: 'neg' described: [:description |
+		description addInput: (testing output: 0)].
+	add _ graph add: 'add' described:[:description| 
+		description addInput: (neg output: 0).
+		description addInput: (training output: 0).
+		].
+	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description|
+		description addInput: (add output: 0)].
+	distance _ graph newOperation: 'Sum' named: 'distance' described: [:description|
+		description addInput: (abs output: 0).
+		description addInput: (axis output: 0).].
+	
+	prediction _ graph newOperation: 'ArgMin' named: 'argmin' described:[:description|
+		description addInput: (distance output: 0).
+		description addInput: (axis output: 0)].
+	operation _ prediction.
+	
+	outputs _ {operation output: 0}.
+	inputs _ {training input: 0. testing input: 0}.! !
+
+!ExampleNearestNeighborPlan methodsFor: 'evaluating' stamp: 'JB 1/19/2017 10:55:32'!
+predict: covariatesTe from: covariatesTr
+	| point result |
+
+	point _  (Point x: covariatesTr y: covariatesTe).
+ 	result _ self runAt: point.
+	^ result allInt64s + 1! !
+
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:26:01'!
+initializeGraph
+	
+	| x xtx y xty inverse result |
+	super initializeGraph.
+	
+	x _ graph placeholder: 'x' type: TF_Tensor typeFloat.
+	y _ graph placeholder: 'y' type: TF_Tensor typeFloat.
+	
+	xtx _ graph newOperation: 'MatMul' named:'xTx' described:[:description|
+		description addInput: (x output: 0).
+		description addInput: (x output: 0).
+		description at: 'transpose_a' putBoolean: true.
+		].
+	
+	inverse _ graph newOperation: 'MatrixInverse' named:'inv' described:[:description|
+		description addInput: (xtx output: 0)].
+	
+	xty _ graph newOperation: 'MatMul' named:'xTy' described:[:description|
+		description addInput: (x output: 0).
+		description addInput: (y output: 0).
+		description at: 'transpose_a' putBoolean: true.
+		].
+	
+	result _ graph newOperation: 'MatMul' named:'result' described:[:description|
+		description addInput: (inverse output: 0).
+		description addInput: (xty output: 0).
+		].
+	
+	operation  _ result.
+	
+	outputs _ {operation output: 0}.
+	inputs _ {x input: 0. y input: 0}.! !
+
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
 decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
@@ -4204,37 +4327,9 @@ decodeCSVGraphDefaults: anArrayOfTF_Tensors
 	
 	^ graph! !
 
-!NearestNeighbor methodsFor: 'initialization' stamp: 'gera 1/16/2017 23:11:54'!
+!NearestNeighbor methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:46:56'!
 initialize
-	self initializeGraph! !
-
-!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/16/2017 22:42:34'!
-initializeGraph
-	| neg add abs axis axisValue distance testing training |
-	graph _ TF_Graph create useFinalization.
-	
-	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
-	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
-	axisValue _ TF_Tensor fromInt32: 0.
-	axis _ graph const: 'axis' value: axisValue.
-	neg _ graph newOperation: 'Neg' named: 'neg' described: [:description |
-		description addInput: (testing output: 0)].
-	add _ graph add: 'add' described:[:description| 
-		description addInput: (neg output: 0).
-		description addInput: (training output: 0).
-		].
-	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description|
-		description addInput: (add output: 0)].
-	distance _ graph newOperation: 'Sum' named: 'distance' described: [:description|
-		description addInput: (abs output: 0).
-		description addInput: (axis output: 0).].
-	
-	prediction _ graph newOperation: 'ArgMin' named: 'argmin' described:[:description|
-		description addInput: (distance output: 0).
-		description addInput: (axis output: 0)].
-	
-	outputs _ {prediction output: 0}.
-	inputs _ {training input: 0. testing input: 0}.! !
+	plan _ ExampleNearestNeighborPlan new.! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/18/2017 01:00:47'!
 irisDescription
@@ -4260,7 +4355,7 @@ loadDataSet
 			decodeCSV: csv
 			graphRun: description ].! !
 
-!NearestNeighbor methodsFor: 'running' stamp: 'JB 1/18/2017 22:57:12'!
+!NearestNeighbor methodsFor: 'running' stamp: 'JB 1/19/2017 10:49:44'!
 run
 	| covariatesTr covariatesTe predictions size dataset testing training |
 	dataset _ self loadDataSet.
@@ -4271,30 +4366,14 @@ run
 	predictions _ (1 to: size) collect: [ :i | | covariates index predicted results trueValue |
 		covariates _ testing  collect:[:col| {col at: i}].
 		covariatesTe _ TF_Tensor fromFloats: covariates allButLast.
-		results _ self
-			runGraphUsing: covariatesTr
-			and: covariatesTe.
-		index _ results first + 1.
+		results _ plan predict: covariatesTe from: covariatesTr.
+		index _ results first.
 		trueValue _ covariates fifth first.
 		predicted _ training fifth at: index.
 		trueValue = predicted
 			ifTrue: [ 1 ]
 			ifFalse: [ 0 ]].
 	^ predictions.! !
-
-!NearestNeighbor methodsFor: 'graph' stamp: 'jb 1/16/2017 22:15:40'!
-runGraphUsing: training and: testing
-	| result results session |	
-	session _ TF_Session onGraph: graph.
-	
-	results _ session
-		runOperations: {prediction}
-		inputs: inputs
-		values: {training. testing}
-		outputs: outputs.
-		
-	result _ results at: 1.
-	^result allInt64s! !
 
 !NearestNeighbor methodsFor: 'sampling' stamp: 'jb 1/15/2017 19:13:00'!
 testingAndTrainingFrom: stream
@@ -4320,57 +4399,14 @@ irisFile
 new
 	^ super new initialize! !
 
-!OLSExample methodsFor: 'as yet unclassified' stamp: 'JB 1/18/2017 23:24:48'!
+!OLSExample methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:29:16'!
 initialize
-	self initializeGraph! !
+	plan _ ExampleOLSPlan new.! !
 
-!OLSExample methodsFor: 'as yet unclassified' stamp: 'JB 1/18/2017 23:37:35'!
-initializeGraph
-	
-	| x xtx y xty inverse result |
-	graph _ TF_Graph create useFinalization.
-	
-	x _ graph placeholder: 'x' type: TF_Tensor typeFloat.
-	y _ graph placeholder: 'y' type: TF_Tensor typeFloat.
-	
-	xtx _ graph newOperation: 'MatMul' named:'xTx' described:[:description|
-		description addInput: (x output: 0).
-		description addInput: (x output: 0).
-		description at: 'transpose_a' putBoolean: true.
-		].
-	
-	inverse _ graph newOperation: 'MatrixInverse' named:'inv' described:[:description|
-		description addInput: (xtx output: 0)].
-	
-	xty _ graph newOperation: 'MatMul' named:'xTy' described:[:description|
-		description addInput: (x output: 0).
-		description addInput: (y output: 0).
-		description at: 'transpose_a' putBoolean: true.
-		].
-	
-	result _ graph newOperation: 'MatMul' named:'result' described:[:description|
-		description addInput: (inverse output: 0).
-		description addInput: (xty output: 0).
-		].
-	
-	operation  _ result.
-	
-	outputs _ {operation output: 0}.
-	inputs _ {x input: 0. y input: 0}.! !
-
-!OLSExample methodsFor: 'as yet unclassified' stamp: 'JB 1/18/2017 23:41:01'!
-runGraphUsing: x and: y
-	| results session result |	
-	session _ TF_Session onGraph: graph.
-	
-	results _ session
-		runOperations: {operation }
-		inputs: inputs
-		values: {x. y}
-		outputs: outputs.
-		
-	  result _ results at: 1.
-	^ result allFloats
-	! !
+!OLSExample methodsFor: 'running' stamp: 'JB 1/19/2017 10:32:36'!
+regress: x on: y
+	| result |
+	result _ plan runAt: (Point x: x y: y).
+	^ result allFloats! !
 TF_Structure initialize!
 TF_AttrMetadata initialize!
