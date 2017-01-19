@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:14:52 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:19:22 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 194!
+!provides: 'TensorFlow' 1 195!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1735,7 +1735,7 @@ testOperationOutputTypeInt32
 testOperationOutputTypeInt64
 	^self testGraph: self constantInt64GraphFromDef outputType: TF_Tensor typeInt64! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:03:50'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:16:52'!
 testOperationPlus
 	| graph a b session constA constB result sum template |
 	
@@ -1749,14 +1749,13 @@ testOperationPlus
 	constB _ graph const: 'b' value: b.
 	
 	sum _ constA + constB.
+	template _ a allFloats + b allFloats.
 	
 	session _ TF_Session onGraph: graph.
 	result _ session
 		runOperation: sum
 		output: (sum output: 0).
 	
-	template _ a allFloats + b allFloats.
-
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
@@ -1787,7 +1786,7 @@ testOperationPlusNegated
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:14:43'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:17:12'!
 testOperationPlusNegatedNegated
 	| graph a b session constA constB result sum template |
 	
@@ -1801,14 +1800,38 @@ testOperationPlusNegatedNegated
 	constB _ graph const: 'b' value: b.
 	
 	sum _ (constA + constB negated) negated.
+	template _ (a allFloats + b allFloats negated) negated.
 	
 	session _ TF_Session onGraph: graph.
 	result _ session
 		runOperation: sum
 		output: (sum output: 0).
 	
-	template _ (a allFloats - b allFloats) negated.
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
 
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:17:53'!
+testOperationPlusNegatedNegatedPlus
+	| graph a b session constA constB result sum template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
+	
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	sum _ (constA + constB negated) negated + constB negated.
+	template _ (a allFloats + b allFloats negated) negated + b allFloats negated.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: sum
+		output: (sum output: 0).
+	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
@@ -3353,13 +3376,9 @@ delete
 create
 	^ TensorFlowCAPI current newImportGraphDefOptions! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 10:53:29'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:19:11'!
 + aTF_Operation
-	^ graph newOperation: 'Add' named: 'add' described: [:description |
-		description
-			addInput: (self output: 0);
-			addInput: (aTF_Operation output: 0)].
-	! !
+	^ self binaryOp: 'Add' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
 InputsCount
@@ -3372,6 +3391,17 @@ attrMetadata: nameString
 	answer _ self library operation: self getMetadataFor: nameString status: status.
 	status check.
 	^ answer! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:18:52'!
+binaryOp: aString with: aTF_Operation
+	| name |
+	name _ aString,'_',graph operationsCount printString.
+	
+	^ graph newOperation: aString named: name described: [:description |
+		description
+			addInput: (self output: 0);
+			addInput: (aTF_Operation output: 0)].
+	! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:44:59'!
 boolAt: nameString
@@ -3498,10 +3528,11 @@ typeAt: nameString
 	^ value unsignedLongLongAt: 1
 ! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:13:54'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:18:57'!
 unaryOp: aString
 	| name |
 	name _ aString,'_',graph operationsCount printString.
+	
 	^ graph newOperation: aString named: name described: [:description |
 		description addInput: (self output: 0)].
 	! !
