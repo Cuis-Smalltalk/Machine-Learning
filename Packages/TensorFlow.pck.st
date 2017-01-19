@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 10:51:38 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:11:17 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 191!
+!provides: 'TensorFlow' 1 193!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1461,6 +1461,13 @@ testGraphOperationAt
 	self assert: operation isNull.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/19/2017 11:11:05'!
+testGraphOperationsCount
+	| graph |
+	graph _ self mulGraphTwoInputsInt64.
+	
+	self assert: graph operationsCount equals: 5.! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:21'!
 testGraphOperationsDo
 	| graph operations |
@@ -1727,6 +1734,58 @@ testOperationOutputTypeInt32
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:05:25'!
 testOperationOutputTypeInt64
 	^self testGraph: self constantInt64GraphFromDef outputType: TF_Tensor typeInt64! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:03:50'!
+testOperationPlus
+	| graph a b session constA constB result sum template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
+	
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	sum _ constA + constB.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: sum
+		output: (sum output: 0).
+	
+	template _ a allFloats + b allFloats.
+
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:04:22'!
+testOperationPlusNegated
+	| graph a b session constA constB result sum template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
+	
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	sum _ constA + constB negated.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: sum
+		output: (sum output: 0).
+	
+	template _ a allFloats - b allFloats.
+
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:15:08'!
 testOutputDims
@@ -3195,6 +3254,13 @@ operationNamed: aString
 	^ answer
 ! !
 
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/19/2017 11:10:01'!
+operationsCount
+	| answer |
+	answer _ 0.
+	self operationsDo: [:each | answer _ answer + 1].
+	^ answer! !
+
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:23:10'!
 operationsDo: oneArgBlock
 	| context operation |
@@ -3260,6 +3326,14 @@ delete
 !TF_ImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
 create
 	^ TensorFlowCAPI current newImportGraphDefOptions! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 10:53:29'!
++ aTF_Operation
+	^ graph newOperation: 'Add' named: 'add' described: [:description |
+		description
+			addInput: (self output: 0);
+			addInput: (aTF_Operation output: 0)].
+	! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
 InputsCount
