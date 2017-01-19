@@ -3151,12 +3151,14 @@ newOperation: typeString named: aString
 	^ self library newOperationOn: self type: typeString named: aString
 ! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:08:25'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/19/2017 10:34:58'!
 newOperation: typeString named: aString described: aBlock
-	| description |
+	| description answer |
 	description _ self newOperation: typeString named: aString.
 	aBlock value: description.
-	^description finish! !
+	answer _ description finish.
+	answer graph: self.
+	^ answer! !
 
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:20:02'!
 newOperationIteratorContext
@@ -3275,6 +3277,14 @@ floatAt: nameString
 	status check.
 	^ value floatAt: 1
 ! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:35:20'!
+graph
+	^ graph! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:35:14'!
+graph: aTF_Graph
+	graph _ aTF_Graph! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
 input: indexInteger
