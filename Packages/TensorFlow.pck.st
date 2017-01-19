@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 12:57:29 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 1:12:49 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 200!
+!provides: 'TensorFlow' 1 203!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1723,6 +1723,90 @@ testOperationAbs
 	self assert: result dimensions equals: template dimensions.
 	self assert: result allFloats equals: template allFloats abs.! !
 
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:02:52'!
+testOperationAcos
+	| graph template session const result output intput |
+	
+	template _ #(1.1 0.2 2.34 0.717273).
+	intput _ TF_Tensor fromFloats: template cos.
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: intput.
+	output _ const arcCos.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: intput dimensions.
+	result allFloats with: template do: [:res :temp |
+		self assert: (res closeTo: temp)].! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:03:43'!
+testOperationAsin
+	| graph template session const result output intput |
+	
+	template _ #(1.1 0.2 -1.34 0.717273).
+	intput _ TF_Tensor fromFloats: template sin.
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: intput.
+	output _ const arcSin.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: intput dimensions.
+	result allFloats with: template do: [:res :temp |
+		self assert: (res closeTo: temp)].! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:05:27'!
+testOperationAtan
+	| graph template session const result output intput |
+	
+	template _ #(1.1 0.2 -1.34 0.717273).
+	intput _ TF_Tensor fromFloats: template tan.
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: intput.
+	output _ const arcTan.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: intput dimensions.
+	result allFloats with: template do: [:res :temp |
+		self assert: (res closeTo: temp)].! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:08:49'!
+testOperationCos
+	| graph template session const result output intput |
+
+	template _ #(0.1 0.0 -0.94 0.717273).
+	intput _ TF_Tensor fromFloats: template arcCos.
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: intput.
+	output _ const cos.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: intput dimensions.
+	result allFloats with: template do: [:res :temp |
+		self assert: (res closeTo: temp)].! !
+
 !TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 12:54:00'!
 testOperationMod
 	| graph a b session constA constB result output template |
@@ -1933,6 +2017,48 @@ testOperationPlusNegatedNegatedPlus
 	
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:07:56'!
+testOperationSin
+	| graph template session const result output intput |
+
+	template _ #(0.1 0.0 -0.94 0.717273).
+	intput _ TF_Tensor fromFloats: template arcSin.
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: intput.
+	output _ const sin.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: intput dimensions.
+	result allFloats with: template do: [:res :temp |
+		self assert: (res closeTo: temp)].! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:09:20'!
+testOperationTan
+	| graph template session const result output intput |
+
+	template _ #(0.1 0.0 -0.94 0.717273).
+	intput _ TF_Tensor fromFloats: template arcTan.
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: intput.
+	output _ const tan.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: intput dimensions.
+	result allFloats with: template do: [:res :temp |
+		self assert: (res closeTo: temp)].! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:15:08'!
 testOutputDims
@@ -3507,6 +3633,21 @@ InputsCount
 abs
 	^ self unaryOp: 'Abs'! !
 
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 12:58:32'!
+arcCos
+	^ self unaryOp: 'Acos'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:03:06'!
+arcSin
+	^ self unaryOp: 'Asin'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:04:36'!
+arcTan
+	^ self unaryOp: 'Atan'
+	! !
+
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/12/2017 18:46:27'!
 attrMetadata: nameString
 	| status answer |
@@ -3535,6 +3676,11 @@ boolAt: nameString
 	status check.
 	^ (value booleanAt: 1) 
 ! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:18'!
+cos
+	^ self unaryOp: 'Cos'
+	! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
 device
@@ -3616,6 +3762,11 @@ shapeAt: nameString
 	status check.
 	^ answer! !
 
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:09'!
+sin
+	^ self unaryOp: 'Sin'
+	! !
+
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:57'!
 stringAt: nameString
 	| value status size |
@@ -3626,6 +3777,11 @@ stringAt: nameString
 	status check.
 	^ (value upTo: 0) asString
 ! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:05'!
+tan
+	^ self unaryOp: 'Tan'
+	! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:00:29'!
 tensorAt: nameString
