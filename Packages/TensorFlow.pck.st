@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 18 January 2017 at 3:22:19 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 January 2017 at 11:21:03 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 186!
+!provides: 'TensorFlow' 1 187!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2336,7 +2336,7 @@ testVersion
 setUp
 	nn _ NearestNeighbor new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'jb 1/16/2017 22:05:03'!
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
 	| dimensions transposed |
 	dimensions _ points first size.
@@ -2346,7 +2346,7 @@ tensorFrom: points
 	points do: [ :point |
 		point withIndexDo: [ :value :coordinate |
 			(transposed at: coordinate) add: value ]].
-	^ nn extractTensor: transposed.! !
+	^ TF_Tensor fromFloats: transposed.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/17/2017 16:35:58'!
 testNearesNeighbor
@@ -3010,10 +3010,10 @@ fields
 initialize
 	^super initialize! !
 
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:49:03'!
+!TF_Buffer methodsFor: 'accessing' stamp: 'JB 1/18/2017 23:01:10'!
 data
 	"This method was automatically generated. See TF_Buffer class>>fields."
-	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType char asPointerType! !
+	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:33:21'!
 data: anObject
@@ -4171,21 +4171,6 @@ decodeCSVGraphDefaults: anArrayOfTF_Tensors
 	
 	^ graph! !
 
-!NearestNeighbor methodsFor: 'private' stamp: 'jb 1/15/2017 22:47:46'!
-extractTensor: multiArray
-	| answer flatten |
-	answer _ TF_Tensor
-		type: TF_Tensor typeFloat
-		dimensions: {multiArray size - 1. multiArray first size}.
-	flatten _ OrderedCollection new.
-	multiArray allButLast do: [ :col |
-		col do: [ :x |
-			flatten add: x ]].
-	TF_Tensor
-		floatArray: flatten
-		into: answer data getHandle.
-	^ answer.! !
-
 !NearestNeighbor methodsFor: 'initialization' stamp: 'gera 1/16/2017 23:11:54'!
 initialize
 	self initializeGraph! !
@@ -4242,17 +4227,17 @@ loadDataSet
 			decodeCSV: csv
 			graphRun: description ].! !
 
-!NearestNeighbor methodsFor: 'running' stamp: 'jb 1/15/2017 23:31:05'!
+!NearestNeighbor methodsFor: 'running' stamp: 'JB 1/18/2017 22:57:12'!
 run
 	| covariatesTr covariatesTe predictions size dataset testing training |
 	dataset _ self loadDataSet.
 	training _ dataset first.
 	testing _ dataset second.
-	covariatesTr _ self extractTensor: training.
+	covariatesTr _  TF_Tensor fromFloats: training allButLast.
 	size _ testing first size.
 	predictions _ (1 to: size) collect: [ :i | | covariates index predicted results trueValue |
-		covariates _ testing collect:[:col| {col at: i}].
-		covariatesTe _ self extractTensor: covariates.
+		covariates _ testing  collect:[:col| {col at: i}].
+		covariatesTe _ TF_Tensor fromFloats: covariates allButLast.
 		results _ self
 			runGraphUsing: covariatesTr
 			and: covariatesTe.
