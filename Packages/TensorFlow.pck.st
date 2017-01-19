@@ -1787,6 +1787,32 @@ testOperationPlusNegated
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:14:43'!
+testOperationPlusNegatedNegated
+	| graph a b session constA constB result sum template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
+	
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	sum _ (constA + constB negated) negated.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: sum
+		output: (sum output: 0).
+	
+	template _ (a allFloats - b allFloats) negated.
+
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:15:08'!
 testOutputDims
 	| graph operation output |
