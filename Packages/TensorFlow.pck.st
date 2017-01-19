@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 12:54:09 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 12:57:29 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 199!
+!provides: 'TensorFlow' 1 200!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1703,6 +1703,25 @@ testNewStatus
 	self deny: status isNull.
 	status delete.
 	self assert: status isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 12:57:18'!
+testOperationAbs
+	| graph template session const result output |
+	
+	template _ TF_Tensor fromFloats: #((-1.1 1.2) (-2.1 -2.2)) abs.
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: template.
+	output _ const abs.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: template dimensions.
+	self assert: result allFloats equals: template allFloats abs.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 12:54:00'!
 testOperationMod
@@ -3483,6 +3502,10 @@ create
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
 InputsCount
 	^ self library operationNumInputs: self! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 12:55:41'!
+abs
+	^ self unaryOp: 'Abs'! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/12/2017 18:46:27'!
 attrMetadata: nameString
