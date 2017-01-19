@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:21:31 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:32:23 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 196!
+!provides: 'TensorFlow' 1 197!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2374,6 +2374,19 @@ testTensorFromFloats2x2SameElementsOrder
 	consts with: values do: [:const :value |
 		self assert: (const closeTo: value)].! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
+testTensorFromFloatsScalar
+	| tensor template values |
+	template _ 3.141516.
+	tensor _ TF_Tensor fromFloats: template.
+	values _ tensor allFloats.
+		
+	self assert: tensor dimensions equals: #().
+	self assert: tensor size equals: 1.
+	self assert: tensor byteSize equals: (1*4).
+	
+	self assert: (template closeTo: values first).! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
 testTensorFromInt64Array
 	| tensor template values |
@@ -4045,12 +4058,12 @@ floatArray: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/18/2017 00:18:02'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/19/2017 11:26:11'!
 fromFloats: values
 	| answer dimensions size count |
 	size _ self sizeOf: values.
 	dimensions _ self dimensionsOf: values.
-	count _ dimensions fold: [:a :b | a * b].
+	count _ dimensions inject: 1 into: [:a :b | a * b].
 	count = size ifFalse: [
 		self error: 'Inferred size and real size don''t match.'].
 	
