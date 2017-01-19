@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 1:12:49 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 January 2017 at 7:07:06 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 203!
+!provides: 'TensorFlow' 1 205!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3154,9 +3154,13 @@ fields
 	"self initialize"
 	^#()! !
 
-!TF_Structure class methodsFor: 'class initialization' stamp: 'gera 1/12/2017 18:44:14'!
+!TF_Structure class methodsFor: 'class initialization' stamp: 'gera 1/19/2017 19:06:52'!
 initialize
-	super initialize.! !
+	super initialize.
+	self == TF_Structure ifTrue: [
+		self allSubclassesDo: [:cls | cls initialize].
+		self allSubclassesDo: [:cls | cls initialize].
+	]! !
 
 !TF_Structure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:33:15'!
 pointerSize
@@ -3370,10 +3374,6 @@ fields
 		(_type 'ulonglong')
 		(totalSize 'longlong'))
 	! !
-
-!TF_AttrMetadata class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:45:15'!
-initialize
-	^super initialize! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'JB 1/18/2017 23:01:10'!
 data
@@ -4747,4 +4747,3 @@ irisFile
 new
 	^ super new initialize! !
 TF_Structure initialize!
-TF_AttrMetadata initialize!
