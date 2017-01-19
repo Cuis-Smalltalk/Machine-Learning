@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 10:07:37 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 10:14:08 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 187!
+!provides: 'TensorFlow' 1 188!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2209,7 +2209,7 @@ testTensorFromFloats
 		self assert: (point x closeTo: point y)]
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:19:32'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 10:13:47'!
 testTensorFromFloats2x2
 	| tensor template values |
 	template _ #(
@@ -2222,14 +2222,12 @@ testTensorFromFloats2x2
 	self assert: tensor dimensions equals: #(2 2).
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (4*4).
-	
-	tensor delete.
-	
+		
 	#(-1.1 -2.1 -1.2 -2.2) with: values do: [:reference :value |
 		self assert: (reference closeTo: value)]
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:22:01'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 10:14:00'!
 testTensorFromFloats2x2SameElementsOrder
 	| tensor template values constTensor consts |
 	template _ #(
@@ -2238,11 +2236,9 @@ testTensorFromFloats2x2SameElementsOrder
 		
 	tensor _ TF_Tensor fromFloats: template.
 	values _ tensor allFloats.
-	tensor delete.
 	
 	constTensor _ self get2x2FloatFromGraphDef.
 	consts _ constTensor allFloats.
-	constTensor delete.
 	
 	consts with: values do: [:const :value |
 		self assert: (const closeTo: value)].! !
