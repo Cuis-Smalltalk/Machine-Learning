@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:19:22 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3025] on 19 January 2017 at 11:21:31 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 195!
+!provides: 'TensorFlow' 1 196!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1811,7 +1811,7 @@ testOperationPlusNegatedNegated
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:17:53'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:21:23'!
 testOperationPlusNegatedNegatedPlus
 	| graph a b session constA constB result sum template |
 	
@@ -1833,6 +1833,10 @@ testOperationPlusNegatedNegatedPlus
 		output: (sum output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
+	
+	result allFloats with: a allFloats negated do: [:r :t |
+		self assert: (r closeTo: t)].
+	
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
