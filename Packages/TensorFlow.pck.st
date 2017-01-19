@@ -3863,7 +3863,7 @@ floatArray: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:18:02'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/18/2017 00:18:02'!
 fromFloats: values
 	| answer dimensions size count |
 	size _ self sizeOf: values.
