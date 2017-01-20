@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 January 2017 at 7:07:06 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 January 2017 at 11:54:35 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 205!
+!provides: 'TensorFlow' 1 206!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2833,10 +2833,11 @@ externalizeString: aString
 		answer byteAt:  index put: char asciiValue].
 	^ answer! !
 
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/27/2016 23:56:18'!
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/19/2017 23:32:25'!
 finishOperation: aTF_OperationDescription status: aTF_Status
-	<cdecl: TF_Operation* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
-	^ self externalCallFailed.! !
+	| answer |
+	answer _ self finishOperationAsVoid: aTF_OperationDescription status: aTF_Status.
+	^ TF_Operation fromHandle: answer getHandle.! !
 
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/19/2017 10:33:08'!
 finishOperationAsVoid: aTF_OperationDescription status: aTF_Status
@@ -2858,14 +2859,30 @@ getCode: aTF_Status
 	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 03:36:16'!
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:27:15'!
 graph: aTF_Graph getOperationNamed: aString
-	<cdecl: TF_Operation* 'TF_GraphOperationByName' (TF_Graph* char*)>
+	| answer |
+	answer _ self graph: aTF_Graph getOperationNamedAsVoid: aString.
+	answer _ TF_Operation fromHandle: answer getHandle.
+	answer graph: aTF_Graph.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:12:26'!
+graph: aTF_Graph getOperationNamedAsVoid: aString
+	<cdecl: void* 'TF_GraphOperationByName' (TF_Graph* char*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/5/2017 20:08:15'!
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:29:16'!
 graph: aTF_Graph operationAt: contextULongLongPtr
-	<cdecl: TF_Operation* 'TF_GraphNextOperation' (TF_Graph* ulonglong*)>
+	| answer |
+	answer _ self graph: aTF_Graph operationAtAsVoid: contextULongLongPtr.
+	answer _ TF_Operation fromHandle: answer getHandle.
+	answer graph: aTF_Graph.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:28:23'!
+graph: aTF_Graph operationAtAsVoid: contextULongLongPtr
+	<cdecl: void* 'TF_GraphNextOperation' (TF_Graph* ulonglong*)>
 	^ self externalCallFailed
 ! !
 
@@ -3532,7 +3549,7 @@ newOperationIteratorContext
 operationAt: contextULongLongPtr
 	^ self library graph: self operationAt: contextULongLongPtr! !
 
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/7/2017 05:10:43'!
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/19/2017 23:27:23'!
 operationNamed: aString
 	| answer |
 	answer _ self library graph: self getOperationNamed: aString asAsciiZ.
@@ -3910,14 +3927,13 @@ at: attribute putType: value
 		set: attribute asAsciiZ
 		toType: value! !
 
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:32:37'!
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/19/2017 23:33:39'!
 finish
 	| answer status |
 	status _ TF_Status create.
 	answer _ self library
-		finishOperationAsVoid: self
+		finishOperation: self
   		status: status.
-	answer _ TF_Operation fromHandle: answer getHandle.
 	handle _ nil.
 	status check.
 	^ answer.! !
