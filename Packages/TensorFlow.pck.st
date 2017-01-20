@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 January 2017 at 11:54:35 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 5:52:26 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 206!
+!provides: 'TensorFlow' 1 208!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2309,18 +2309,26 @@ testSessionDeletionDoesntDeleteGraphs
 	
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/19/2017 23:34:31'!
-testSessionFinalizationReleasesExternalMemory
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/20/2017 17:48:50'!
+testSessionFinalizationReleasesExternalMemory 
 	" WeakArray restartFinalizationProcess "
-	| handles graph tries |
-	tries _ 50.
+	| tries total handles graph |
+	total _ 0.
+	tries _ 20.
 	graph _ TF_Graph create.
-	handles _ (1 to: tries) collect: [:i |
-		Smalltalk garbageCollect.
-		(TF_Session onGraph: graph) getHandle].
+	handles _ Set new.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_Session onGraph: graph) getHandle]).
+		handles size < total ifTrue: [
+			^ self]].
 
-	self assert: (handles asSet size) < tries.
-	graph delete
+	graph delete.
+	
+	self assert: (handles size) < total.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:46'!
@@ -2562,18 +2570,27 @@ testTensorDimensions: anArray
 	self assert: tensor size equals: size.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 23:34:54'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/20/2017 17:49:12'!
 testTensorFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
-	| handles template size |
-	size _ 50.
+	| handles template tries total |
+	total _ 0.
+	tries _ 20.
+	handles _ Set new.
+
 	template _ {String new: 10. String new: 100. String new: 1000}.
 	
-	handles _ (1 to: size) collect: [:i |
-		Smalltalk garbageCollect.
-		(TF_Tensor fromStringArray: template) useFinalization getHandle].
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_Tensor fromStringArray: template) getHandle]).
+		handles size < total ifTrue: [
+			^ self]
+	].
 
-	self assert: (handles asSet size) < size.! !
+	self assert: (handles size) < total.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
 testTensorFromFloats
