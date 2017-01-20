@@ -2309,11 +2309,11 @@ testSessionDeletionDoesntDeleteGraphs
 	
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 21:28:51'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/19/2017 23:34:31'!
 testSessionFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
 	| handles graph tries |
-	tries _ 30.
+	tries _ 50.
 	graph _ TF_Graph create.
 	handles _ (1 to: tries) collect: [:i |
 		Smalltalk garbageCollect.
@@ -2562,11 +2562,11 @@ testTensorDimensions: anArray
 	self assert: tensor size equals: size.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 11:16:18'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 23:34:54'!
 testTensorFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
 	| handles template size |
-	size _ 20.
+	size _ 50.
 	template _ {String new: 10. String new: 100. String new: 1000}.
 	
 	handles _ (1 to: size) collect: [:i |
