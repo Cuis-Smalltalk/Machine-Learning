@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:04:28 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:13:26 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 210!
+!provides: 'TensorFlow' 1 211!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -312,15 +312,13 @@ testExternalFromArrayTensor
 	self assert: (array at: 2) getHandle = t2 getHandle.
 	! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 12:46:04'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/20/2017 18:08:26'!
 testOperationArrayAtPut
 	| graph sample |
 	graph _ TF_Graph create.
 	sample _ graph placeholder: 'var' type: TF_Tensor typeInt64.
 	
 	self testArrayAtPutFor: TF_OperationPtrArray elementSample: sample.
-
-	graph delete.
 ! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 19:15:43'!
@@ -786,7 +784,7 @@ testAsStringGraphRunOn: tensor
 
 	^ result! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:01'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:16'!
 testAttrGetBoolFalse
 	| graph in op |
 	graph _ TF_Graph create.
@@ -795,10 +793,9 @@ testAttrGetBoolFalse
 		description addInput: (in output: 0)].
 	
 	self assert: (op boolAt: 'scientific') equals: false.
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:10'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:23'!
 testAttrGetBoolTrue
 	| graph in op |
 	graph _ TF_Graph create.
@@ -807,10 +804,9 @@ testAttrGetBoolTrue
 		description addInput: (in output: 0)].
 	
 	self assert: (op boolAt: 'signed_input') equals: true.
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:29'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:27'!
 testAttrGetFloat
 	| graph in op |
 	graph _ TF_Graph create.
@@ -823,8 +819,7 @@ testAttrGetFloat
 	
 	self assert: (op floatAt: 'min') equals: -6.0.
 	self assert: (op floatAt: 'max') equals: 6.0.
-	
-	graph delete! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:33'!
 testAttrGetInt
@@ -836,17 +831,16 @@ testAttrGetInt
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:36'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:31'!
 testAttrGetShape
 	| graph op |
 	graph _ TF_Graph create.
 	op _ graph placeholder: 'in' type: TF_Tensor typeDouble.
 	
 	self assert: (op shapeAt: 'shape') equals: #().
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:41'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:36'!
 testAttrGetString
 	| graph in op |
 	graph _ TF_Graph create.
@@ -855,8 +849,7 @@ testAttrGetString
 		description addInput: (in output: 0)].
 	
 	self assert: (op stringAt: 'fill') equals: ''.
-	
-	graph delete! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:53'!
 testAttrGetTensor
@@ -882,7 +875,7 @@ testAttrGetType
 	
 	graph delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:09'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:39'!
 testAttrSetBoolFalse
 	| graph in op |
 	graph _ TF_Graph create.
@@ -895,10 +888,9 @@ testAttrSetBoolFalse
 			description addInput: (in output: 0)].
 	
 	self assert: (op boolAt: 'signed_input') equals: false.
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:12'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:43'!
 testAttrSetBoolTrue
 	| graph in op |
 	graph _ TF_Graph create.
@@ -908,10 +900,9 @@ testAttrSetBoolTrue
 		description addInput: (in output: 0)].
 	
 	self assert: (op boolAt: 'scientific') equals: true.
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 10:41:06'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:48'!
 testAttrSetFloat
 	| graph in op min max |
 	min _ -1234.5678e10.
@@ -928,8 +919,7 @@ testAttrSetFloat
 	
 	self assert: ((op floatAt: 'min') closeTo: min).
 	self assert: ((op floatAt: 'max') closeTo: max).
-	
-	graph delete! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:38:13'!
 testAttrSetShape
@@ -938,7 +928,7 @@ testAttrSetShape
 	self testAttrSetShape: #(1 2 3 4).
 	self testAttrSetShape: (1 to: 200) asArray.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:21'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:53'!
 testAttrSetShape: anIntegerArray
 	| graph op |
 	graph _ TF_Graph create.
@@ -950,8 +940,7 @@ testAttrSetShape: anIntegerArray
 			description at: 'dtype' putType: TF_Tensor typeInt64].
 		
 	self assert: (op shapeAt: 'shape') equals: anIntegerArray.
-
-	graph delete! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:59:12'!
 testAttrSetString
@@ -963,7 +952,7 @@ testAttrSetString
 	self testAttrSetString: '123456789'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:09:32'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:57'!
 testAttrSetString: aString
 	| graph in op |
 	graph _ TF_Graph create.
@@ -975,8 +964,7 @@ testAttrSetString: aString
 	Smalltalk garbageCollect.	" Force releasing the string, to see if the API makes a copy or not"
 	
 	self assert: (op stringAt: 'fill') equals: aString.
-	
-	graph delete! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:20'!
 testBufferDataBytes
@@ -1189,7 +1177,7 @@ testGetAllOps
 	self assert: (ops data fromCString includesSubString: 'tensor').
 	ops delete! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:20'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:06'!
 testGetAttrMetadataBoolean
 	| graph in op template metadata |
 	template _ '1234567890abc'.
@@ -1202,10 +1190,9 @@ testGetAttrMetadataBoolean
 	metadata _ op attrMetadata: 'scientific'.
 	self assert: metadata isBoolean.
 	self assert: metadata isList equals: false.
+! !
 
-	graph delete! !
-
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:25'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:12'!
 testGetAttrMetadataFloat
 	| graph in op metadata |
 	graph _ TF_Graph create.
@@ -1218,11 +1205,9 @@ testGetAttrMetadataFloat
 	
 	metadata _ op attrMetadata: 'min'.
 	self assert: metadata isFloat.
-	self assert: metadata isList equals: false.
-	
-	graph delete! !
+	self assert: metadata isList equals: false.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:30'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:17'!
 testGetAttrMetadataInt
 	| graph in op template metadata |
 	template _ '1234567890abc'.
@@ -1235,10 +1220,9 @@ testGetAttrMetadataInt
 	metadata _ op attrMetadata: 'precision'.
 	self assert: metadata isInt.
 	self assert: metadata isList equals: false.
+! !
 
-	graph delete! !
-
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:38'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:22'!
 testGetAttrMetadataShape
 	| graph op template metadata |
 	template _ #(1 2 3 4 5).
@@ -1254,10 +1238,9 @@ testGetAttrMetadataShape
 	self assert: metadata isShape.
 	self assert: metadata isList equals: false.
 	self assert: metadata totalSize equals: template size.
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:48'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:27'!
 testGetAttrMetadataString
 	| graph in op template metadata |
 	template _ '1234567890abc'.
@@ -1273,10 +1256,9 @@ testGetAttrMetadataString
 	self assert: metadata isString.
 	self assert: metadata isList equals: false.
 	self assert: metadata totalSize equals: template size.
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:52'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:33'!
 testGetAttrMetadataTensor
 	| graph op template metadata |
 	template _ #(1 2 3 4 5).
@@ -1286,10 +1268,9 @@ testGetAttrMetadataTensor
 	metadata _ op attrMetadata: 'value'.
 	self assert: metadata isTensor.
 	self assert: metadata isList equals: false.
-	
-	graph delete! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:11:56'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:37'!
 testGetAttrMetadataType
 	| graph op template metadata |
 	template _ #(1 2 3 4 5).
@@ -1304,8 +1285,7 @@ testGetAttrMetadataType
 	metadata _ op attrMetadata: 'dtype'.
 	self assert: metadata isType.
 	self assert: metadata isList equals: false.
-	
-	graph delete! !
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:12:06'!
 testGetOperationOnConstantGraph
@@ -1533,39 +1513,27 @@ testGraphOperationsSelectEmpty
 	self assert: operations size equals: 0.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 01:30:28'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:10:45'!
 testImportBad
 	| graph buffer |
 	graph _ TF_Graph create.
 	buffer _ TF_Buffer fromString: 'ouch'.
 	
 	self should: [graph import: buffer] raise: Error.
-	
-	buffer delete.
-	graph delete.
-	! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/6/2017 00:04:20'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:06:41'!
 testImportConstantGraph
-	| graph |
-
 	self shouldnt: [
-		graph _ self constantFloatGraphFromDef.
-		graph delete.
-		graph _ self constantInt32GraphFromDef.
-		graph delete.
-		graph _ self constantInt64GraphFromDef.
-		graph delete.
-		] raise: Error.
+		self constantFloatGraphFromDef.
+		self constantInt32GraphFromDef.
+		self constantInt64GraphFromDef.
+	] raise: Error.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 12/22/2016 02:19:54'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:06:23'!
 testImportEmpty
-	| graph |
-
-	self shouldnt: [
-		graph _ self emptyGraph.
-		graph delete] raise: Error.
+	self shouldnt: [self emptyGraph] raise: Error.
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:08'!
@@ -1751,14 +1719,13 @@ testOperationAbs
 	self assert: result dimensions equals: template dimensions.
 	self assert: result allFloats equals: template allFloats abs.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:02:52'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:27'!
 testOperationAcos
 	| graph template session const result output intput |
 	
 	template _ #(1.1 0.2 2.34 0.717273).
 	intput _ TF_Tensor fromFloats: template cos.
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: intput.
 	output _ const arcCos.
@@ -1772,14 +1739,13 @@ testOperationAcos
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:03:43'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:34'!
 testOperationAsin
 	| graph template session const result output intput |
 	
 	template _ #(1.1 0.2 -1.34 0.717273).
 	intput _ TF_Tensor fromFloats: template sin.
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: intput.
 	output _ const arcSin.
@@ -1793,14 +1759,13 @@ testOperationAsin
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:05:27'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:43'!
 testOperationAtan
 	| graph template session const result output intput |
 	
 	template _ #(1.1 0.2 -1.34 0.717273).
 	intput _ TF_Tensor fromFloats: template tan.
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: intput.
 	output _ const arcTan.
@@ -1814,14 +1779,13 @@ testOperationAtan
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:08:49'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:46'!
 testOperationCos
 	| graph template session const result output intput |
 
 	template _ #(0.1 0.0 -0.94 0.717273).
 	intput _ TF_Tensor fromFloats: template arcCos.
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: intput.
 	output _ const cos.
@@ -1835,7 +1799,7 @@ testOperationCos
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 12:54:00'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:51'!
 testOperationMod
 	| graph a b session constA constB result output template |
 	
@@ -1843,7 +1807,6 @@ testOperationMod
 	b _ TF_Tensor fromFloats: #((3.0 2.0) (7.0 5.0)).
 	
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
@@ -1860,7 +1823,7 @@ testOperationMod
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:36:26'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:55'!
 testOperationMul
 	| graph a b session constA constB result output template |
 	
@@ -1868,7 +1831,6 @@ testOperationMul
 	b _ TF_Tensor fromFloats: #((2.0 4.0) (8.0 16.0)).
 	
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
@@ -1885,7 +1847,7 @@ testOperationMul
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:23:20'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:59'!
 testOperationMulScalar
 	| graph a b session constA constB result sum template |
 	
@@ -1893,7 +1855,6 @@ testOperationMulScalar
 	b _ TF_Tensor fromFloats: 2.0.
 	
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
@@ -1910,13 +1871,12 @@ testOperationMulScalar
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 10:47:58'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:12:04'!
 testOperationNegated
 	| graph template session const result negated |
 	
 	template _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: template.
 	negated _ const negated.
@@ -1941,7 +1901,7 @@ testOperationOutputTypeInt32
 testOperationOutputTypeInt64
 	^self testGraph: self constantInt64GraphFromDef outputType: TF_Tensor typeInt64! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:16:52'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:12:07'!
 testOperationPlus
 	| graph a b session constA constB result sum template |
 	
@@ -1949,7 +1909,6 @@ testOperationPlus
 	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
 	
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
@@ -1966,7 +1925,7 @@ testOperationPlus
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:04:22'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:12:11'!
 testOperationPlusNegated
 	| graph a b session constA constB result sum template |
 	
@@ -1974,7 +1933,6 @@ testOperationPlusNegated
 	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
 	
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
@@ -1992,7 +1950,7 @@ testOperationPlusNegated
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:17:12'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:12:16'!
 testOperationPlusNegatedNegated
 	| graph a b session constA constB result sum template |
 	
@@ -2000,7 +1958,6 @@ testOperationPlusNegatedNegated
 	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
 	
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
@@ -2017,7 +1974,7 @@ testOperationPlusNegatedNegated
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 11:21:23'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:12:19'!
 testOperationPlusNegatedNegatedPlus
 	| graph a b session constA constB result sum template |
 	
@@ -2025,7 +1982,6 @@ testOperationPlusNegatedNegatedPlus
 	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
 	
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
@@ -2046,14 +2002,13 @@ testOperationPlusNegatedNegatedPlus
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:07:56'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:12:23'!
 testOperationSin
 	| graph template session const result output intput |
 
 	template _ #(0.1 0.0 -0.94 0.717273).
 	intput _ TF_Tensor fromFloats: template arcSin.
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: intput.
 	output _ const sin.
@@ -2067,14 +2022,13 @@ testOperationSin
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/19/2017 13:09:20'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:12:29'!
 testOperationTan
 	| graph template session const result output intput |
 
 	template _ #(0.1 0.0 -0.94 0.717273).
 	intput _ TF_Tensor fromFloats: template arcTan.
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: intput.
 	output _ const tan.
@@ -2088,17 +2042,16 @@ testOperationTan
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:15:08'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:07:50'!
 testOutputDims
 	| graph operation output |
 	graph _ self constantInt64GraphFromDef.
 	operation _ graph operationNamed: 'a'.
 	output _ operation output: 0.
 	self assert: (graph outputDimenssionsCount: output) equals: 0.
-	graph delete.
 	output free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:48'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:12:39'!
 testPlaceholderType: type
 	| graph var session result tensor abs |
 	graph _ TF_Graph create.
@@ -2114,7 +2067,6 @@ testPlaceholderType: type
 		value: tensor
 		output: (abs output: 0).
 
-	graph delete.
 	result delete.
 ! !
 
@@ -2288,7 +2240,7 @@ testRunOperationArray
 
 	graph delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/8/2017 12:08:48'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:12:50'!
 testSessionDeletionDoesntDeleteGraphs
 	| session graph allocatedObjects |
 	graph _ TF_Graph create.
@@ -2305,10 +2257,9 @@ testSessionDeletionDoesntDeleteGraphs
 		shouldnt: [graph placeholder: 'a' type: TF_Tensor typeInt64]
 		raise: Error
 		description: 'The FFI call would crash if the graph was released by deleting the session'.
-	
-	graph delete.! !
+! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/20/2017 17:48:50'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/20/2017 18:12:58'!
 testSessionFinalizationReleasesExternalMemory 
 	" WeakArray restartFinalizationProcess "
 	| tries total handles graph |
@@ -2324,8 +2275,6 @@ testSessionFinalizationReleasesExternalMemory
 			(TF_Session onGraph: graph) getHandle]).
 		handles size < total ifTrue: [
 			^ self]].
-
-	graph delete.
 	
 	self assert: (handles size) < total.
 ! !
