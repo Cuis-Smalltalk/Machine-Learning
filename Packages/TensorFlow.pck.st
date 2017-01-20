@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:16:48 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:21:46 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 212!
+!provides: 'TensorFlow' 1 213!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1823,7 +1823,7 @@ testOperationMod
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:55'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:20:30'!
 testOperationMul
 	| graph a b session constA constB result output template |
 	
@@ -1835,7 +1835,7 @@ testOperationMul
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
 	
-	output _ constA * constB.
+	output _ constA @* constB.
 	template _ a allFloats * b allFloats.
 	
 	session _ TF_Session onGraph: graph.
@@ -1847,7 +1847,7 @@ testOperationMul
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:11:59'!
+!TensorFlowCAPITest methodsFor: 'testing operations' stamp: 'gera 1/20/2017 18:21:19'!
 testOperationMulScalar
 	| graph a b session constA constB result sum template |
 	
@@ -1859,7 +1859,7 @@ testOperationMulScalar
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
 	
-	sum _ constA * constB.
+	sum _ constA @* constB.
 	template _ a allFloats * 2.0.
 	
 	session _ TF_Session onGraph: graph.
@@ -3624,13 +3624,13 @@ delete
 create
 	^ TensorFlowCAPI current newImportGraphDefOptions! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:22:25'!
-* aTF_Operation
-	^ self binaryOp: 'Mul' with: aTF_Operation! !
-
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:19:11'!
 + aTF_Operation
 	^ self binaryOp: 'Add' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
+@* aTF_Operation
+	^ self binaryOp: 'Mul' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 12:52:43'!
 \\ aTF_Operation
