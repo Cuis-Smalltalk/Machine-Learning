@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 5:52:26 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:02:53 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 208!
+!provides: 'TensorFlow' 1 209!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3654,9 +3654,9 @@ placeholder: nameString type: typeInteger
 		described: [:description |
 			description at: 'dtype' putType: typeInteger]! !
 
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 22:31:20'!
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
 create
-	^ TensorFlowCAPI current newGraph! !
+	^ TensorFlowCAPI current newGraph useFinalization! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:26'!
 fromFileNamed: aString
