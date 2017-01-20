@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:13:26 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:16:48 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 211!
+!provides: 'TensorFlow' 1 212!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1513,14 +1513,14 @@ testGraphOperationsSelectEmpty
 	self assert: operations size equals: 0.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:10:45'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:16:44'!
 testImportBad
 	| graph buffer |
 	graph _ TF_Graph create.
 	buffer _ TF_Buffer fromString: 'ouch'.
 	
 	self should: [graph import: buffer] raise: Error.
-! !
+	buffer delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:06:41'!
 testImportConstantGraph
