@@ -1431,6 +1431,35 @@ testGraphFinalizationReleasesExternalMemory
 	self assert: (handles asSet size) < tries.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/19/2017 23:06:59'!
+testGraphNotFinalizedWhenHeldByOperations
+	| graph in1 in2 add |
+	graph _ self addGraphTwoInputsInt64.
+	graph useFinalization.
+	
+	in1 _ graph operationNamed: 'in1'.
+	in2 _ graph operationNamed: 'in2'.
+	add _ graph operationNamed: 'add'.
+
+	self assert: in1 name equals: 'in1'.
+	self assert: in2 name equals: 'in2'.
+	self assert: add name equals: 'add'.
+		
+	graph _ nil.
+	Smalltalk garbageCollect.
+	
+	self assert: in1 name equals: 'in1'.
+	self assert: in2 name equals: 'in2'.
+	self assert: add name equals: 'add'.
+	
+	graph _ self mulGraphTwoInputsInt64.
+	graph ignoreFinalization.
+	graph delete.
+
+	self assert: in1 name equals: 'in1'.
+	self assert: in2 name equals: 'in2'.
+	self assert: add name equals: 'add'.! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:07'!
 testGraphOperationAt
 	| graph operation context |
