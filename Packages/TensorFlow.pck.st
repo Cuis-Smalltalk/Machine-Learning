@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:02:53 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:04:28 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 209!
+!provides: 'TensorFlow' 1 210!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1431,7 +1431,7 @@ testGraphFinalizationReleasesExternalMemory
 	self assert: (handles asSet size) < tries.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/19/2017 23:06:59'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:04:24'!
 testGraphNotFinalizedWhenHeldByOperations
 	| graph in1 in2 add |
 	graph _ self addGraphTwoInputsInt64.
@@ -1453,7 +1453,6 @@ testGraphNotFinalizedWhenHeldByOperations
 	self assert: add name equals: 'add'.
 	
 	graph _ self mulGraphTwoInputsInt64.
-	graph ignoreFinalization.
 	graph delete.
 
 	self assert: in1 name equals: 'in1'.
