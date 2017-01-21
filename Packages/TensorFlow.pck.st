@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:44:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:10:46 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 226!
+!provides: 'TensorFlow' 1 227!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -813,6 +813,18 @@ runFloatAsStringGraph
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 12/21/2016 02:11:17'!
 setUp
 	library _ TensorFlowCAPI current! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 17:05:41'!
+tesCloseSessionTwiceNoCrash
+	| graph session |
+	graph _ TF_Graph create.
+	session _ TF_Session onGraph: graph.
+	self deny: session isNull.
+	session ignoreFinalization.
+	session close.
+	session close.
+	session delete.
+	self assert: session isNull.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:44'!
 testAsStringGraphRunOn: tensor
@@ -4302,30 +4314,29 @@ close
 	self library closeSession: self status: status.
 	status check! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/19/2017 09:47:09'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/21/2017 17:08:08'!
 delete
 	| status |
 	self ignoreFinalization.
-	status _ TF_Status create.
 	self isNull ifFalse: [
+		self close.
+		status _ TF_Status create.
 		self library
 			deleteSession: self
-			status: status].
-	status check.
+			status: status.
+		status check.
+	].
 	handle _ nil.
 ! !
 
-!TF_Session methodsFor: 'release' stamp: 'gera 1/13/2017 10:40:47'!
+!TF_Session methodsFor: 'release' stamp: 'gera 1/21/2017 17:08:40'!
 finalize
-	[
-	self isNull ifFalse: [ self close ].
-	self delete ]
-		on: Error
-		do: [
-			Transcript
-				newLine;
-				print: 'Error finalizing ';
-				show: self ].! !
+	[self delete] on: Error do: [
+		Transcript
+			newLine;
+			print: 'Error finalizing ';
+			show: self
+	].! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
 run
@@ -4505,9 +4516,8 @@ delete
 		self library deleteStatus: self].
 	handle _ nil.! !
 
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:31:44'!
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:09:37'!
 finalize
-	handle isNull ifTrue: [^self].
 	self delete! !
 
 !TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 10:48:36'!
