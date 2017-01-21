@@ -2972,8 +2972,11 @@ testNearesNeighborWithOperations
 
 !TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:41'!
 testOLS
-	|ols x y betas |
-	ols _ OLSExample new.
+	self testOLS: OLSExample new.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:17'!
+testOLS: ols
+	| x y betas |
 	x _ TF_Tensor fromFloats: #(
 		(1  2   3)
 		(6  7   8)
@@ -2997,6 +3000,10 @@ testOLS
 	
 		
 ! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:19:01'!
+testOLSWithOperations
+	self testOLS: OLSExample new initializeWithOperations! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
@@ -5017,6 +5024,18 @@ initializeGraph
 	outputs _ {operation output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:17:34'!
+initializeGraphWithOperations
+	| x y |
+	super initializeGraph.
+	
+	x _ graph placeholder: 'x' type: TF_Tensor typeFloat.
+	y _ graph placeholder: 'y' type: TF_Tensor typeFloat.
+	
+	operation _ (x \* x) inverse * (x \* y).
+	outputs _ {operation output: 0}.
+	inputs _ {x input: 0. y input: 0}.! !
+
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
 decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
@@ -5137,6 +5156,10 @@ new
 !OLSExample methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:29:16'!
 initialize
 	plan _ ExampleOLSPlan new.! !
+
+!OLSExample methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:16:37'!
+initializeWithOperations
+	plan _ ExampleOLSPlan new initializeGraphWithOperations.! !
 
 !OLSExample methodsFor: 'running' stamp: 'gera 1/21/2017 04:20:26'!
 regress: x on: y
