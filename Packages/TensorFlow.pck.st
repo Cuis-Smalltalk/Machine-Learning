@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 20 January 2017 at 6:37:17 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 1:38:18 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 215!
+!provides: 'TensorFlow' 1 217!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2469,7 +2469,7 @@ testOperationCos
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:25:31'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 01:38:01'!
 testOperationMatMul
 	| graph a b session constA constB result output template |
 	
@@ -2482,8 +2482,11 @@ testOperationMatMul
 	constB _ graph const: 'b' value: b.
 	
 	output _ constA * constB.
-	template _ a allFloats * b allFloats.
-	
+	template _ {
+		1.1*2.0+(1.2*8.0).		1.1*4.0+(1.2*16.0).
+		2.1*2.0+(2.2*8.0).		2.1*4.0+(2.2*16.0).
+	}.
+
 	session _ TF_Session onGraph: graph.
 	result _ session
 		runOperation: output
