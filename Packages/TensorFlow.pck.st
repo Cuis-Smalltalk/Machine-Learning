@@ -34,7 +34,7 @@ TensorFlowOperationsTest class
 
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
-	instanceVariableNames: 'nn'
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -2918,10 +2918,6 @@ testOperationTan
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
-
-!TensorFlowExamplesTest methodsFor: 'initialization' stamp: 'jb 1/16/2017 22:05:43'!
-setUp
-	nn _ NearestNeighbor new.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
