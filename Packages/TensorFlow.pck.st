@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 6:21:52 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 6:38:22 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 231!
+!provides: 'TensorFlow' 1 233!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1065,13 +1065,18 @@ testCloseSession
 	self shouldnt: [session delete] raise: Error.
 	self assert: session isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/2/2017 15:40:33'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/21/2017 18:30:32'!
 testConcatGraphInputList
+	| wrongSize wrongType lastError |
+	wrongSize _ 'Error: INVALID_ARGUMENT: Inconsistent values for attr ''N'' 2 vs. 0 while building NodeDef ''concat'' using Op<name=Concat; signature=concat_dim:int32, values:N*T -> output:T; attr=N:int,min=2; attr=T:type>'.
+	wrongType _ 'Error: INVALID_ARGUMENT: Inconsistent values for attr ''T'' DT_INT64 vs. DT_INT32 while building NodeDef ''concat'' using Op<name=Concat; signature=concat_dim:int32, values:N*T -> output:T; attr=N:int,min=2; attr=T:type>'.
+	
 	self concatGraphInputListNoSizeNoType.
 	self concatGraphInputList.
-	self should: [self concatGraphInputListWrongSize] raise: Error.
-	self should: [self concatGraphInputListWrongType] raise: Error.
-! !
+	[self concatGraphInputListWrongSize] ifError: [:description :receiver | lastError _ description].
+	self assert: wrongSize equals: lastError.
+	[self concatGraphInputListWrongType] ifError: [:description :receiver | lastError _ description].
+	self assert: wrongType equals: lastError.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:22'!
 testCreateGraphAddTwoInputs
@@ -1358,11 +1363,13 @@ testGetOperationOnConstantGraph
 	self assert: op InputsCount equals: 0.
 	self assert: op outputsCount equals: 1.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/22/2016 03:44:19'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/21/2017 18:31:15'!
 testGetOperationOnEmptyGraph
-	| graph |
+	| graph notFound lastError |
+	notFound _ 'Error: Operation not found'.
 	graph _ self emptyGraph.
-	self should: [graph operationNamed: 'something'] raise: Error! !
+	[graph operationNamed: 'something'] ifError: [:description :receiver | lastError _ description].
+	self assert: notFound equals: lastError.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:12:12'!
 testGraph: aTF_Graph outputType: anInteger
@@ -1582,13 +1589,15 @@ testGraphOperationsSelectEmpty
 	self assert: operations size equals: 0.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:16:44'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/21/2017 18:31:54'!
 testImportBad
-	| graph buffer |
+	| graph buffer wrongFormat lastError |
+	wrongFormat _ 'Error: INVALID_ARGUMENT: Invalid GraphDef'.
 	graph _ TF_Graph create.
 	buffer _ TF_Buffer fromString: 'ouch'.
 	
-	self should: [graph import: buffer] raise: Error.
+	[graph import: buffer] ifError: [:description :receiver | lastError _ description].
+	self assert: wrongFormat equals: lastError.
 	buffer delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:06:41'!
@@ -1732,13 +1741,14 @@ testNewOperationPlaceholder
 	self assert: operation outputsCount equals: 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 05:11:32'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/21/2017 18:33:36'!
 testNewOperationPlaceholderNoType
-	| graph |
+	| graph lastError noType |
+	noType _ 'Error: INVALID_ARGUMENT: NodeDef missing attr ''dtype'' from Op<name=Placeholder; signature= -> output:dtype; attr=dtype:type; attr=shape:shape,default=[]>; NodeDef: placeholder = Placeholder[_class=[], shape=[]]()'.
 	graph _ TF_Graph create.
-	self
-		should: [(graph newOperation: 'Placeholder' named: 'placeholder') finish]
-		raise: Error
+	[(graph newOperation: 'Placeholder' named: 'placeholder') finish] ifError: [:description :receiver |
+		lastError _ description].
+	self assert: noType equals: lastError.
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:29:25'!
@@ -2020,12 +2030,13 @@ testSessionFinalizationReleasesExternalMemory
 	self assert: (handles size) < total.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:46'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 18:34:41'!
 testSessionOnEmptyGraph
-	| session |
+	| session lastError noTarget |
+	noTarget _ 'Error: INVALID_ARGUMENT: Must specify at least one target to fetch or execute.'.
 	session _ TF_Session onGraph: self emptyGraph.
-	self should: [session run] raise: Error.
-! !
+	[session run] ifError: [:description :receiver | lastError _ description].
+	self assert: noTarget equals: lastError.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:13:29'!
 testSessionOptionFinalizationReleasesExternalMemory 
@@ -2050,15 +2061,13 @@ testSessionOptionFinalizationReleasesExternalMemory
 testSessionOptionsFromProtoBufEmpty
 	TF_SessionOptions fromProtoBuf: ''.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:40:01'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 18:37:58'!
 testSessionOptionsFromProtoBufInvalid
-	| expected actual |
+	| expected lastError |
 	expected _ 'Error: INVALID_ARGUMENT: Unparseable ConfigProto'.
 	
-	[TF_SessionOptions fromProtoBuf: '.'] ifError: [:description :receiver |
-		actual _ description.
-	].
-	self assert: expected equals: actual.! !
+	[TF_SessionOptions fromProtoBuf: '.'] ifError: [:description :receiver | lastError _ description].
+	self assert: expected equals: lastError.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 18:18:28'!
 testSessionOptionsFromProtoBufValid
@@ -2120,19 +2129,20 @@ testSizes
 	self assertSizeOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: 4*3.
 	self assertSizeOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: 3*3*1.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 10:16:01'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/21/2017 18:36:42'!
 testStatusCodes
-	| status  |
+	| status  msg lastError |
 	status _ TF_Status create.
 	
 	self assert: status isOk.
 	self assert: status codeText equals: 'OK'.
 	self shouldnt: [status check] raise: Error.
 	
-	status code: 1 message: 'You cancelled it!!'.
+	msg _ 'You cancelled it!!'.
+	status code: 1 message: msg.
 	self assert: status codeText equals: 'CANCELLED'.
-	self should: [status check] raise: Error.
-! !
+	[status check] ifError: [:description :receiver | lastError _ description].
+	self assert: 'Error: CANCELLED: ',msg equals: lastError! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/7/2017 20:21:25'!
 testStatusFinalizationReleasesExternalMemory
