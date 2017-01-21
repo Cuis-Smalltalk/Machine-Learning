@@ -2931,10 +2931,15 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 04:32:58'!
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
 testNearesNeighbor
-	| first second third closest references tensorReference tensors plan predictor |
-	plan _ ExampleNearestNeighborPlan  new.
+	| plan |
+	plan _ ExampleNearestNeighborPlan new.
+	self testNearesNeighbor: plan.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:09:49'!
+testNearesNeighbor: plan
+	| first second third closest references tensorReference tensors predictor |
 	first _ #(0 0 0 0 0).
 	second _ #(1 1 3 4 2).
 	third _ #(8 1 3 4 2).
@@ -2959,7 +2964,13 @@ testNearesNeighbor
 	closest _ predictor value:  tensors third.
 	self assert: closest equals: 3.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 04:28:10'!
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:28'!
+testNearesNeighborWithOperations
+	| plan |
+	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations.
+	self testNearesNeighbor: plan.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:41'!
 testOLS
 	|ols x y betas |
 	ols _ OLSExample new.
