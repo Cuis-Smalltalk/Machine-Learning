@@ -4947,6 +4947,24 @@ initializeGraph
 	outputs _ {operation output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:06:49'!
+initializeGraphWithOperations
+	| axis axisValue distance testing training prediction |
+	graph _ TF_Graph create useFinalization.
+	
+	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
+	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
+	axisValue _ TF_Tensor fromInt32: 0.
+	axis _ graph const: 'axis' value: axisValue.
+	
+	distance _ (testing negated + training) abs sumOn: axis.
+	prediction _ distance findMinOn: axis.
+	
+	operation _ prediction.
+	outputs _ {prediction output: 0}.
+	inputs _ {training input: 0. testing input: 0}.
+! !
+
 !ExampleNearestNeighborPlan methodsFor: 'evaluating' stamp: 'gera 1/21/2017 04:19:59'!
 predict: covariatesTesting from: covariatesTraining
 	| result |
