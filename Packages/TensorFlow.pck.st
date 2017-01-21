@@ -42,16 +42,6 @@ TestCase subclass: #TensorFlowExamplesTest
 TensorFlowExamplesTest class
 	instanceVariableNames: ''!
 
-!classDefinition: #TensorFlowExamplesWithOperationsTest category: #'TensorFlow-Examples'!
-TensorFlowExamplesTest subclass: #TensorFlowExamplesWithOperationsTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Examples'!
-!classDefinition: 'TensorFlowExamplesWithOperationsTest class' category: #'TensorFlow-Examples'!
-TensorFlowExamplesWithOperationsTest class
-	instanceVariableNames: ''!
-
 !classDefinition: #TensorFlowCAPI category: #'TensorFlow-Kernel'!
 ExternalLibrary subclass: #TensorFlowCAPI
 	instanceVariableNames: ''
