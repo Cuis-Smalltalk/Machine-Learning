@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:14:40 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:21:19 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 228!
+!provides: 'TensorFlow' 1 229!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4452,13 +4452,12 @@ runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 	status check.
 	^ tensor! !
 
-!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:27:48'!
+!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
 onGraph: aTF_Graph
 	| options status answer |
 	options _ TF_SessionOptions create.
 	status _ TF_Status create.
 	answer _ TensorFlowCAPI current newSessionGraph: aTF_Graph options: options status: status.
-	options delete.
 	status check.
 	answer useFinalization.
 	^ answer! !
