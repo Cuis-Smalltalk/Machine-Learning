@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:10:46 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:14:40 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 227!
+!provides: 'TensorFlow' 1 228!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2025,6 +2025,25 @@ testSessionOnEmptyGraph
 	| session |
 	session _ TF_Session onGraph: self emptyGraph.
 	self should: [session run] raise: Error.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:13:29'!
+testSessionOptionFinalizationReleasesExternalMemory 
+	" WeakArray restartFinalizationProcess "
+	| tries total handles |
+	total _ 0.
+	tries _ 10.
+	handles _ Set new.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_SessionOptions create) getHandle]).
+		handles size < total ifTrue: [
+			^ self]].
+	
+	self assert: (handles size) < total.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:12:49'!
@@ -4444,11 +4463,16 @@ onGraph: aTF_Graph
 	answer useFinalization.
 	^ answer! !
 
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:47:17'!
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:12:10'!
 delete
+	self ignoreFinalization.
 	self isNull ifFalse: [
 		self library deleteSessionOptions: self].
 	handle _ nil! !
+
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:12:20'!
+finalize
+	self delete! !
 
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:37:00'!
 target: aString
@@ -4457,9 +4481,9 @@ target: aString
 	self library sessionOptions: self setTarget: (self library externalizeString: aString).
 ! !
 
-!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 02:50:29'!
+!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:12:26'!
 create
-	^ TensorFlowCAPI current newSessionOptions! !
+	^ TensorFlowCAPI current newSessionOptions useFinalization! !
 
 !TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:47:47'!
 onTarget: aString
