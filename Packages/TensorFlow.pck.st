@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 4:08:40 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:25:13 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 220!
+!provides: 'TensorFlow' 1 222!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2430,11 +2430,11 @@ testVersion
 setUp
 	library _ TensorFlowCAPI current! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:24:42'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:21:32'!
 testOperationAbs
 	| graph template session const result output |
 	
-	template _ TF_Tensor fromFloats: #((-1.1 1.2) (-2.1 -2.2)) abs.
+	template _ TF_Tensor fromFloats: #((-1.1 1.2) (-2.1 -2.2)).
 	graph _ TF_Graph create.
 	graph useFinalization.
 	
