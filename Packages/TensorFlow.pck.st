@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:43:05 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:44:41 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 225!
+!provides: 'TensorFlow' 1 226!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -726,11 +726,10 @@ floatAsStringGraph
 		description addInput: (const output: 0)].
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 15:07:29'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 05:39:19'!
 get2x2FloatFromGraphDef
 	| graph session const result |
 	graph _ self constant2x2FloatGraphFromDef.
-	graph useFinalization.
 	
 	const _ graph operationNamed: 'a'.
 	session _ TF_Session onGraph: graph.
@@ -1918,7 +1917,7 @@ testRunGraphMulTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 05:42:45'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 05:43:57'!
 testRunGraphMulTwoInputsConstTensorDeleted
 	| graph inputs inputValues mul output session results |
 	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
@@ -1928,8 +1927,8 @@ testRunGraphMulTwoInputsConstTensorDeleted
 		with: ((graph operationNamed: 'in2') input: 0).
 		
 	inputValues _ Array
-		with: (TF_Tensor fromInt64: 16r23) useFinalization
-		with: (TF_Tensor fromInt64: 16r24) useFinalization.
+		with: (TF_Tensor fromInt64: 16r23)
+		with: (TF_Tensor fromInt64: 16r24).
 
 	Smalltalk garbageCollect.
 	(TF_Tensor fromInt64: 16r1234123412341234) useFinalization.
@@ -2420,13 +2419,12 @@ testVersion
 setUp
 	library _ TensorFlowCAPI current! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:21:32'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:44:04'!
 testOperationAbs
 	| graph template session const result output |
 	
 	template _ TF_Tensor fromFloats: #((-1.1 1.2) (-2.1 -2.2)).
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: template.
 	output _ const abs.
@@ -2636,13 +2634,12 @@ testOperationMatMulBTransposed
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:24:51'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:44:08'!
 testOperationMatrixInverse
 	| graph template session const result identity inverse |
 	
 	template _ TF_Tensor fromFloats: #((-1.1 1.2) (-2.1 -2.2)).
 	graph _ TF_Graph create.
-	graph useFinalization.
 	
 	const _ graph const: 'const' value: template.
 	inverse _ const inverse.
@@ -4927,9 +4924,9 @@ typeUInt8
 initialize
 	self initializeGraph! !
 
-!ExamplePlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:23:46'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:44:31'!
 initializeGraph
-	graph _ TF_Graph create useFinalization.
+	graph _ TF_Graph create
 	! !
 
 !ExamplePlan methodsFor: 'running' stamp: 'gera 1/21/2017 04:22:27'!
@@ -4975,10 +4972,10 @@ initializeGraph
 	outputs _ {operation output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:06:49'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:44:26'!
 initializeGraphWithOperations
 	| axis axisValue distance testing training prediction |
-	graph _ TF_Graph create useFinalization.
+	graph _ TF_Graph create.
 	
 	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
 	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
