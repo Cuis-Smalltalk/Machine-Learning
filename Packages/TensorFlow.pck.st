@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 January 2017 at 11:01:39 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 4:45:15 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 189!
+!provides: 'TensorFlow' 1 190!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2384,45 +2384,54 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/19/2017 10:53:43'!
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 04:32:58'!
 testNearesNeighbor
 	| first second third closest references tensorReference tensors plan predictor |
 	plan _ ExampleNearestNeighborPlan  new.
-	first _ {0. 0. 0. 0. 0}.
-	second _ {1. 1. 3. 4. 2}.
-	third _ {8. 1. 3. 4. 2}.
-	references _ Array
-		with: first
-		with: second
-		with: third.
+	first _ #(0 0 0 0 0).
+	second _ #(1 1 3 4 2).
+	third _ #(8 1 3 4 2).
+	references _{
+		first.
+		second.
+		third}.
 	tensorReference _ self tensorFrom: references.
 	tensors _ references collect: [ :point |
 		self tensorFrom: {point} ].
+	
 	predictor _ [:unknown | | result | 
 		result _ plan predict: unknown from: tensorReference.
 		result first].
+	
 	closest _ predictor value: tensors first.
-	self assert: closest  equals: 1.
+	self assert: closest equals: 1.
+	
 	closest _ predictor value:  tensors second.
 	self assert: closest equals: 2.
+	
 	closest _ predictor value:  tensors third.
-	self assert: closest  equals: 3.! !
+	self assert: closest equals: 3.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'JB 1/19/2017 10:32:57'!
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 04:28:10'!
 testOLS
 	|ols x y betas |
 	ols _ OLSExample new.
-	x _ TF_Tensor fromFloats: 	{{1.  2.  3}.
-        									{6.  7.  8}.
-        									{ 4.  5.  6}.
-        									{ 9.  2.  3}.
-        									{1. 10.  2}}.
+	x _ TF_Tensor fromFloats: #(
+		(1  2   3)
+		(6  7   8)
+		(4  5   6)
+		(9  2   3)
+		(1 10  2)
+	).
 
-	y _ TF_Tensor fromFloats: 	{{14}.
-        									{44}.
-        									{32}.
-        									{22}.
-        									{27}}.
+	y _ TF_Tensor fromFloats: #(
+		(14)
+		(44)
+		(32)
+		(22)
+		(27)
+	).
+	
 	betas _ ols regress: x on: y.
 	self assert: (betas first closeTo: 1);
 		assert: (betas second closeTo: 2);
