@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:28:07 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:38:27 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 223!
+!provides: 'TensorFlow' 1 224!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1449,16 +1449,24 @@ testGraphDeletionDoesntBreakSessions
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/7/2017 21:00:14'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/21/2017 05:37:56'!
 testGraphFinalizationReleasesExternalMemory
 	" WeakArray restartFinalizationProcess "
-	| handles tries |
+	| tries total handles |
+	total _ 0.
 	tries _ 10.
-	handles _ (1 to: tries) collect: [:i |
-		Smalltalk garbageCollect.
-		TF_Graph create useFinalization getHandle].
+	handles _ Set new.
 
-	self assert: (handles asSet size) < tries.
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			TF_Graph create useFinalization getHandle]).
+		handles size < total ifTrue: [
+			^ self]
+	].
+	
+	self assert: (handles size) < total.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:04:24'!
