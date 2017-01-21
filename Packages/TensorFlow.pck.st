@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 1:38:18 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 2:28:17 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 217!
+!provides: 'TensorFlow' 1 218!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2496,6 +2496,60 @@ testOperationMatMul
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 02:28:13'!
+testOperationMatMulATransposed
+	| graph a b session constA constB result output template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((2.0 4.0) (8.0 16.0)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	output _ constA \* constB.
+	template _ {
+		1.1*2.0+(2.1*8.0).		1.1*4.0+(2.1*16.0).
+		1.2*2.0+(2.2*8.0).		1.2*4.0+(2.2*16.0).
+	}.
+
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 02:27:34'!
+testOperationMatMulBTransposed
+	| graph a b session constA constB result output template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((2.0 4.0) (8.0 16.0)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	output _ constA *\ constB.
+	template _ {
+		1.1*2.0+(1.2*4.0).		1.1*8.0+(1.2*16.0).
+		2.1*2.0+(2.2*4.0).		2.1*8.0+(2.2*16.0).
+	}.
+
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output
+		output: (output output: 0).
+	
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:25:38'!
 testOperationMod
 	| graph a b session constA constB result output template |
@@ -3669,6 +3723,15 @@ create
 * aTF_Operation
 	^ self binaryOp: 'MatMul' with: aTF_Operation! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:26:09'!
+*\ aTF_Operation
+	^ self
+		binaryOp: 'MatMul'
+		with: aTF_Operation
+		described: [:description |
+			description at: 'transpose_b' putBoolean: true]
+! !
+
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:19:11'!
 + aTF_Operation
 	^ self binaryOp: 'Add' with: aTF_Operation! !
@@ -3676,6 +3739,15 @@ create
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
 @* aTF_Operation
 	^ self binaryOp: 'Mul' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:26:18'!
+\* aTF_Operation
+	^ self
+		binaryOp: 'MatMul'
+		with: aTF_Operation
+		described: [:description |
+			description at: 'transpose_a' putBoolean: true]
+! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 12:52:43'!
 \\ aTF_Operation
@@ -3712,15 +3784,21 @@ attrMetadata: nameString
 	status check.
 	^ answer! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:18:52'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:22:49'!
 binaryOp: aString with: aTF_Operation
+	^ self binaryOp: aString with: aTF_Operation described: [:nothing]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:20:55'!
+binaryOp: aString with: aTF_Operation described: oneArgBlock
 	| name |
 	name _ aString,'_',graph operationsCount printString.
 	
 	^ graph newOperation: aString named: name described: [:description |
 		description
 			addInput: (self output: 0);
-			addInput: (aTF_Operation output: 0)].
+			addInput: (aTF_Operation output: 0).
+		oneArgBlock value: description].
 	! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:44:59'!
