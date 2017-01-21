@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 4:45:15 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 4:46:12 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 190!
+!provides: 'TensorFlow' 1 191!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4208,19 +4208,18 @@ initializeGraph
 	graph _ TF_Graph create useFinalization.
 	! !
 
-!ExamplePlan methodsFor: 'running' stamp: 'JB 1/19/2017 10:24:33'!
-runAt: point
-	| results session result |	
+!ExamplePlan methodsFor: 'running' stamp: 'gera 1/21/2017 04:22:27'!
+runOn: inputValues
+	| session results |	
 	session _ TF_Session onGraph: graph.
 	
 	results _ session
-		runOperations: {operation }
+		runOperations: {operation}
 		inputs: inputs
-		values: {point x.  point y}
+		values: inputValues
 		outputs: outputs.
 		
-	  result _ results at: 1.
-	^ result
+	^ results first
 	! !
 
 !ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:34:53'!
@@ -4252,15 +4251,14 @@ initializeGraph
 	outputs _ {operation output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'evaluating' stamp: 'JB 1/19/2017 10:55:32'!
-predict: covariatesTe from: covariatesTr
-	| point result |
+!ExampleNearestNeighborPlan methodsFor: 'evaluating' stamp: 'gera 1/21/2017 04:19:59'!
+predict: covariatesTesting from: covariatesTraining
+	| result |
 
-	point _  (Point x: covariatesTr y: covariatesTe).
- 	result _ self runAt: point.
+ 	result _ self runOn: {covariatesTraining. covariatesTesting}.
 	^ result allInt64s + 1! !
 
-!ExampleOLSPlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:26:01'!
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 04:44:38'!
 initializeGraph
 	
 	| x xtx y xty inverse result |
@@ -4415,10 +4413,10 @@ new
 initialize
 	plan _ ExampleOLSPlan new.! !
 
-!OLSExample methodsFor: 'running' stamp: 'JB 1/19/2017 10:32:36'!
+!OLSExample methodsFor: 'running' stamp: 'gera 1/21/2017 04:20:26'!
 regress: x on: y
 	| result |
-	result _ plan runAt: (Point x: x y: y).
+	result _ plan runOn: {x. y}.
 	^ result allFloats! !
 TF_Structure initialize!
 TF_AttrMetadata initialize!
