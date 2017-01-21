@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:25:13 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:28:07 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 222!
+!provides: 'TensorFlow' 1 223!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -270,16 +270,6 @@ Object subclass: #NearestNeighbor
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'NearestNeighbor class' category: #'TensorFlow-Examples'!
 NearestNeighbor class
-	instanceVariableNames: ''!
-
-!classDefinition: #NearestNeighborWithOperations category: #'TensorFlow-Examples'!
-NearestNeighbor subclass: #NearestNeighborWithOperations
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Examples'!
-!classDefinition: 'NearestNeighborWithOperations class' category: #'TensorFlow-Examples'!
-NearestNeighborWithOperations class
 	instanceVariableNames: ''!
 
 !classDefinition: #OLSExample category: #'TensorFlow-Examples'!
@@ -5118,23 +5108,6 @@ irisFile
 !NearestNeighbor class methodsFor: 'instance creation' stamp: 'gera 1/16/2017 23:12:43'!
 new
 	^ super new initialize! !
-
-!NearestNeighborWithOperations methodsFor: 'graph' stamp: 'gera 1/21/2017 03:37:29'!
-initializeGraph
-	| axis axisValue distance testing training |
-	graph _ TF_Graph create useFinalization.
-	
-	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
-	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
-	axisValue _ TF_Tensor fromInt32: 0.
-	axis _ graph const: 'axis' value: axisValue.
-	
-	distance _ (testing negated + training) abs sumOn: axis.
-	prediction _ distance findMinOn: axis.
-	
-	outputs _ {prediction output: 0}.
-	inputs _ {training input: 0. testing input: 0}.
-! !
 
 !OLSExample methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:29:16'!
 initialize
