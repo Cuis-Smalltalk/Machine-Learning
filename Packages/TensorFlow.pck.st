@@ -2646,6 +2646,27 @@ testOperationMatMulBTransposed
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:24:51'!
+testOperationMatrixInverse
+	| graph template session const result identity inverse |
+	
+	template _ TF_Tensor fromFloats: #((-1.1 1.2) (-2.1 -2.2)).
+	graph _ TF_Graph create.
+	graph useFinalization.
+	
+	const _ graph const: 'const' value: template.
+	inverse _ const inverse.
+	identity _ const * inverse.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: identity
+		output: (identity output: 0).
+	
+	self assert: result dimensions equals: template dimensions.
+	result allFloats with: #(1.0 0.0 0.0 1.0) do: [:real :expected |
+		self assert: (real closeTo: expected)]! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:25:38'!
 testOperationMod
 	| graph a b session constA constB result output template |
@@ -4022,6 +4043,10 @@ intAt: nameString
 	status check.
 	^ value unsignedLongLongAt: 1
 ! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/21/2017 05:15:34'!
+inverse
+	^ self unaryOp: 'MatrixInverse'! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
