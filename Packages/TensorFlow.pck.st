@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:38:27 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:43:05 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 224!
+!provides: 'TensorFlow' 1 225!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1918,7 +1918,7 @@ testRunGraphMulTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 11:18:12'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 05:42:45'!
 testRunGraphMulTwoInputsConstTensorDeleted
 	| graph inputs inputValues mul output session results |
 	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
@@ -1947,7 +1947,9 @@ testRunGraphMulTwoInputsConstTensorDeleted
 	self deny: results isNull.
 	self deny: results first isNull.
 	self deny: results first data isNull.
-	self assert: (results first data getHandle signedLongLongAt: 1) equals: 16rF0F0F0F0F0F0E6C.
+	self
+		assert: (results first data getHandle signedLongLongAt: 1)
+		equals: ((16r2121212121212121 * 16r23 * 16r24) bitAnd: 16rFFFFFFFFFFFFFFFF).
 
 	graph delete.
 	results first delete.
