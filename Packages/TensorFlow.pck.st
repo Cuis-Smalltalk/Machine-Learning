@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 2:28:17 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 3:41:19 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 218!
+!provides: 'TensorFlow' 1 219!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2409,6 +2409,42 @@ testOperationAcos
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 04:04:39'!
+testOperationArgMin
+	| graph a session const result output0 output1 axis0 axis1 |
+	
+	a _ TF_Tensor fromFloats: #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	).
+	
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'a' value: a.
+	axis0 _ graph const: 'axis0' value: (TF_Tensor fromInt32: 0).
+	axis1 _ graph const: 'axis1' value: (TF_Tensor fromInt32: 1).
+	
+	output0 _ const findMinOn: axis0.
+	output1 _ const findMinOn: axis1.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output0
+		output: (output0 output: 0).
+	
+	self assert: result dimensions equals: #(2).
+	result allInt64s with: #(0 2) do: [:r :t |
+		self assert: r equals: t].
+	
+	result _ session
+		runOperation: output1
+		output: (output1 output: 0).
+	
+	self assert: result dimensions equals: #(3).
+	result allInt64s with: #(0 0 1) do: [:r :t |
+		self assert: r equals: t].! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:24:52'!
 testOperationAsin
 	| graph template session const result output intput |
@@ -2760,6 +2796,47 @@ testOperationSin
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 04:08:09'!
+testOperationSum
+	| graph a session const result output0 output1 axis0 axis1 template sumOn1 sumOn0 |
+	
+	template _ #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	).
+	
+	sumOn0 _ template sum.
+	sumOn1 _ template collect: [:line | line sum].
+	
+	a _ TF_Tensor fromFloats: template.
+	
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'a' value: a.
+	axis0 _ graph const: 'axis0' value: (TF_Tensor fromInt32: 0).
+	axis1 _ graph const: 'axis1' value: (TF_Tensor fromInt32: 1).
+	
+	output0 _ const sumOn: axis0.
+	output1 _ const sumOn: axis1.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session
+		runOperation: output0
+		output: (output0 output: 0).
+	
+	self assert: result dimensions equals: #(2).
+	result allFloats with: sumOn0 do: [:r :t |
+		self assert: (r closeTo: t)].
+	
+	result _ session
+		runOperation: output1
+		output: (output1 output: 0).
+	
+	self assert: result dimensions equals: #(3).
+	result allFloats with: sumOn1 do: [:r :t |
+		self assert: (r closeTo: t)].! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:26:27'!
 testOperationTan
@@ -3820,6 +3897,10 @@ cos
 device
 	^ self library operationDevice: self! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:37:51'!
+findMinOn: aTF_Operation
+	^ self binaryOp: 'ArgMin' with: aTF_Operation! !
+
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 10:22:29'!
 floatAt: nameString
 	| value status |
@@ -3911,6 +3992,10 @@ stringAt: nameString
 	status check.
 	^ (value upTo: 0) asString
 ! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:30:55'!
+sumOn: aTF_Operation
+	^ self binaryOp: 'Sum' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:05'!
 tan
