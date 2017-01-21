@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 3:41:19 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 4:08:40 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 219!
+!provides: 'TensorFlow' 1 220!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -40,6 +40,16 @@ TestCase subclass: #TensorFlowExamplesTest
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
 TensorFlowExamplesTest class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowExamplesWithOperationsTest category: #'TensorFlow-Examples'!
+TensorFlowExamplesTest subclass: #TensorFlowExamplesWithOperationsTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesWithOperationsTest class' category: #'TensorFlow-Examples'!
+TensorFlowExamplesWithOperationsTest class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowCAPI category: #'TensorFlow-Kernel'!
@@ -240,6 +250,16 @@ Object subclass: #NearestNeighbor
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'NearestNeighbor class' category: #'TensorFlow-Examples'!
 NearestNeighbor class
+	instanceVariableNames: ''!
+
+!classDefinition: #NearestNeighborWithOperations category: #'TensorFlow-Examples'!
+NearestNeighbor subclass: #NearestNeighborWithOperations
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'NearestNeighborWithOperations class' category: #'TensorFlow-Examples'!
+NearestNeighborWithOperations class
 	instanceVariableNames: ''!
 
 
@@ -2900,6 +2920,10 @@ testNearesNeighbor
 		and: tensors third.
 	self assert: closest + 1 equals: {3}.! !
 
+!TensorFlowExamplesWithOperationsTest methodsFor: 'initialization' stamp: 'gera 1/21/2017 02:31:08'!
+setUp
+	nn _ NearestNeighborWithOperations new.! !
+
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
 	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
@@ -4964,4 +4988,21 @@ irisFile
 !NearestNeighbor class methodsFor: 'instance creation' stamp: 'gera 1/16/2017 23:12:43'!
 new
 	^ super new initialize! !
+
+!NearestNeighborWithOperations methodsFor: 'graph' stamp: 'gera 1/21/2017 03:37:29'!
+initializeGraph
+	| axis axisValue distance testing training |
+	graph _ TF_Graph create useFinalization.
+	
+	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
+	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
+	axisValue _ TF_Tensor fromInt32: 0.
+	axis _ graph const: 'axis' value: axisValue.
+	
+	distance _ (testing negated + training) abs sumOn: axis.
+	prediction _ distance findMinOn: axis.
+	
+	outputs _ {prediction output: 0}.
+	inputs _ {training input: 0. testing input: 0}.
+! !
 TF_Structure initialize!
