@@ -3662,6 +3662,10 @@ delete
 create
 	^ TensorFlowCAPI current newImportGraphDefOptions! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:22:38'!
+* aTF_Operation
+	^ self binaryOp: 'MatMul' with: aTF_Operation! !
+
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:19:11'!
 + aTF_Operation
 	^ self binaryOp: 'Add' with: aTF_Operation! !
