@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 5:21:19 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 6:21:52 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 229!
+!provides: 'TensorFlow' 1 231!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2045,6 +2045,32 @@ testSessionOptionFinalizationReleasesExternalMemory
 	
 	self assert: (handles size) < total.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:34:16'!
+testSessionOptionsFromProtoBufEmpty
+	TF_SessionOptions fromProtoBuf: ''.! !
+
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:40:01'!
+testSessionOptionsFromProtoBufInvalid
+	| expected actual |
+	expected _ 'Error: INVALID_ARGUMENT: Unparseable ConfigProto'.
+	
+	[TF_SessionOptions fromProtoBuf: '.'] ifError: [:description :receiver |
+		actual _ description.
+	].
+	self assert: expected equals: actual.! !
+
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 18:18:28'!
+testSessionOptionsFromProtoBufValid
+	"
+	In [241]: tf.ConfigProto(allow_soft_placement=True, log_device_placement=True).SerializeToString()
+	Out[241]: b'8\x01@\x01'
+	"
+	| config |
+	
+	config _ #[16r38 1 16r40 1].
+	TF_SessionOptions fromProtoBuf: config.
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:12:49'!
 testSessionOptionsSetTarget
@@ -4462,6 +4488,13 @@ onGraph: aTF_Graph
 	answer useFinalization.
 	^ answer! !
 
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:33:06'!
+config: aString
+	| status |
+	status _ TF_Status create.
+	self library sessionOptions: self setConfig: aString configSize: aString size status: status.
+	status check.! !
+
 !TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:12:10'!
 delete
 	self ignoreFinalization.
@@ -4483,6 +4516,13 @@ target: aString
 !TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:12:26'!
 create
 	^ TensorFlowCAPI current newSessionOptions useFinalization! !
+
+!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:32:21'!
+fromProtoBuf: aString
+	| answer |
+	answer _ self create.
+	answer config: aString.
+	^ answer! !
 
 !TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:47:47'!
 onTarget: aString
