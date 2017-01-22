@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 9:45:58 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 22 January 2017 at 4:48:39 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 235!
+!provides: 'TensorFlow' 1 236!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -726,14 +726,14 @@ floatAsStringGraph
 		description addInput: (const output: 0)].
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 18:43:24'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/22/2017 16:22:16'!
 get2x2FloatFromGraphDef
 	| graph session const result |
 	graph _ self constant2x2FloatGraphFromDef.
 	
-	const _ graph operationNamed: 'a'.
+	const _ (graph operationNamed: 'a') output: 0.
 	session _ TF_Session onGraph: graph.
-	result _ session runOutputs: {const output: 0}.
+	result _ session runOutput: const.
 	
 	^ result! !
 
@@ -1880,13 +1880,6 @@ testRunGraphAddTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:06:22'!
-testRunGraphConst
-	| graph |
-	graph _ self constantInt64GraphFromDef.
-
-	self testSessionRunTargetOutputOnGraph: graph! !
-
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 12:24:10'!
 testRunGraphMulOneInput
 	| graph input inputValue result mul output session |
@@ -2117,14 +2110,19 @@ testSessionOptionsSetTarget
 	options delete.
 	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 18:46:40'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/22/2017 16:28:12'!
+testSessionRunOutput
+	^ self testSessionRunOutputOnGraph: self constantInt64GraphFromDef.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/22/2017 16:25:23'!
 testSessionRunOutputOnGraph: graph
 	| operation session output tensor |
 	session _ TF_Session onGraph: graph.
 	operation _ graph operationNamed: 'a'.
 	output _ operation output: 0.
 	
-	tensor _ session runOutput: {output}.
+	tensor _ session runOutput: output.
 	
 	self deny: tensor isNull.
 	self deny: tensor data isNull.
