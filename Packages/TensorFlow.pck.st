@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 22 January 2017 at 4:48:39 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 22 January 2017 at 5:49:06 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 236!
+!provides: 'TensorFlow' 1 237!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -234,7 +234,7 @@ TF_Tensor class
 
 !classDefinition: #ExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #ExamplePlan
-	instanceVariableNames: 'graph inputs outputs operation'
+	instanceVariableNames: 'graph inputs outputs'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -5148,21 +5148,20 @@ initializeGraph
 	graph _ TF_Graph create
 	! !
 
-!ExamplePlan methodsFor: 'running' stamp: 'gera 1/21/2017 04:22:27'!
+!ExamplePlan methodsFor: 'running' stamp: 'gera 1/22/2017 17:26:12'!
 runOn: inputValues
 	| session results |	
 	session _ TF_Session onGraph: graph.
 	
 	results _ session
-		runOperations: {operation}
-		inputs: inputs
+		runInputs: inputs
 		values: inputValues
 		outputs: outputs.
 		
 	^ results first
 	! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:34:53'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:49'!
 initializeGraph
 	| neg add abs axis axisValue distance testing training prediction |
 	super initializeGraph.
@@ -5186,12 +5185,11 @@ initializeGraph
 	prediction _ graph newOperation: 'ArgMin' named: 'argmin' described:[:description|
 		description addInput: (distance output: 0).
 		description addInput: (axis output: 0)].
-	operation _ prediction.
 	
-	outputs _ {operation output: 0}.
+	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:44:26'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:36'!
 initializeGraphWithOperations
 	| axis axisValue distance testing training prediction |
 	graph _ TF_Graph create.
@@ -5204,7 +5202,6 @@ initializeGraphWithOperations
 	distance _ (testing negated + training) abs sumOn: axis.
 	prediction _ distance findMinOn: axis.
 	
-	operation _ prediction.
 	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.
 ! !
@@ -5216,7 +5213,7 @@ predict: covariatesTesting from: covariatesTraining
  	result _ self runOn: {covariatesTraining. covariatesTesting}.
 	^ result allInt64s + 1! !
 
-!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 04:44:38'!
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:48:01'!
 initializeGraph
 	
 	| x xtx y xty inverse result |
@@ -5245,21 +5242,20 @@ initializeGraph
 		description addInput: (xty output: 0).
 		].
 	
-	operation  _ result.
-	
-	outputs _ {operation output: 0}.
+	outputs _ {result output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
-!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:17:34'!
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:48:34'!
 initializeGraphWithOperations
-	| x y |
+	| x y prediction |
 	super initializeGraph.
 	
 	x _ graph placeholder: 'x' type: TF_Tensor typeFloat.
 	y _ graph placeholder: 'y' type: TF_Tensor typeFloat.
 	
-	operation _ (x \* x) inverse * (x \* y).
-	outputs _ {operation output: 0}.
+	prediction _ (x \* x) inverse * (x \* y).
+	
+	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
