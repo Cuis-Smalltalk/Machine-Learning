@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 22 January 2017 at 5:49:06 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 22 January 2017 at 6:09:38 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 237!
+!provides: 'TensorFlow' 1 239!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1164,6 +1164,24 @@ testDecodeCSVGraphRunOneLine
 	self assert: cols third equals: #(33333333).
 	self assert: cols fourth equals: #(44444444).
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/22/2017 18:08:45'!
+testDescriptionDevice
+	| graph in op expected lastError |
+	graph _ TF_Graph create.
+	in _ graph const: 'const' value: (TF_Tensor fromInt64: 12345678).
+	op _ graph newOperation: 'Mul' named: 'out' described: [:description |
+		description
+			device: 'anInvalidDevice';
+			addInput: (in output: 0);
+			addInput: (in output: 0)].
+	
+	[(TF_Session onGraph: graph) runOutput: (op output: 0)] ifError: [:description :receiver | lastError _ description].
+	
+	expected _  'Error: INVALID_ARGUMENT: Malformed device specification ''anInvalidDevice''
+	 [[Node: out = Mul[T=DT_INT64, _class=[], _device="anInvalidDevice"](const, const)]]'.
+	
+	self assert: expected equals: lastError.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
 testDimensions
@@ -3257,6 +3275,11 @@ description: aTF_OperationDescription set: aString toType: anInt
 	<cdecl: void 'TF_SetAttrType' (TF_OperationDescription* char* ulonglong)>
 	^ self externalCallFailed.! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/22/2017 17:57:36'!
+description: aTF_OperationDescription setDevice: aString
+	<cdecl: void 'TF_SetDevice' (TF_OperationDescription* char*)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
 externalizeString: aString
 	| answer |
@@ -4399,6 +4422,10 @@ at: attribute putType: value
 		description: self
 		set: attribute asAsciiZ
 		toType: value! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/22/2017 17:58:17'!
+device: aString
+	^self library description: self setDevice: aString! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/19/2017 23:33:39'!
 finish
