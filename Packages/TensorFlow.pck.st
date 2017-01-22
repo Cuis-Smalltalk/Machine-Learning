@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 6:38:22 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 21 January 2017 at 9:45:58 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 233!
+!provides: 'TensorFlow' 1 235!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -726,16 +726,14 @@ floatAsStringGraph
 		description addInput: (const output: 0)].
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 05:39:19'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 18:43:24'!
 get2x2FloatFromGraphDef
 	| graph session const result |
 	graph _ self constant2x2FloatGraphFromDef.
 	
 	const _ graph operationNamed: 'a'.
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: const
-		output: (const output: 0).
+	result _ session runOutputs: {const output: 0}.
 	
 	^ result! !
 
@@ -1980,6 +1978,35 @@ testRunGraphMulTwoInputsConstTensorDeleted
 testRunGraphMulTwoInputsConstTensorDeletedManyTimes
 	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDeleted]! !
 
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 21:45:03'!
+testRunGraphMulTwoInputsRunInputsOutputs
+	| graph inputs inputValues mul output session results |
+	graph _ self mulGraphTwoInputsInt64.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 6)
+		with: (TF_Tensor fromInt64: 11).
+	mul _ graph operationNamed: 'mul2'.
+	output _ mul output: 0.
+	session _ TF_Session onGraph: graph.
+	
+	results _ session
+		runInputs: inputs
+		values: inputValues
+		outputs: {output}.
+	
+	self deny: results isNull.
+	self deny: results first isNull.
+	self deny: results first data isNull.
+	self assert: (results first data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
+
+	graph delete.
+	results first delete.
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:30:34'!
 testRunOperationArray
 	| graph operation session |
@@ -2089,6 +2116,22 @@ testSessionOptionsSetTarget
 	options target: 'local'.
 	options delete.
 	self assert: options isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 18:46:40'!
+testSessionRunOutputOnGraph: graph
+	| operation session output tensor |
+	session _ TF_Session onGraph: graph.
+	operation _ graph operationNamed: 'a'.
+	output _ operation output: 0.
+	
+	tensor _ session runOutput: {output}.
+	
+	self deny: tensor isNull.
+	self deny: tensor data isNull.
+	self assert: (tensor data getHandle signedLongLongAt: 1) equals: 16r4242424242424242.
+
+	output free.
+	graph delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:30:57'!
 testSessionRunTarget
@@ -4406,6 +4449,26 @@ run
 	
 	status check! !
 
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:45:33'!
+runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+	| inputs invalues outputs outvalues status |
+	status _ TF_Status create.
+	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
+	invalues _ TF_TensorPtrArray externalFromArray: inArrayOfTF_Tensor.
+	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
+	outvalues _ TF_TensorPtrArray new: outArrayOfTF_Outputs size.
+	
+	self library
+		runSession: self options: nil
+		inputs: inputs values: invalues count: inArrayOfTF_Outputs size
+		outputs: outputs values: outvalues count: outArrayOfTF_Outputs size
+		targets: nil count: 0
+		metadata: nil status: status.
+		
+	status check.
+	^ outvalues
+! !
+
 !TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:03:48'!
 runOperation: aTF_Operation
 	^self runOperations: (Array with: aTF_Operation)! !
@@ -4482,6 +4545,30 @@ runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 		inputs: nil values: nil count: 0
 		outputs: aTF_OutputArray values: outvalues count: anInteger
 		targets: aTF_OperationArray count: 1
+		metadata: nil status: status.
+		
+	tensor _ outvalues first.
+	status check.
+	^ tensor! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:44:06'!
+runOutputs: anArrayOfTF_Outputs
+	| outputs |
+	outputs _ TF_OutputArray externalFromArray: anArrayOfTF_Outputs .
+	
+	^ self runOutputs: outputs size: anArrayOfTF_Outputs size! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:41:01'!
+runOutputs: aTF_OutputArray size: anInteger
+	| status outvalues tensor |
+	status _ TF_Status create.
+	outvalues _ TF_TensorPtrArray new: anInteger.
+	
+	self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: aTF_OutputArray values: outvalues count: anInteger
+		targets: nil count: 0
 		metadata: nil status: status.
 		
 	tensor _ outvalues first.
