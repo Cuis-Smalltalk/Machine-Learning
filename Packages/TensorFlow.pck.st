@@ -2527,7 +2527,7 @@ testVersion
 setUp
 	library _ TensorFlowCAPI current! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:44:04'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:20:40'!
 testOperationAbs
 	| graph template session const result output |
 	
@@ -2535,17 +2535,17 @@ testOperationAbs
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: template.
-	output _ const abs.
+	output _ const abs output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: output.
 	
 	self assert: result dimensions equals: template dimensions.
-	self assert: result allFloats equals: template allFloats abs.! !
+	self assert: result allFloats equals: template allFloats abs.
+	
+	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:24:47'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:20:52'!
 testOperationAcos
 	| graph template session const result output intput |
 	
@@ -2554,18 +2554,18 @@ testOperationAcos
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: intput.
-	output _ const arcCos.
+	output _ const arcCos output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: output.
 	
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].! !
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 04:04:39'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:45:45'!
 testOperationArgMin
 	| graph a session const result output0 output1 axis0 axis1 |
 	
@@ -2585,23 +2585,53 @@ testOperationArgMin
 	output1 _ const findMinOn: axis1.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output0
-		output: (output0 output: 0).
+	result _ session runOutput: (output0 output: 0).
 	
 	self assert: result dimensions equals: #(2).
 	result allInt64s with: #(0 2) do: [:r :t |
 		self assert: r equals: t].
 	
-	result _ session
-		runOperation: output1
-		output: (output1 output: 0).
+	result _ session runOutput: (output1 output: 0).
 	
 	self assert: result dimensions equals: #(3).
 	result allInt64s with: #(0 0 1) do: [:r :t |
 		self assert: r equals: t].! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:24:52'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:41:51'!
+testOperationArgMinTwoOutputs
+	| graph a session const results first second output0 output1 axis0 axis1 |
+	
+	a _ TF_Tensor fromFloats: #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	).
+	
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'a' value: a.
+	axis0 _ graph const: 'axis0' value: (TF_Tensor fromInt32: 0).
+	axis1 _ graph const: 'axis1' value: (TF_Tensor fromInt32: 1).
+	
+	output0 _ (const findMinOn: axis0) output: 0.
+	output1 _ (const findMinOn: axis1) output: 0.
+	
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOutputs: {output0. output1}.
+	
+	first _ results at: 1.
+	second _ results at: 2.
+	
+	self assert: first dimensions equals: #(2).
+	first allInt64s with: #(0 2) do: [:r :t |
+		self assert: r equals: t].
+	
+	self assert: second dimensions equals: #(3).
+	second allInt64s with: #(0 0 1) do: [:r :t |
+		self assert: r equals: t].! !
+
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:02'!
 testOperationAsin
 	| graph template session const result output intput |
 	
@@ -2610,18 +2640,18 @@ testOperationAsin
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: intput.
-	output _ const arcSin.
+	output _ const arcSin output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: output.
 	
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].! !
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:25:00'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:14'!
 testOperationAtan
 	| graph template session const result output intput |
 	
@@ -2630,18 +2660,18 @@ testOperationAtan
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: intput.
-	output _ const arcTan.
+	output _ const arcTan output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: output.
 	
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].! !
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:25:08'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 22:00:53'!
 testOperationCos
 	| graph template session const result output intput |
 
@@ -2650,18 +2680,18 @@ testOperationCos
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: intput.
-	output _ const cos.
+	output _ const cos output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: output.
 	
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].! !
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 01:38:01'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:45:23'!
 testOperationMatMul
 	| graph a b session constA constB result output template |
 	
@@ -2672,7 +2702,7 @@ testOperationMatMul
 	
 	constA _ graph const: 'a' value: a.
 	constB _ graph const: 'b' value: b.
-	
+
 	output _ constA * constB.
 	template _ {
 		1.1*2.0+(1.2*8.0).		1.1*4.0+(1.2*16.0).
@@ -2680,15 +2710,13 @@ testOperationMatMul
 	}.
 
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
-	
+	result _ session runOutput: (output output: 0).
+
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 02:28:13'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:09'!
 testOperationMatMulATransposed
 	| graph a b session constA constB result output template |
 	
@@ -2707,15 +2735,13 @@ testOperationMatMulATransposed
 	}.
 
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: (output output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 02:27:34'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:18'!
 testOperationMatMulBTransposed
 	| graph a b session constA constB result output template |
 	
@@ -2734,15 +2760,13 @@ testOperationMatMulBTransposed
 	}.
 
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: (output output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 05:44:08'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:25'!
 testOperationMatrixInverse
 	| graph template session const result identity inverse |
 	
@@ -2751,18 +2775,18 @@ testOperationMatrixInverse
 	
 	const _ graph const: 'const' value: template.
 	inverse _ const inverse.
-	identity _ const * inverse.
+	identity _ const * inverse output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: identity
-		output: (identity output: 0).
+	result _ session runOutput: identity.
 	
 	self assert: result dimensions equals: template dimensions.
 	result allFloats with: #(1.0 0.0 0.0 1.0) do: [:real :expected |
-		self assert: (real closeTo: expected)]! !
+		self assert: (real closeTo: expected)].
+	
+	identity free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:25:38'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:26'!
 testOperationMod
 	| graph a b session constA constB result output template |
 	
@@ -2778,15 +2802,13 @@ testOperationMod
 	template _ a allFloats \\ b allFloats.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: (output output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:25:43'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:33'!
 testOperationMul
 	| graph a b session constA constB result output template |
 	
@@ -2802,15 +2824,13 @@ testOperationMul
 	template _ a allFloats * b allFloats.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: (output output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:25:49'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:41'!
 testOperationMulScalar
 	| graph a b session constA constB result sum template |
 	
@@ -2826,15 +2846,13 @@ testOperationMulScalar
 	template _ a allFloats * 2.0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: sum
-		output: (sum output: 0).
+	result _ session runOutput: (sum output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:25:56'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:31'!
 testOperationNegated
 	| graph template session const result negated |
 	
@@ -2842,17 +2860,17 @@ testOperationNegated
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: template.
-	negated _ const negated.
+	negated _ const negated output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: negated
-		output: (negated output: 0).
+	result _ session runOutput: negated.
 	
 	self assert: result dimensions equals: template dimensions.
-	self assert: result allFloats equals: template allFloats negated.! !
+	self assert: result allFloats equals: template allFloats negated.
+	
+	negated free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:26:01'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:53'!
 testOperationPlus
 	| graph a b session constA constB result sum template |
 	
@@ -2868,15 +2886,13 @@ testOperationPlus
 	template _ a allFloats + b allFloats.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: sum
-		output: (sum output: 0).
+	result _ session runOutput: (sum output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:26:09'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:47:02'!
 testOperationPlusNegated
 	| graph a b session constA constB result sum template |
 	
@@ -2891,9 +2907,7 @@ testOperationPlusNegated
 	sum _ constA + constB negated.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: sum
-		output: (sum output: 0).
+	result _ session runOutput: (sum output: 0).
 	
 	template _ a allFloats - b allFloats.
 
@@ -2901,7 +2915,7 @@ testOperationPlusNegated
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:26:13'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:47:12'!
 testOperationPlusNegatedNegated
 	| graph a b session constA constB result sum template |
 	
@@ -2917,15 +2931,13 @@ testOperationPlusNegatedNegated
 	template _ (a allFloats + b allFloats negated) negated.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: sum
-		output: (sum output: 0).
+	result _ session runOutput: (sum output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/20/2017 18:26:17'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:47:20'!
 testOperationPlusNegatedNegatedPlus
 	| graph a b session constA constB result sum template |
 	
@@ -2941,9 +2953,7 @@ testOperationPlusNegatedNegatedPlus
 	template _ (a allFloats + b allFloats negated) negated + b allFloats negated.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: sum
-		output: (sum output: 0).
+	result _ session runOutput: (sum output: 0).
 	
 	self assert: result dimensions equals: a dimensions.
 	
@@ -2953,7 +2963,7 @@ testOperationPlusNegatedNegatedPlus
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:26:22'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:39'!
 testOperationSin
 	| graph template session const result output intput |
 
@@ -2962,18 +2972,18 @@ testOperationSin
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: intput.
-	output _ const sin.
+	output _ const sin output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: output.
 	
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].! !
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 04:08:09'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 21:56:35'!
 testOperationSum
 	| graph a session const result output0 output1 axis0 axis1 template sumOn1 sumOn0 |
 	
@@ -3014,7 +3024,44 @@ testOperationSum
 	result allFloats with: sumOn1 do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/20/2017 18:26:27'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:48:36'!
+testOperationSumOnOutputs
+	| graph a session const results first second output0 output1 axis0 axis1 template sumOn1 sumOn0 |
+	
+	template _ #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	).
+	
+	sumOn0 _ template sum.
+	sumOn1 _ template collect: [:line | line sum].
+	
+	a _ TF_Tensor fromFloats: template.
+	
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'a' value: a.
+	axis0 _ graph const: 'axis0' value: (TF_Tensor fromInt32: 0).
+	axis1 _ graph const: 'axis1' value: (TF_Tensor fromInt32: 1).
+	
+	output0 _ const sumOn: axis0.
+	output1 _ const sumOn: axis1.
+	
+	session _ TF_Session onGraph: graph.
+	results _ session runOutputs: {output0 output: 0. output1 output: 0}.
+	first _ results at: 1.
+	second _ results at: 2.
+	
+	self assert: first dimensions equals: #(2).
+	first allFloats with: sumOn0 do: [:r :t |
+		self assert: (r closeTo: t)].
+	
+	self assert: second dimensions equals: #(3).
+	second allFloats with: sumOn1 do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:47'!
 testOperationTan
 	| graph template session const result output intput |
 
@@ -3023,16 +3070,16 @@ testOperationTan
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: intput.
-	output _ const tan.
+	output _ const tan output: 0.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session
-		runOperation: output
-		output: (output output: 0).
+	result _ session runOutput: output.
 	
 	self assert: result dimensions equals: intput dimensions.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].! !
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
@@ -4484,7 +4531,7 @@ runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output:
 	^ tensor
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:09:51'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:56:52'!
 runOperation: aTF_Operation output: aTF_Output
 	| operations  answer outputs |
 	operations _ TF_OperationPtrArray externalNew: 1.
@@ -4494,7 +4541,7 @@ runOperation: aTF_Operation output: aTF_Output
 	operations first: aTF_Operation.	
 	answer _ self runOperations: operations outputs: outputs size: 1.
 
-	^ answer! !
+	^ answer first! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:00'!
 runOperations: anArrayOfTF_Operations
@@ -4532,9 +4579,9 @@ runOperations: anArrayOfTF_Operations inputs: inArrayOfTF_Outputs values: inArra
 	^ outvalues
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:35'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:54:28'!
 runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
-	| status outvalues tensor |
+	| status outvalues |
 	status _ TF_Status create.
 	outvalues _ TF_TensorPtrArray new: anInteger.
 	
@@ -4545,9 +4592,14 @@ runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 		targets: aTF_OperationArray count: 1
 		metadata: nil status: status.
 		
-	tensor _ outvalues first.
 	status check.
-	^ tensor! !
+	^ outvalues! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 22:00:03'!
+runOutput: aTF_Output
+	| results |
+	results _ self runOutputs: {aTF_Output}.
+	^ results first! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:44:06'!
 runOutputs: anArrayOfTF_Outputs
@@ -4556,9 +4608,9 @@ runOutputs: anArrayOfTF_Outputs
 	
 	^ self runOutputs: outputs size: anArrayOfTF_Outputs size! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:41:01'!
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:57:43'!
 runOutputs: aTF_OutputArray size: anInteger
-	| status outvalues tensor |
+	| status outvalues |
 	status _ TF_Status create.
 	outvalues _ TF_TensorPtrArray new: anInteger.
 	
@@ -4569,9 +4621,8 @@ runOutputs: aTF_OutputArray size: anInteger
 		targets: nil count: 0
 		metadata: nil status: status.
 		
-	tensor _ outvalues first.
 	status check.
-	^ tensor! !
+	^ outvalues! !
 
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
 onGraph: aTF_Graph
