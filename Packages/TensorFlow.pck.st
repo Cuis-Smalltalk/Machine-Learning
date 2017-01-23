@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 11:23:54 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 10:44:44 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 247!
+!provides: 'TensorFlow' 1 248!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2768,6 +2768,27 @@ testOperationCos
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/23/2017 10:44:28'!
+testOperationExp
+	| graph inputs template session const result output |
+	
+	template _ #(-1.1 1.2).
+	
+	inputs _ TF_Tensor fromFloats: template.
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'const' value: inputs.
+	output _ const exp output: 0.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: output.
+	
+	self assert: result dimensions equals: inputs dimensions.
+	result allFloats with: template exp do: [:res :temp |
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/23/2017 09:56:51'!
 testOperationIdentity
 	| graph template const result same |
@@ -4304,6 +4325,11 @@ cos
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
 device
 	^ self library operationDevice: self! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/23/2017 10:39:24'!
+exp
+	^ self unaryOp: 'Exp'
+	! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:37:51'!
 findMinOn: aTF_Operation
