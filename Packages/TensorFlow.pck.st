@@ -1878,6 +1878,20 @@ testPrintOn
 	self assert: printString last equals: '''add'''.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 00:19:25'!
+testRankOfOperation
+	| graph template const rank |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	rank _ graph rankOf: (const output: 0).
+	
+	self assert: template dimensions size equals: rank.
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:50:59'!
 testRanks
 	self assertRankOf: -13123213 is: 0.
@@ -3349,6 +3363,12 @@ graph: aTF_Graph getOperationNamedAsVoid: aString
 	<cdecl: void* 'TF_GraphOperationByName' (TF_Graph* char*)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 00:18:44'!
+graph: aTF_Graph getRankOf:  aTF_Output status: status
+	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
+	^ self externalCallFailed
+! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:29:16'!
 graph: aTF_Graph operationAt: contextULongLongPtr
 	| answer |
@@ -4084,6 +4104,14 @@ placeholder: nameString type: typeInteger
 		named: nameString
 		described: [:description |
 			description at: 'dtype' putType: typeInteger]! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 00:18:19'!
+rankOf: aTF_Output
+	| status answer |
+	status _ TF_Status create.
+	answer _ self library graph: self getRankOf:  aTF_Output status: status.
+	status check.
+	^ answer! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
 create
