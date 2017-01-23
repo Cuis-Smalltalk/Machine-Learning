@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 10:44:44 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 10:50:25 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 248!
+!provides: 'TensorFlow' 1 250!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2900,6 +2900,29 @@ testOperationMatrixInverse
 	
 	identity free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 1/23/2017 10:46:06'!
+testOperationMinus
+	| graph a b session constA constB result sum template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	sum _ constA - constB.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (sum output: 0).
+	
+	template _ a allFloats - b allFloats.
+
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:26'!
 testOperationMod
 	| graph a b session constA constB result output template |
@@ -4242,6 +4265,12 @@ create
 + aTF_Operation
 	^ self binaryOp: 'Add' with: aTF_Operation! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 1/23/2017 10:48:37'!
+- aTF_Operation
+	| negated |
+	negated _ aTF_Operation negated.
+	^ self + negated! !
+
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
 @* aTF_Operation
 	^ self binaryOp: 'Mul' with: aTF_Operation! !
@@ -5371,7 +5400,7 @@ initializeGraph
 	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:36'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'JB 1/23/2017 10:49:44'!
 initializeGraphWithOperations
 	| axis axisValue distance testing training prediction |
 	graph _ TF_Graph create.
@@ -5381,7 +5410,7 @@ initializeGraphWithOperations
 	axisValue _ TF_Tensor fromInt32: 0.
 	axis _ graph const: 'axis' value: axisValue.
 	
-	distance _ (testing negated + training) abs sumOn: axis.
+	distance _ (testing - training) abs sumOn: axis.
 	prediction _ distance findMinOn: axis.
 	
 	outputs _ {prediction output: 0}.
