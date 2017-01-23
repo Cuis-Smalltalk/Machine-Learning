@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 10:50:25 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 4:16:47 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 250!
+!provides: 'TensorFlow' 1 252!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1226,6 +1226,61 @@ testDimensionOfOutput
 	dimensions _ graph dimensionsOf: (const output: 0).
 	
 	self assert: template dimensions equals: dimensions.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 16:09:52'!
+testDimensionOfOutputSet
+	| graph var dimensions output |
+	graph _ TF_Graph create.
+	
+	var _ graph newOperation: 'Placeholder' named: 'var' described: [:description |
+		description
+			at: 'dtype' putType: TF_Tensor typeInt64;
+			at: 'shape' putShape: #(3 -1 -1)].
+	
+	output _ var output: 0.
+	
+	dimensions _ graph dimensionsOf: output.
+	self assert: dimensions equals: #(3 -1 -1).
+
+	graph dimensionsOf: output set: #(-1 3 -1).
+
+	dimensions _ graph dimensionsOf: output.
+	self assert: dimensions equals: #(3 3 -1).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 15:14:46'!
+testDimensionOfOutputSetInvalid
+	| graph template const output invalidDimensions lastError |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	output _ const output: 0.
+	
+	[graph dimensionsOf: output set: #(1 2 3)] ifError: [:description :receiver | lastError _ description].
+	
+	invalidDimensions _ 'Error: INVALID_ARGUMENT: Dimension 0 in both shapes must be equal, but are 2 and 1'.
+	self assert: invalidDimensions equals: lastError.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 15:17:46'!
+testDimensionOfOutputSetInvalidRank
+	| graph template const output invalidDimensions lastError |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	output _ const output: 0.
+	
+	[graph dimensionsOf: output set: #(1 2 3 -1)] ifError: [:description :receiver | lastError _ description].
+	
+	invalidDimensions _ 'Error: INVALID_ARGUMENT: Shapes must be equal rank, but are 3 and 4'.
+	self assert: invalidDimensions equals: lastError.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
@@ -3478,6 +3533,12 @@ graph: aTF_Graph operationAtAsVoid: contextULongLongPtr
 	^ self externalCallFailed
 ! !
 
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 15:12:33'!
+graph: aTF_Graph setDimensionsOf:  aTF_OutputOrInput to: anInt64Array size: anInteger status: status
+	<cdecl: void 'TF_GraphSetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
+	^ self externalCallFailed
+! !
+
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/5/2017 20:47:43'!
 graph: aTF_Graph toGraphDef: aTF_Buffer status: aTF_Status
 	<cdecl: void 'TF_GraphToGraphDef' (TF_Graph* TF_Buffer* TF_Status*)>
@@ -4104,6 +4165,20 @@ dimensionsOf: aTF_OutputOrInput
 	
 	answer _ (1 to: size) collect: [:i | value at: i].
 	^ answer! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 15:08:37'!
+dimensionsOf: aTF_OutputOrInput set: dimensions
+	| status value |
+	value _ Int64Array externalFromArray: dimensions.
+	status _ TF_Status create.
+	
+	self library
+		graph: self
+		setDimensionsOf: aTF_OutputOrInput
+		to: value
+		size: dimensions size
+		status: status.
+	status check.! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
 finalize
