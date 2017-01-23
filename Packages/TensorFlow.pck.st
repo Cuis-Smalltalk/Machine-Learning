@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 12:20:06 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 9:49:37 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 243!
+!provides: 'TensorFlow' 1 244!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1198,6 +1198,20 @@ testDescriptionDevice
 	 [[Node: out = Mul[T=DT_INT64, _class=[], _device="anInvalidDevice"](const, const)]]'.
 	
 	self assert: expected equals: lastError.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:49:20'!
+testDimensionOfOutput
+	| graph template const dimensions |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	dimensions _ graph dimensionsOf: (const output: 0).
+	
+	self assert: template dimensions equals: dimensions.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
 testDimensions
@@ -3350,6 +3364,12 @@ getCode: aTF_Status
 	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
 	^self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 09:46:50'!
+graph: aTF_Graph getDimensionsOf:  aTF_Output into: anInt64Array size: anInteger status: status
+	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
+	^ self externalCallFailed
+! !
+
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:27:15'!
 graph: aTF_Graph getOperationNamed: aString
 	| answer |
@@ -3991,6 +4011,24 @@ delete
 	self isNull ifFalse: [
 		self library deleteGraph: self].
 	handle _ nil! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 09:48:02'!
+dimensionsOf: aTF_Output
+	| status value size answer |
+	size _ self rankOf: aTF_Output.
+	value _ Int64Array externalNew: size.
+	status _ TF_Status create.
+	
+	self library
+		graph: self
+		getDimensionsOf: aTF_Output
+		into: value
+		size: size
+		status: status.
+	status check.
+	
+	answer _ (1 to: size) collect: [:i | value at: i].
+	^ answer! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
 finalize
