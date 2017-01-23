@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 11:23:54 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 11:31:16 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 247!
+!provides: 'TensorFlow' 1 248!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3414,8 +3414,8 @@ graph: aTF_Graph getOperationNamedAsVoid: aString
 	<cdecl: void* 'TF_GraphOperationByName' (TF_Graph* char*)>
 	^ self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 00:18:44'!
-graph: aTF_Graph getRankOf:  aTF_Output status: status
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:31:00'!
+graph: aTF_Graph getRankOf:  aTF_OutputOrInput status: status
 	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
 	^ self externalCallFailed
 ! !
@@ -4174,11 +4174,11 @@ placeholder: nameString type: typeInteger
 		described: [:description |
 			description at: 'dtype' putType: typeInteger]! !
 
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 00:18:19'!
-rankOf: aTF_Output
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:31:07'!
+rankOf: aTF_OutputOrInput
 	| status answer |
 	status _ TF_Status create.
-	answer _ self library graph: self getRankOf:  aTF_Output status: status.
+	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
 	status check.
 	^ answer! !
 
