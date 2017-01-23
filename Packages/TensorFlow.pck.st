@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 9:49:37 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 11:18:56 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 244!
+!provides: 'TensorFlow' 1 246!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2753,6 +2753,22 @@ testOperationCos
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/23/2017 09:56:51'!
+testOperationIdentity
+	| graph template const result same |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	same _ const identity output: 0.
+	
+	result _ (TF_Session onGraph: graph) runOutput: same.
+	
+	self assert: template dimensions equals: result dimensions.
+	self assert: #(1 2 3 4 5 6) equals: result allFloats.! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:45:23'!
 testOperationMatMul
 	| graph a b session constA constB result output template |
@@ -4295,6 +4311,11 @@ graph
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:35:14'!
 graph: aTF_Graph
 	graph _ aTF_Graph! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/23/2017 09:52:07'!
+identity
+	^ self unaryOp: 'Identity'
+	! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
 input: indexInteger
