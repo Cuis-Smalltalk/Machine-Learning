@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 11:18:56 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 11:23:54 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 246!
+!provides: 'TensorFlow' 1 247!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3395,8 +3395,8 @@ getCode: aTF_Status
 	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 09:46:50'!
-graph: aTF_Graph getDimensionsOf:  aTF_Output into: anInt64Array size: anInteger status: status
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:23:19'!
+graph: aTF_Graph getDimensionsOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
 	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
 	^ self externalCallFailed
 ! !
@@ -4043,16 +4043,16 @@ delete
 		self library deleteGraph: self].
 	handle _ nil! !
 
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 09:48:02'!
-dimensionsOf: aTF_Output
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
+dimensionsOf: aTF_OutputOrInput
 	| status value size answer |
-	size _ self rankOf: aTF_Output.
+	size _ self rankOf: aTF_OutputOrInput.
 	value _ Int64Array externalNew: size.
 	status _ TF_Status create.
 	
 	self library
 		graph: self
-		getDimensionsOf: aTF_Output
+		getDimensionsOf: aTF_OutputOrInput
 		into: value
 		size: size
 		status: status.
