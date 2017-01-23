@@ -1199,6 +1199,21 @@ testDescriptionDevice
 	
 	self assert: expected equals: lastError.! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:52:54'!
+testDimensionOfInput
+	| graph template const dimensions same |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	same _ const identity.
+	dimensions _ graph dimensionsOf: (same input: 0).
+	
+	self assert: template dimensions equals: dimensions.
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:49:20'!
 testDimensionOfOutput
 	| graph template const dimensions |
