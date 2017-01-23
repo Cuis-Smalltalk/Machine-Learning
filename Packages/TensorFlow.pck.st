@@ -1892,8 +1892,8 @@ testPrintOn
 	self assert: printString last equals: '''add'''.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 00:19:25'!
-testRankOfOperation
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:48:53'!
+testRankOfOutput
 	| graph template const rank |
 	graph _ TF_Graph create.
 	template _ TF_Tensor fromFloats: #(
@@ -4340,7 +4340,7 @@ printOn: strm
 			space;
 			print: self name]! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/13/2017 13:14:12'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/23/2017 09:47:55'!
 shapeAt: nameString
 	| value status size answer |
 	size _ (self attrMetadata: nameString) totalSize.
@@ -4353,9 +4353,9 @@ shapeAt: nameString
 		getShape: value
 		size: size
 		status: status.
-		
-	answer _ (1 to: size) collect: [:i | value at: i].
 	status check.
+
+	answer _ (1 to: size) collect: [:i | value at: i].
 	^ answer! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:09'!
