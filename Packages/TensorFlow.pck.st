@@ -2557,6 +2557,30 @@ testTensorFromFloats2x2SameElementsOrder
 	consts with: values do: [:const :value |
 		self assert: (const closeTo: value)].! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 15:29:55'!
+testTensorFromFloatsDimensions
+	| tensor template values |
+	template _ #(1.23456 0.0 -1.234567 1.1).
+	tensor _ TF_Tensor fromFloats: template dimensions: #(2 2).
+	values _ tensor allFloats.
+		
+	self assert: tensor dimensions equals: #(2 2).
+	self assert: tensor size equals: 4.
+	self assert: tensor byteSize equals: (tensor size*4).
+	template with: values do: [:templ :actual |
+		self assert: (templ closeTo: actual)]
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 16:16:34'!
+testTensorFromFloatsDimensionsUndefinedSize
+	| template invalidDimension lastError |
+	template _ #(1.23456 0.0 -1.234567 1.1).
+	
+	[TF_Tensor fromFloats: template dimensions: #(2 2 -1)] ifError: [:description :receiver | lastError _ description].
+	
+	invalidDimension _ 'Error: Inferred size and real size don''t match.'.
+	self assert: invalidDimension equals: lastError! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
 testTensorFromFloatsScalar
 	| tensor template values |
@@ -5157,15 +5181,21 @@ floatArray: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/19/2017 11:26:11'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 15:22:48'!
 fromFloats: values
-	| answer dimensions size count |
-	size _ self sizeOf: values.
+	| dimensions |
 	dimensions _ self dimensionsOf: values.
+	^ self fromFloats: values dimensions: dimensions.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:09'!
+fromFloats: values dimensions: dimensions
+	| answer size count |
+	size _ self sizeOf: values.
 	count _ dimensions inject: 1 into: [:a :b | a * b].
 	count = size ifFalse: [
 		self error: 'Inferred size and real size don''t match.'].
-	
+		
 	answer _ self type: self typeFloat dimensions: dimensions.
 	self floatArray: values into: answer data getHandle.
 	^ answer! !
@@ -5304,7 +5334,7 @@ sizeOf: aMultidimensionalTensor
 sizeOfString: aString.
 	^ TensorFlowCAPI current stringEncodedSize: aString.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:42:58'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:51'!
 type: anInteger dimensions: anIntegerArray
 	" I understand dimenssions are:
 		#()		-> Scalar
