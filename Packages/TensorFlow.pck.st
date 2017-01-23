@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 22 January 2017 at 6:09:38 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 12:20:06 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 239!
+!provides: 'TensorFlow' 1 243!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -823,6 +823,22 @@ tesCloseSessionTwiceNoCrash
 	session close.
 	session delete.
 	self assert: session isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 00:19:56'!
+testAddControlInput
+	| graph in op result |
+	graph _ TF_Graph create.
+	in _ graph const: 'const' value: (TF_Tensor fromInt64: 12345678).
+	op _ graph newOperation: 'Mul' named: 'out' described: [:description |
+		description
+			addInput: (in output: 0);
+			addInput: (in output: 0);
+			addControlInput: (in output: 0)].
+	
+	result _ (TF_Session onGraph: graph) runOutput: (op output: 0).
+	
+	self assert: 12345678*12345678 equals: result allInt64s first.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:44'!
 testAsStringGraphRunOn: tensor
@@ -3230,6 +3246,11 @@ deleteTensor: aTF_Tensor
 	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/22/2017 20:32:21'!
+description: aTF_OperationDescription addControlInput: aTF_Output
+	<cdecl: void 'TF_AddControlInput' (TF_OperationDescription* TF_Output)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:59:08'!
 description: aTF_OperationDescription addInput: aTF_Output
 	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output)>
@@ -4332,6 +4353,12 @@ unaryOp: aString
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
 	self library description: self add: input.! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/22/2017 20:37:18'!
+addControlInput: aTF_OutputOrInput
+	^self library
+		description: self
+		addControlInput: aTF_OutputOrInput! !
 
 !TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:32:31'!
 addInput: aTF_OutputOrInput
