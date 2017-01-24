@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 4:16:47 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 24 January 2017 at 6:58:12 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 252!
+!provides: 'TensorFlow' 1 254!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1017,7 +1017,7 @@ testAttrSetShape: anIntegerArray
 	self assert: (op shapeAt: 'shape') equals: anIntegerArray.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:59:12'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/24/2017 18:57:10'!
 testAttrSetString
 	self testAttrSetString: '1'.
 	self testAttrSetString: '12'.
@@ -1025,20 +1025,41 @@ testAttrSetString
 	self testAttrSetString: '1234567'.
 	self testAttrSetString: '12345678'.
 	self testAttrSetString: '123456789'.
-! !
+	self testAttrSetString: ((ByteArray new: 100) atAllPut: 65) asString.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:57'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/24/2017 18:57:40'!
 testAttrSetString: aString
-	| graph in op |
+	| graph in op copy |
 	graph _ TF_Graph create.
+	copy _ aString asByteArray.
+	
 	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
 	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
-		description at: 'fill' putString: aString.
+		description at: 'fill' putString: copy.
+		description addInput: (in output: 0)].
+	
+	copy at: 1 put: 65.	"Change Smalltalk String to see if TensorFlow makes a copy"	
+	
+	self assert: (op stringAt: 'fill') equals: aString.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 23:31:54'!
+testAttrSetStrings
+	self testAttrSetStrings: #('file:///tmp/TFDebug.log').
+	self testAttrSetStrings: #('file:///tmp/TFDebug.log' 'file:///tmp/TFDebug2.log').! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 17:11:06'!
+testAttrSetStrings: aAnArrayOfStrings
+	| graph template in op |
+	graph _ TF_Graph create.
+	template _ #((1 2 3) (4 5 6) (7 8 9)).
+	in _ graph const: 'in' value: (TF_Tensor fromFloats: template).
+	op _ graph newOperation: 'DebugNumericSummary' named: 'out' described: [:description |
+		description at: 'debug_urls' putStrings: aAnArrayOfStrings.
 		description addInput: (in output: 0)].
 	
 	Smalltalk garbageCollect.	" Force releasing the string, to see if the API makes a copy or not"
-	
-	self assert: (op stringAt: 'fill') equals: aString.
+
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:20'!
@@ -3463,8 +3484,8 @@ description: aTF_OperationDescription set: aString toShape: anInt64Array size: s
 	<cdecl: void 'TF_SetAttrShape' (TF_OperationDescription* char* Int64Array* ulonglong)>
 	^ self externalCallFailed.! !
 
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 08:45:47'!
-description: aTF_OperationDescription set: aString toString: anInt size: size
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/23/2017 17:18:33'!
+description: aTF_OperationDescription set: nameString toString: valueString size: size
 	<cdecl: void 'TF_SetAttrString' (TF_OperationDescription* char* char* ulonglong)>
 	^ self externalCallFailed.! !
 
