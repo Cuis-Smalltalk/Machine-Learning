@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 25 January 2017 at 11:42:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 25 January 2017 at 3:45:20 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 253!
+!provides: 'TensorFlow' 1 254!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -300,6 +300,16 @@ Object subclass: #OLSExample
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'OLSExample class' category: #'TensorFlow-Examples'!
 OLSExample class
+	instanceVariableNames: ''!
+
+!classDefinition: #SimpleNeuralNetworkExample category: #'TensorFlow-Examples'!
+Object subclass: #SimpleNeuralNetworkExample
+	instanceVariableNames: 'forward backward weights'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'SimpleNeuralNetworkExample class' category: #'TensorFlow-Examples'!
+SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
 
@@ -2474,19 +2484,17 @@ testTensorFinalizationReleasesExternalMemory
 	self assert: (handles size) < total.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'JB 1/25/2017 12:28:07'!
 testTensorFromFloats
 	| tensor template values |
-	template _ #(1.23456 0.0 -1.234567).
-	tensor _ TF_Tensor fromFloats: template.
+	template _ 1.23456.
+	tensor _ TF_Tensor fromFloat: template.
 	values _ tensor allFloats.
 		
-	self assert: tensor dimensions equals: #(3).
-	self assert: tensor size equals: 3.
-	self assert: tensor byteSize equals: (3*4).
-	template @ values do: [:point |
-		self assert: (point x closeTo: point y)]
-! !
+	self assert: tensor dimensions equals: #().
+	self assert: tensor size equals: 1.
+	self assert: tensor byteSize equals: (1*4).
+	self assert: (values first closeTo: template)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 10:13:47'!
 testTensorFromFloats2x2
@@ -3162,6 +3170,25 @@ testOperationSin
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/25/2017 11:52:06'!
+testOperationSquared
+	| graph template session const result output |
+	
+	template _ TF_Tensor fromFloats: #((-1.1 1.2) (-2.1 -2.2)).
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'const' value: template.
+	output _ const squared output: 0.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: output.
+	
+	self assert: result dimensions equals: template dimensions.
+	result allFloats with: template allFloats squared do: [:res :temp |
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 21:56:35'!
 testOperationSum
 	| graph a session const result output0 output1 axis0 axis1 template sumOn1 sumOn0 |
@@ -3363,6 +3390,26 @@ testOLS: ols
 !TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:19:01'!
 testOLSWithOperations
 	self testOLS: OLSExample new initializeWithOperations! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NeuralNetwork' stamp: 'JB 1/25/2017 15:42:41'!
+testSimpleNeuralNetwork
+	| inputs weights nn prediction target targetValues |
+	inputs _ TF_Tensor fromFloats: {
+		{1.0}.
+		{2 ln}
+		}.
+	targetValues _ #( 0.5 0.5).
+	target _ TF_Tensor fromFloats: targetValues.
+	weights _ #(
+		(1.0 1.0)
+		(1.0 0.0)
+	).
+	nn _ SimpleNeuralNetworkExample new.
+	nn initialWeights: weights;
+	 	learnAll: {inputs} to: {target} steps: 100.
+	prediction _ nn predict: inputs.
+	targetValues with: prediction do:[:real :predicted| 
+		self assert: (real - predicted) abs < 0.1]! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
@@ -4516,6 +4563,11 @@ sin
 	^ self unaryOp: 'Sin'
 	! !
 
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/25/2017 11:50:16'!
+squared
+	^ self @* self
+	! !
+
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:57'!
 stringAt: nameString
 	| value status size |
@@ -5146,6 +5198,13 @@ floatArray: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'JB 1/25/2017 12:29:42'!
+fromFloat: value 
+	| answer |
+	answer _ self type: self typeFloat dimensions: #().
+	answer data getHandle floatAt: 1 put: value.
+	^ answer! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/19/2017 11:26:11'!
 fromFloats: values
 	| answer dimensions size count |
@@ -5434,7 +5493,23 @@ runOn: inputValues
 	^ results first
 	! !
 
-!BackpropagationForwardPlan methodsFor: 'as yet unclassified' stamp: 'JB 1/25/2017 11:40:47'!
+!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'JB 1/25/2017 13:37:11'!
+initializeGraph
+	| inputVariable weights actual delta learningRate newWeights target learningRateValue one |
+	super initializeGraph.
+	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
+	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
+	actual _ graph placeholder: 'actual' type: TF_Tensor typeFloat.
+	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
+	learningRateValue _ TF_Tensor fromFloat: 0.9.
+	learningRate _ graph const: 'learningRate' value: learningRateValue.
+	one _ graph const: 'one' value: (TF_Tensor fromFloat: 1.0).
+	delta _ (target - actual) negated @* actual @* (one - actual) @* inputVariable.
+	newWeights _ weights - (learningRate @* delta).
+	outputs _ {newWeights output: 0}.
+	inputs _ {inputVariable input: 0. weights input: 0. target input:0. actual input: 0}! !
+
+!BackpropagationForwardPlan methodsFor: 'initialization' stamp: 'JB 1/25/2017 11:40:47'!
 initializeGraph
 	| activation inputVariable netInput weights |
 	super initializeGraph.
@@ -5672,4 +5747,31 @@ regress: x on: y
 	| result |
 	result _ plan runOn: {x. y}.
 	^ result allFloats! !
+
+!SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'JB 1/25/2017 15:23:33'!
+initialWeights: aCollection
+	weights _ TF_Tensor fromFloats: aCollection! !
+
+!SimpleNeuralNetworkExample methodsFor: 'initialization' stamp: 'JB 1/25/2017 15:22:27'!
+initialize
+	forward _ BackpropagationForwardPlan new.
+	backward _ BackpropagationBackwardPlan new.! !
+
+!SimpleNeuralNetworkExample methodsFor: 'learning' stamp: 'JB 1/25/2017 15:25:47'!
+learn: sample with: expected
+		| result |
+	result _ forward runOn: {sample. weights}.
+	weights _ backward runOn: {sample. weights. expected. result}.! !
+
+!SimpleNeuralNetworkExample methodsFor: 'learning' stamp: 'JB 1/25/2017 15:29:01'!
+learnAll: samples to: targets steps: n
+	n timesRepeat: [
+		samples with: targets do:[:sample :target| self learn: sample with: target]
+		]! !
+
+!SimpleNeuralNetworkExample methodsFor: 'service' stamp: 'JB 1/25/2017 15:26:43'!
+predict: sample
+		| result |
+	result _ forward runOn: {sample. weights}.
+	^ result allFloats ! !
 TF_Structure initialize!
