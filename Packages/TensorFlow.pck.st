@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 23 January 2017 at 10:50:25 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 24 January 2017 at 9:59:28 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 250!
+!provides: 'TensorFlow' 1 251!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -240,6 +240,16 @@ Object subclass: #ExamplePlan
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'ExamplePlan class' category: #'TensorFlow-Examples'!
 ExamplePlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #BackPropForwardPlan category: #'TensorFlow-Examples'!
+ExamplePlan subclass: #BackPropForwardPlan
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'BackPropForwardPlan class' category: #'TensorFlow-Examples'!
+BackPropForwardPlan class
 	instanceVariableNames: ''!
 
 !classDefinition: #ExampleNearestNeighborPlan category: #'TensorFlow-Examples'!
@@ -3100,6 +3110,28 @@ testOperationPlusNegatedNegatedPlus
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'Javier Burroni 1/24/2017 21:35:47'!
+testOperationSigmoid
+	| graph inputs template session const result output transformed |
+	
+	template _ #(-1.1 1.2 0 4).
+	
+	inputs _ TF_Tensor fromFloats: template.
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'const' value: inputs.
+	output _ const sigmoid output: 0.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: output.
+	
+	transformed _ template collect:[:x| (x negated exp + 1) reciprocal].
+	self assert: result dimensions equals: inputs dimensions.
+	result allFloats with: transformed do: [:res :temp |
+		self assert: (res closeTo: temp)].
+	
+	output free.! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:39'!
 testOperationSin
 	| graph template session const result output intput |
@@ -3229,6 +3261,24 @@ tensorFrom: points
 		point withIndexDo: [ :value :coordinate |
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-BackPropagation' stamp: 'Javier Burroni 1/24/2017 21:58:48'!
+testForward
+	| inputs plan rawResult result weights |
+	plan _ BackPropForwardPlan new.
+	inputs _ TF_Tensor fromFloats: {
+		{0.0}.
+		{2 ln}
+		}.
+	weights _ TF_Tensor fromFloats: #(
+		(1.0 1.0)
+		(1.0 0.0)
+	).
+	rawResult _ plan runOn: {inputs. weights}.
+	result _ rawResult allFloats.
+	
+	self assert: (result first closeTo: (1 + 0.5) reciprocal);
+		 assert: (result second closeTo: 0.5)! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
 testNearesNeighbor
@@ -4447,6 +4497,10 @@ shapeAt: nameString
 	answer _ (1 to: size) collect: [:i | value at: i].
 	^ answer! !
 
+!TF_Operation methodsFor: 'ops unary' stamp: 'Javier Burroni 1/24/2017 21:36:48'!
+sigmoid
+	^ self unaryOp: 'Sigmoid'! !
+
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:09'!
 sin
 	^ self unaryOp: 'Sin'
@@ -5369,6 +5423,17 @@ runOn: inputValues
 		
 	^ results first
 	! !
+
+!BackPropForwardPlan methodsFor: 'as yet unclassified' stamp: 'Javier Burroni 1/24/2017 21:41:01'!
+initializeGraph
+	| activation inputVariable netInput weights |
+	super initializeGraph.
+	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
+	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
+	netInput _ weights * inputVariable.
+	activation _ netInput sigmoid.
+	outputs _ {activation output: 0}.
+	inputs _ {inputVariable input: 0. weights input: 0}! !
 
 !ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:49'!
 initializeGraph
