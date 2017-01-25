@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 25 January 2017 at 11:30:02 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 25 January 2017 at 11:42:41 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 252!
+!provides: 'TensorFlow' 1 253!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -242,6 +242,26 @@ Object subclass: #ExamplePlan
 ExamplePlan class
 	instanceVariableNames: ''!
 
+!classDefinition: #BackpropagationBackwardPlan category: #'TensorFlow-Examples'!
+ExamplePlan subclass: #BackpropagationBackwardPlan
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'BackpropagationBackwardPlan class' category: #'TensorFlow-Examples'!
+BackpropagationBackwardPlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #BackpropagationForwardPlan category: #'TensorFlow-Examples'!
+ExamplePlan subclass: #BackpropagationForwardPlan
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'BackpropagationForwardPlan class' category: #'TensorFlow-Examples'!
+BackpropagationForwardPlan class
+	instanceVariableNames: ''!
+
 !classDefinition: #ExampleNearestNeighborPlan category: #'TensorFlow-Examples'!
 ExamplePlan subclass: #ExampleNearestNeighborPlan
 	instanceVariableNames: ''
@@ -260,16 +280,6 @@ ExamplePlan subclass: #ExampleOLSPlan
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'ExampleOLSPlan class' category: #'TensorFlow-Examples'!
 ExampleOLSPlan class
-	instanceVariableNames: ''!
-
-!classDefinition: #PerceptronForwardPlan category: #'TensorFlow-Examples'!
-ExamplePlan subclass: #PerceptronForwardPlan
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Examples'!
-!classDefinition: 'PerceptronForwardPlan class' category: #'TensorFlow-Examples'!
-PerceptronForwardPlan class
 	instanceVariableNames: ''!
 
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
@@ -3262,10 +3272,10 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Perceptron' stamp: 'Javier Burroni 1/25/2017 11:29:31'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'JB 1/25/2017 11:41:28'!
 testForward
 	| inputs plan rawResult result weights |
-	plan _ PerceptronForwardPlan new.
+	plan _ BackpropagationForwardPlan new.
 	inputs _ TF_Tensor fromFloats: {
 		{0.0}.
 		{2 ln}
@@ -5424,6 +5434,17 @@ runOn: inputValues
 	^ results first
 	! !
 
+!BackpropagationForwardPlan methodsFor: 'as yet unclassified' stamp: 'JB 1/25/2017 11:40:47'!
+initializeGraph
+	| activation inputVariable netInput weights |
+	super initializeGraph.
+	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
+	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
+	netInput _ weights * inputVariable.
+	activation _ netInput sigmoid.
+	outputs _ {activation output: 0}.
+	inputs _ {inputVariable input: 0. weights input: 0}! !
+
 !ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:49'!
 initializeGraph
 	| neg add abs axis axisValue distance testing training prediction |
@@ -5520,17 +5541,6 @@ initializeGraphWithOperations
 	
 	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
-
-!PerceptronForwardPlan methodsFor: 'as yet unclassified' stamp: 'Javier Burroni 1/24/2017 21:41:01'!
-initializeGraph
-	| activation inputVariable netInput weights |
-	super initializeGraph.
-	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
-	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
-	netInput _ weights * inputVariable.
-	activation _ netInput sigmoid.
-	outputs _ {activation output: 0}.
-	inputs _ {inputVariable input: 0. weights input: 0}! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
 decodeCSV: csvLines graphRun: description
