@@ -4475,11 +4475,11 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/12/2017 18:46:27'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
 attrMetadata: nameString
 	| status answer |
 	status _ TF_Status create.
-	answer _ self library operation: self getMetadataFor: nameString status: status.
+	answer _ self library operation: self getMetadataFor: nameString asAsciiZ status: status.
 	status check.
 	^ answer! !
 
