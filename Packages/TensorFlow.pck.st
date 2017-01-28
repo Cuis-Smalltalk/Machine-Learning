@@ -926,6 +926,20 @@ testAttrGetString
 	self assert: (op stringAt: 'fill') equals: ''.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/28/2017 00:59:03'!
+testAttrGetStrings
+	| graph template in op strings |
+	graph _ TF_Graph create.
+	template _ #('hola' 'como' 'estas?').
+	in _ graph const: 'in' value: (TF_Tensor fromFloats: 1).
+	op _ graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
+			description at: 'debug_urls' putStrings: template.
+			description addInput: (in output: 0)].
+	
+	strings _ op stringsAt: 'debug_urls'.
+	
+	self assert: template equals: strings.! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:53'!
 testAttrGetTensor
 	| op graph tensor |
@@ -3696,6 +3710,13 @@ operation: aTF_Operation attr: nameZString getString: valueString size: maxSize 
 
 ! !
 
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/26/2017 22:36:48'!
+operation: aTF_Operation attr: nameZString getStrings: valueStringArray sizes: sizesArray maxCount: maxCount storage: aBytaArray size: storageSize status: status
+	<cdecl: void 'TF_OperationGetAttrStringList' (TF_Operation* char* void* Int64Array* ulonglong void* size_t TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:59:08'!
 operation: aTF_Operation attr: nameZString getTensor: valueLongPtr status: status
 	<cdecl: void 'TF_OperationGetAttrTensor' (TF_Operation* char* void* TF_Status*)>
@@ -4597,16 +4618,47 @@ sin
 	^ self unaryOp: 'Sin'
 	! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:57'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:59:40'!
 stringAt: nameString
-	| value status size |
-	size _ 100.
+	| metadata value status |
+	metadata _ self attrMetadata: nameString.
 	status _ TF_Status create.
-	value _ ByteArray new: size.
-	self library operation: self attr: nameString asAsciiZ getString: value size: size status: status.
+	value _ ByteArray new: metadata totalSize .
+	self library
+		operation: self
+		attr: nameString asAsciiZ
+		getString: value
+		size: metadata totalSize 
+		status: status.
 	status check.
 	^ (value upTo: 0) asString
 ! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/28/2017 01:11:05'!
+stringsAt: nameString
+	| status pointers sizes spaceRequired storage metadata valuesCount |
+	metadata _ self attrMetadata: nameString.
+	spaceRequired _ metadata totalSize.
+	valuesCount _ metadata listSize.
+	pointers _ ByteArray new: Smalltalk wordSize * valuesCount.
+	sizes _ (Int64Array externalNew: valuesCount) useFinalization.
+	storage _ ExternalAddress gcallocate: spaceRequired.
+	status _ TF_Status create.
+	self library
+		operation: self
+		attr: nameString asAsciiZ 
+		getStrings: pointers
+		sizes: sizes
+		maxCount: valuesCount
+		storage: storage
+		size: spaceRequired
+		status: status.
+	status check.
+	^ (1 to: valuesCount) collect: [:i |
+		| one |
+		one _ pointers pointerAt: i-1*Smalltalk wordSize+1.
+		one _ one structAt: 1 length: (sizes at: i).
+		one asString]! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:30:55'!
 sumOn: aTF_Operation
