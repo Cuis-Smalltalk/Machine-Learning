@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 24 January 2017 at 6:58:12 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 28 January 2017 at 1:11:29 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 254!
+!provides: 'TensorFlow' 1 256!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1043,24 +1043,44 @@ testAttrSetString: aString
 	self assert: (op stringAt: 'fill') equals: aString.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 23:31:54'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/25/2017 10:58:07'!
 testAttrSetStrings
-	self testAttrSetStrings: #('file:///tmp/TFDebug.log').
-	self testAttrSetStrings: #('file:///tmp/TFDebug.log' 'file:///tmp/TFDebug2.log').! !
+	self testAttrSetStrings: #('file://tmp/TFDebug.log').
+	self testAttrSetStrings: #('file://tmp/TFDebug.log' 'file://tmp/TFDebug.2.log').! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 17:11:06'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/28/2017 01:09:40'!
 testAttrSetStrings: aAnArrayOfStrings
 	| graph template in op |
 	graph _ TF_Graph create.
 	template _ #((1 2 3) (4 5 6) (7 8 9)).
 	in _ graph const: 'in' value: (TF_Tensor fromFloats: template).
-	op _ graph newOperation: 'DebugNumericSummary' named: 'out' described: [:description |
+	op _ graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
 		description at: 'debug_urls' putStrings: aAnArrayOfStrings.
 		description addInput: (in output: 0)].
 	
-	Smalltalk garbageCollect.	" Force releasing the string, to see if the API makes a copy or not"
+	(TF_Session onGraph: graph)
+		runOutput: (op output: 0).
 
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/26/2017 22:32:06'!
+testAttrSetStringsInvalid
+	| graph template in lastError notAList |
+	graph _ TF_Graph create.
+	template _ #((1 2 3) (4 5 6) (7 8 9)).
+	in _ graph const: 'in' value: (TF_Tensor fromFloats: template).
+	[
+		graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
+			description at: 'tensor_name' putStrings: #('hola' 'como' 'estas?').
+			description addInput: (in output: 0)].
+	] ifError: [:description :receiver | lastError _ description].
+
+	notAList _ 'Error: INVALID_ARGUMENT: AttrValue had value with type ''list(string)'' when ''string'' expected
+	 for attr ''tensor_name''
+	; NodeDef: out = DebugIdentity[T=DT_FLOAT, _class=[], debug_urls=[], tensor_name=["hola", "como", "estas?"]](in); Op<name=DebugIdentity; signature=input:T -> output:T; attr=T:type; attr=tensor_name:string,default=""; attr=debug_urls:list(string),default=[]; allows_uninitialized_input=true>'.
+	
+	self assert: notAList equals: lastError.
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:20'!
 testBufferDataBytes
@@ -3489,6 +3509,11 @@ description: aTF_OperationDescription set: nameString toString: valueString size
 	<cdecl: void 'TF_SetAttrString' (TF_OperationDescription* char* char* ulonglong)>
 	^ self externalCallFailed.! !
 
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/24/2017 01:24:05'!
+description: aTF_OperationDescription set: aString toStrings: anArrayOfString sizes: sizes count: count
+	<cdecl: void 'TF_SetAttrStringList' (TF_OperationDescription* char* void* Int64Array* longlong)>
+	^ self externalCallFailed.! !
+
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
 description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
 	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
@@ -4703,6 +4728,27 @@ at: attribute putString: aString
 		set: attribute asAsciiZ
 		toString: aString
 		size: aString size.
+	status check
+	! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/24/2017 23:40:04'!
+at: attribute putStrings: anArrayOfStrings
+	| status sizes strings pointers |
+	sizes _ anArrayOfStrings collect: [:str | str size].
+	sizes _ Int64Array externalFromArray: sizes.
+	sizes useFinalization.
+	strings _ anArrayOfStrings collect: [:each | (self library externalizeString: each) useFinalization].
+	pointers _ ByteArray new: Smalltalk wordSize * strings size.
+	strings withIndexDo: [:each :index |
+		pointers pointerAt: index-1*Smalltalk wordSize+1 put: each].
+	 
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toStrings: pointers
+		sizes: sizes
+		count: anArrayOfStrings size.
 	status check
 	! !
 
