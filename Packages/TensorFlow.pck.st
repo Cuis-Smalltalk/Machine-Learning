@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:00:49 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:08:58 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 261!
+!provides: 'TensorFlow' 1 262!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1987,13 +1987,19 @@ testNewVariableNoAttributes
 		should: [graph newOperation: 'Variable' named: 'var']
 		raiseError: error.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:30:47'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:08:54'!
 testNewVariableNoInitialization
-	| graph var |
+	| graph var expectedError lastError |
 	graph _ TF_Graph create.
-	var _ graph variable: 'var'.
-	(TF_Session onGraph: graph)
-		runOutput: (var output: 0).! !
+	var _ graph variable: 'var' type: TF_Tensor typeFloat shape: #().
+	[(TF_Session onGraph: graph)
+		runOutput: (var output: 0)] ifError: [:description :receiver | lastError _ description].
+
+	expectedError _ 'Error: FAILED_PRECONDITION: Attempting to use uninitialized value var'.
+	
+	self
+		assert: expectedError equals: lastError lines first
+		! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:22'!
 testOperationOutputTypeFloat
@@ -4548,6 +4554,16 @@ variable: nameString
 	^ self
 		newOperation: 'Variable'
 		named: nameString! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:04:54'!
+variable: nameString type: typeInteger shape: anArray
+	^ self
+		newOperation: 'Variable'
+		named: nameString
+		described: [:description |
+			description
+				at: 'dtype' putType: typeInteger;
+				at: 'shape' putShape: anArray]! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
 create
