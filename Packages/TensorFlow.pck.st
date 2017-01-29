@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 1:56:56 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:05:04 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 256!
+!provides: 'TensorFlow' 1 258!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3301,17 +3301,17 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'JB 1/25/2017 11:41:28'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 02:01:59'!
 testForward
 	| inputs plan rawResult result weights |
 	plan _ BackpropagationForwardPlan new.
 	inputs _ TF_Tensor fromFloats: {
-		{0.0}.
+		{0}.
 		{2 ln}
-		}.
+	}.
 	weights _ TF_Tensor fromFloats: #(
-		(1.0 1.0)
-		(1.0 0.0)
+		(1 1)
+		(1 0)
 	).
 	rawResult _ plan runOn: {inputs. weights}.
 	result _ rawResult allFloats.
@@ -3393,18 +3393,18 @@ testOLS: ols
 testOLSWithOperations
 	self testOLS: OLSExample new initializeWithOperations! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NeuralNetwork' stamp: 'JB 1/25/2017 15:42:41'!
+!TensorFlowExamplesTest methodsFor: 'testing-NeuralNetwork' stamp: 'gera 1/29/2017 02:04:33'!
 testSimpleNeuralNetwork
 	| inputs weights nn prediction target targetValues |
 	inputs _ TF_Tensor fromFloats: {
-		{1.0}.
+		{1}.
 		{2 ln}
 		}.
-	targetValues _ #( 0.5 0.5).
+	targetValues _ #(0.5 0.5).
 	target _ TF_Tensor fromFloats: targetValues.
 	weights _ #(
-		(1.0 1.0)
-		(1.0 0.0)
+		(1 1)
+		(1 0)
 	).
 	nn _ SimpleNeuralNetworkExample new.
 	nn initialWeights: weights;
@@ -5488,7 +5488,7 @@ runOn: inputValues
 	^ results first
 	! !
 
-!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 01:56:53'!
+!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 02:04:46'!
 initializeGraph
 	| inputVariable weights actual delta learningRate newWeights target learningRateValue one |
 	super initializeGraph.
@@ -5498,7 +5498,7 @@ initializeGraph
 	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
 	learningRateValue _ TF_Tensor fromFloats: 0.9.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
-	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1.0).
+	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1).
 	delta _ (target - actual) negated @* actual @* (one - actual) @* inputVariable.
 	newWeights _ weights - (learningRate @* delta).
 	outputs _ {newWeights output: 0}.
