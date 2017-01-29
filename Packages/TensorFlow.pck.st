@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 28 January 2017 at 1:11:29 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:25:11 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 256!
+!provides: 'TensorFlow' 1 257!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -20,6 +20,16 @@ TestCase subclass: #TensorFlowCAPITest
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TensorFlowCAPITest class' category: #'TensorFlow-Kernel'!
 TensorFlowCAPITest class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowCAPITestSlowTests category: #'TensorFlow-Kernel'!
+TestCase subclass: #TensorFlowCAPITestSlowTests
+	instanceVariableNames: 'library'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TensorFlowCAPITestSlowTests class' category: #'TensorFlow-Kernel'!
+TensorFlowCAPITestSlowTests class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowOperationsTest category: #'TensorFlow-Kernel'!
@@ -1668,26 +1678,6 @@ testGraphDeletionDoesntBreakSessions
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/21/2017 05:37:56'!
-testGraphFinalizationReleasesExternalMemory
-	" WeakArray restartFinalizationProcess "
-	| tries total handles |
-	total _ 0.
-	tries _ 10.
-	handles _ Set new.
-
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			TF_Graph create useFinalization getHandle]).
-		handles size < total ifTrue: [
-			^ self]
-	].
-	
-	self assert: (handles size) < total.
-! !
-
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:04:24'!
 testGraphNotFinalizedWhenHeldByOperations
 	| graph in1 in2 add |
@@ -2147,47 +2137,6 @@ testRunGraphMulTwoInputs
 	results first delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/21/2017 05:43:57'!
-testRunGraphMulTwoInputsConstTensorDeleted
-	| graph inputs inputValues mul output session results |
-	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
-	
-	inputs _ Array
-		with: ((graph operationNamed: 'in1') input: 0)
-		with: ((graph operationNamed: 'in2') input: 0).
-		
-	inputValues _ Array
-		with: (TF_Tensor fromInt64: 16r23)
-		with: (TF_Tensor fromInt64: 16r24).
-
-	Smalltalk garbageCollect.
-	(TF_Tensor fromInt64: 16r1234123412341234) useFinalization.
-	Smalltalk garbageCollect.
-	
-	mul _ graph operationNamed: 'mul2'.
-	output _ mul output: 0.
-	session _ TF_Session onGraph: graph.
-	results _ session
-		runOperations: (Array with: mul)
-		inputs: inputs
-		values: inputValues
-		outputs: (Array with: output).
-	
-	self deny: results isNull.
-	self deny: results first isNull.
-	self deny: results first data isNull.
-	self
-		assert: (results first data getHandle signedLongLongAt: 1)
-		equals: ((16r2121212121212121 * 16r23 * 16r24) bitAnd: 16rFFFFFFFFFFFFFFFF).
-
-	graph delete.
-	results first delete.
-! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 11:18:24'!
-testRunGraphMulTwoInputsConstTensorDeletedManyTimes
-	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDeleted]! !
-
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 21:45:03'!
 testRunGraphMulTwoInputsRunInputsOutputs
 	| graph inputs inputValues mul output session results |
@@ -2247,26 +2196,6 @@ testSessionDeletionDoesntDeleteGraphs
 		description: 'The FFI call would crash if the graph was released by deleting the session'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/20/2017 18:12:58'!
-testSessionFinalizationReleasesExternalMemory 
-	" WeakArray restartFinalizationProcess "
-	| tries total handles graph |
-	total _ 0.
-	tries _ 20.
-	graph _ TF_Graph create.
-	handles _ Set new.
-	
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			(TF_Session onGraph: graph) getHandle]).
-		handles size < total ifTrue: [
-			^ self]].
-	
-	self assert: (handles size) < total.
-! !
-
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 18:34:41'!
 testSessionOnEmptyGraph
 	| session lastError noTarget |
@@ -2274,25 +2203,6 @@ testSessionOnEmptyGraph
 	session _ TF_Session onGraph: self emptyGraph.
 	[session run] ifError: [:description :receiver | lastError _ description].
 	self assert: noTarget equals: lastError.! !
-
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:13:29'!
-testSessionOptionFinalizationReleasesExternalMemory 
-	" WeakArray restartFinalizationProcess "
-	| tries total handles |
-	total _ 0.
-	tries _ 10.
-	handles _ Set new.
-	
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			(TF_SessionOptions create) getHandle]).
-		handles size < total ifTrue: [
-			^ self]].
-	
-	self assert: (handles size) < total.
-! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:34:16'!
 testSessionOptionsFromProtoBufEmpty
@@ -2401,16 +2311,6 @@ testStatusCodes
 	self assert: status codeText equals: 'CANCELLED'.
 	[status check] ifError: [:description :receiver | lastError _ description].
 	self assert: 'Error: CANCELLED: ',msg equals: lastError! !
-
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/7/2017 20:21:25'!
-testStatusFinalizationReleasesExternalMemory
-	" WeakArray restartFinalizationProcess "
-	| handles |
-	handles _ (1 to: 11) collect: [:i |
-		Smalltalk garbageCollect.
-		TF_Status create getHandle].
-
-	self assert: (handles asSet size) < 11.! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 10:16:12'!
 testStatusGetMessage
@@ -2570,28 +2470,6 @@ testTensorDimensions: anArray
 		ifFalse: [anArray product].
 	self assert: dimensions equals: anArray.
 	self assert: tensor size equals: size.
-! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/20/2017 17:49:12'!
-testTensorFinalizationReleasesExternalMemory
-	" WeakArray restartFinalizationProcess "
-	| handles template tries total |
-	total _ 0.
-	tries _ 20.
-	handles _ Set new.
-
-	template _ {String new: 10. String new: 100. String new: 1000}.
-	
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			(TF_Tensor fromStringArray: template) getHandle]).
-		handles size < total ifTrue: [
-			^ self]
-	].
-
-	self assert: (handles size) < total.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
@@ -2763,6 +2641,142 @@ testVersion
 	| version |
 	version _ library version.
 	self assert: (#('0.11.head' '0.12.0' '0.12.head' '1.0.0-alpha') includes: version)! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:22:17'!
+mulGraphTwoInputsInt64ConstTensorDeleted
+	^ TensorFlowCAPITest new mulGraphTwoInputsInt64ConstTensorDeleted! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing graph' stamp: 'gera 1/29/2017 02:18:22'!
+testGraphFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| tries total handles |
+	total _ 0.
+	tries _ 10.
+	handles _ Set new.
+
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			TF_Graph create useFinalization getHandle]).
+		handles size < total ifTrue: [
+			^ self]
+	].
+	
+	self assert: (handles size) < total.
+! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:20:03'!
+testRunGraphMulTwoInputsConstTensorDeleted
+	| graph inputs inputValues mul output session results |
+	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+		
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 16r23)
+		with: (TF_Tensor fromInt64: 16r24).
+
+	Smalltalk garbageCollect.
+	(TF_Tensor fromInt64: 16r1234123412341234) useFinalization.
+	Smalltalk garbageCollect.
+	
+	mul _ graph operationNamed: 'mul2'.
+	output _ mul output: 0.
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOperations: (Array with: mul)
+		inputs: inputs
+		values: inputValues
+		outputs: (Array with: output).
+	
+	self deny: results isNull.
+	self deny: results first isNull.
+	self deny: results first data isNull.
+	self
+		assert: (results first data getHandle signedLongLongAt: 1)
+		equals: ((16r2121212121212121 * 16r23 * 16r24) bitAnd: 16rFFFFFFFFFFFFFFFF).
+
+	graph delete.
+	results first delete.
+! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:21:07'!
+testRunGraphMulTwoInputsConstTensorDeletedManyTimes
+	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDeleted]! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing session' stamp: 'gera 1/29/2017 02:17:24'!
+testSessionFinalizationReleasesExternalMemory 
+	" WeakArray restartFinalizationProcess "
+	| tries total handles graph |
+	total _ 0.
+	tries _ 20.
+	graph _ TF_Graph create.
+	handles _ Set new.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_Session onGraph: graph) getHandle]).
+		handles size < total ifTrue: [
+			^ self]].
+	
+	self assert: (handles size) < total.
+! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing options' stamp: 'gera 1/29/2017 02:17:51'!
+testSessionOptionFinalizationReleasesExternalMemory 
+	" WeakArray restartFinalizationProcess "
+	| tries total handles |
+	total _ 0.
+	tries _ 10.
+	handles _ Set new.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_SessionOptions create) getHandle]).
+		handles size < total ifTrue: [
+			^ self]].
+	
+	self assert: (handles size) < total.
+! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing status' stamp: 'gera 1/29/2017 02:23:00'!
+testStatusFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles |
+	handles _ (1 to: 11) collect: [:i |
+		Smalltalk garbageCollect.
+		TF_Status create getHandle].
+
+	self assert: (handles asSet size) < 11.! !
+
+!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:16:30'!
+testTensorFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles template tries total |
+	total _ 0.
+	tries _ 20.
+	handles _ Set new.
+
+	template _ {String new: 10. String new: 100. String new: 1000}.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_Tensor fromStringArray: template) getHandle]).
+		handles size < total ifTrue: [
+			^ self]
+	].
+
+	self assert: (handles size) < total.
+! !
 
 !TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 1/20/2017 18:23:31'!
 setUp
