@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 5:16:46 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 5:21:21 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 277!
+!provides: 'TensorFlow' 1 278!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3644,14 +3644,14 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:16:29'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:20:32'!
 testBackpropagationPlanForward
 	| plan inputs rawResult result const graph weights first second sigmoid |
 	plan _ BackpropagationPlan basicNew.
 	plan initializeGraph.
-	plan initializeSession.
 	plan initializeVariables.
 	plan initializeForwardGraph.
+	plan initializeSession.
 	
 	inputs _ TF_Tensor fromFloats: {
 		{0}.
@@ -6031,16 +6031,16 @@ initializeGraph
 	graph _ TF_Graph create
 	! !
 
-!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:12:47'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:20:08'!
 initializeSession
-	session _ TF_Session onGraph: graph! !
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.
+! !
 
-!ExamplePlan methodsFor: 'running' stamp: 'gera 1/29/2017 05:12:58'!
+!ExamplePlan methodsFor: 'running' stamp: 'gera 1/29/2017 05:19:43'!
 runOn: inputValues
 	| results |	
-	
-	graph initializeOn: session.
-	
+		
 	results _ session
 		runInputs: inputs
 		values: inputValues
