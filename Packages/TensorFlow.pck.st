@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:25:11 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:26:47 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 257!
+!provides: 'TensorFlow' 1 258!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1969,6 +1969,12 @@ testNewStatus
 	self deny: status isNull.
 	status delete.
 	self assert: status isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:15:33'!
+testNewVariableNoAttributes
+	| graph |
+	graph _ TF_Graph create.
+	graph variable: 'var1'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:22'!
 testOperationOutputTypeFloat
@@ -4514,6 +4520,12 @@ rankOf: aTF_OutputOrInput
 	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
 	status check.
 	^ answer! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:13:16'!
+variable: nameString
+	^ self
+		newOperation: 'VariableV2'
+		named: nameString! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
 create
