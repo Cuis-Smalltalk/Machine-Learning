@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 1:55:13 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 1:56:56 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 255!
+!provides: 'TensorFlow' 1 256!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5200,13 +5200,6 @@ floatArray: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'JB 1/25/2017 12:29:42'!
-fromFloat: value 
-	| answer |
-	answer _ self type: self typeFloat dimensions: #().
-	answer data getHandle floatAt: 1 put: value.
-	^ answer! !
-
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/19/2017 11:26:11'!
 fromFloats: values
 	| answer dimensions size count |
@@ -5495,7 +5488,7 @@ runOn: inputValues
 	^ results first
 	! !
 
-!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'JB 1/25/2017 13:37:11'!
+!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 01:56:53'!
 initializeGraph
 	| inputVariable weights actual delta learningRate newWeights target learningRateValue one |
 	super initializeGraph.
@@ -5503,9 +5496,9 @@ initializeGraph
 	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
 	actual _ graph placeholder: 'actual' type: TF_Tensor typeFloat.
 	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
-	learningRateValue _ TF_Tensor fromFloat: 0.9.
+	learningRateValue _ TF_Tensor fromFloats: 0.9.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
-	one _ graph const: 'one' value: (TF_Tensor fromFloat: 1.0).
+	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1.0).
 	delta _ (target - actual) negated @* actual @* (one - actual) @* inputVariable.
 	newWeights _ weights - (learningRate @* delta).
 	outputs _ {newWeights output: 0}.
