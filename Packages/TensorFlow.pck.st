@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:23:44 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 12:03:08 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 284!
+!provides: 'TensorFlow' 1 286!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3162,6 +3162,30 @@ testOperationExp
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/29/2017 12:03:01'!
+testOperationIAlias
+	| graph template const result same1 same2 |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	same1 _ const alias: 'another_name'.
+	same2 _ graph operationNamed: 'another_name'.
+	
+	result _ (TF_Session onGraph: graph) runOutput: (same1 output: 0).
+	
+	self assert: template dimensions equals: result dimensions.
+	self assert: #(1 2 3 4 5 6) equals: result allFloats.
+	
+	result _ (TF_Session onGraph: graph) runOutput: (same2 output: 0).
+	
+	self assert: template dimensions equals: result dimensions.
+	self assert: #(1 2 3 4 5 6) equals: result allFloats.
+	
+! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/23/2017 09:56:51'!
 testOperationIdentity
 	| graph template const result same |
@@ -4966,6 +4990,10 @@ InputsCount
 abs
 	^ self unaryOp: 'Abs'! !
 
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 11:59:40'!
+alias: nameString
+	^ self unaryOp: 'Identity' named: nameString! !
+
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 12:58:32'!
 arcCos
 	^ self unaryOp: 'Acos'
@@ -5227,11 +5255,14 @@ typeAt: nameString
 	^ value unsignedLongLongAt: 1
 ! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:18:57'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 12:01:10'!
 unaryOp: aString
 	| name |
 	name _ aString,'_',graph operationsCount printString.
-	
+	^ self unaryOp: aString named: name! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 12:00:58'!
+unaryOp: aString named: name
 	^ graph newOperation: aString named: name described: [:description |
 		description addInput: (self output: 0)].
 	! !
