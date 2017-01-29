@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:08:58 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:21:09 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 262!
+!provides: 'TensorFlow' 1 263!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1977,6 +1977,42 @@ testNewStatus
 	self deny: status isNull.
 	status delete.
 	self assert: status isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:20:42'!
+testNewVariableInitialization
+	| graph var assign pi result session |
+	graph _ TF_Graph create.
+	var _ graph variable: 'var' type: TF_Tensor typeFloat shape: #().
+	pi _ graph const: 'pi' value: (TF_Tensor fromFloats: 3.14).
+	assign _ graph newOperation: 'Assign' named: 'assign' described: [:description |
+		description
+			addInput: (var output: 0);
+			addInput: (pi output: 0)].
+	
+	session _ TF_Session onGraph: graph.
+	
+	session runOutput: (assign output: 0).
+	result _ session runOutput: (var output: 0).
+
+	self assert: (result allFloats first closeTo: 3.14)! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:18:42'!
+testNewVariableInitializationNodeNotRun
+	| graph var pi lastError |
+	graph _ TF_Graph create.
+	var _ graph variable: 'var' type: TF_Tensor typeFloat shape: #().
+	pi _ graph const: 'pi' value: (TF_Tensor fromFloats: 3.14).
+	graph newOperation: 'Assign' named: 'assign' described: [:description |
+		description
+			addInput: (var output: 0);
+			addInput: (pi output: 0)].
+	
+	[(TF_Session onGraph: graph)
+		runOutput: (var output: 0)] ifError: [:description :receiver | lastError _ description].
+	
+	self
+		assert: 'Error: FAILED_PRECONDITION: Attempting to use uninitialized value var'
+		equals: lastError lines first! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:51:48'!
 testNewVariableNoAttributes
