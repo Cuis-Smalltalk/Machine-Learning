@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 25 January 2017 at 3:45:20 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 1:55:13 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 254!
+!provides: 'TensorFlow' 1 255!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2484,17 +2484,19 @@ testTensorFinalizationReleasesExternalMemory
 	self assert: (handles size) < total.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'JB 1/25/2017 12:28:07'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
 testTensorFromFloats
 	| tensor template values |
-	template _ 1.23456.
-	tensor _ TF_Tensor fromFloat: template.
+	template _ #(1.23456 0.0 -1.234567).
+	tensor _ TF_Tensor fromFloats: template.
 	values _ tensor allFloats.
 		
-	self assert: tensor dimensions equals: #().
-	self assert: tensor size equals: 1.
-	self assert: tensor byteSize equals: (1*4).
-	self assert: (values first closeTo: template)! !
+	self assert: tensor dimensions equals: #(3).
+	self assert: tensor size equals: 3.
+	self assert: tensor byteSize equals: (3*4).
+	template @ values do: [:point |
+		self assert: (point x closeTo: point y)]
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 10:13:47'!
 testTensorFromFloats2x2
