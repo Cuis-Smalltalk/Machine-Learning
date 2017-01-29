@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:25:11 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:29:12 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 264!
+!provides: 'TensorFlow' 1 265!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1989,6 +1989,21 @@ testNewVariableForTensor
 		description
 			addInput: (var output: 0);
 			addInput: (pis output: 0)].
+	
+	session _ TF_Session onGraph: graph.
+	
+	session runOutput: (assign output: 0).
+	result _ session runOutput: (var output: 0).
+
+	self assert: result allFloats equals: pisTensor allFloats! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:29:01'!
+testNewVariableInitialValue
+	| graph var assign result session pisTensor |
+	graph _ TF_Graph create.
+	pisTensor _ TF_Tensor fromFloats: #(3.14 3.1415 3.141516).
+	var _ graph variable: 'var' initialValue: pisTensor.
+	assign _ graph operationNamed: 'var_initialize'.
 	
 	session _ TF_Session onGraph: graph.
 	
@@ -4607,6 +4622,20 @@ rankOf: aTF_OutputOrInput
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:23:14'!
 variable: nameString forTensor: aTF_Tensor
 	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:28:57'!
+variable: nameString initialValue: aTF_Tensor
+	| const var |
+	var _ self variable: nameString forTensor: aTF_Tensor.
+	const _ self const: nameString, '_initialValue' value: aTF_Tensor.
+	self
+		newOperation: 'Assign'
+		named: nameString, '_initialize'
+		described: [:description |
+			description
+				addInput: (var output: 0);
+				addInput: (const output: 0)].
+	^ var! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:04:54'!
 variable: nameString type: typeInteger shape: anArray
