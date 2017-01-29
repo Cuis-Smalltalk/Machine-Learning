@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 5:09:01 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 5:16:46 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 276!
+!provides: 'TensorFlow' 1 277!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -244,7 +244,7 @@ TF_Tensor class
 
 !classDefinition: #ExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #ExamplePlan
-	instanceVariableNames: 'graph inputs outputs'
+	instanceVariableNames: 'graph inputs outputs session'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -3644,11 +3644,12 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 04:36:57'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:16:29'!
 testBackpropagationPlanForward
 	| plan inputs rawResult result const graph weights first second sigmoid |
 	plan _ BackpropagationPlan basicNew.
 	plan initializeGraph.
+	plan initializeSession.
 	plan initializeVariables.
 	plan initializeForwardGraph.
 	
@@ -3754,10 +3755,10 @@ testNearesNeighbor: plan
 	closest _ predictor value:  tensors third.
 	self assert: closest equals: 3.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:28'!
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/29/2017 05:15:13'!
 testNearesNeighborWithOperations
 	| plan |
-	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations.
+	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations initializeSession.
 	self testNearesNeighbor: plan.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:41'!
@@ -3791,7 +3792,7 @@ testOLS: ols
 		
 ! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:19:01'!
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/29/2017 05:16:11'!
 testOLSWithOperations
 	self testOLS: OLSExample new initializeWithOperations! !
 
@@ -6020,19 +6021,23 @@ typeUInt16
 typeUInt8
 	^4! !
 
-!ExamplePlan methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:23:20'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:12:34'!
 initialize
-	self initializeGraph! !
+	self initializeGraph.
+	self initializeSession.! !
 
 !ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:44:31'!
 initializeGraph
 	graph _ TF_Graph create
 	! !
 
-!ExamplePlan methodsFor: 'running' stamp: 'gera 1/29/2017 04:24:33'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:12:47'!
+initializeSession
+	session _ TF_Session onGraph: graph! !
+
+!ExamplePlan methodsFor: 'running' stamp: 'gera 1/29/2017 05:12:58'!
 runOn: inputValues
-	| session results |	
-	session _ TF_Session onGraph: graph.
+	| results |	
 	
 	graph initializeOn: session.
 	
@@ -6141,9 +6146,8 @@ predict: covariatesTesting from: covariatesTraining
  	result _ self runOn: {covariatesTraining. covariatesTesting}.
 	^ result allInt64s + 1! !
 
-!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:48:01'!
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:16:45'!
 initializeGraph
-	
 	| x xtx y xty inverse result |
 	super initializeGraph.
 	
@@ -6307,9 +6311,9 @@ new
 initialize
 	plan _ ExampleOLSPlan new.! !
 
-!OLSExample methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:16:37'!
+!OLSExample methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:15:58'!
 initializeWithOperations
-	plan _ ExampleOLSPlan new initializeGraphWithOperations.! !
+	plan _ ExampleOLSPlan new initializeGraphWithOperations initializeSession! !
 
 !OLSExample methodsFor: 'running' stamp: 'gera 1/21/2017 04:20:26'!
 regress: x on: y
