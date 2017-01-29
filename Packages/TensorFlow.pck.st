@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:29:12 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:31:15 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 265!
+!provides: 'TensorFlow' 1 266!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1610,11 +1610,11 @@ testGraphCreationConst
 	self assert: operation outputsCount equals: 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:12:31'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 03:30:49'!
 testGraphDefinition
 	| definition operations |
 	definition _ self mulGraphTwoInputsInt64 definition.
-	operations _ (TF_Graph fromString: definition) allVariables.
+	operations _ (TF_Graph fromString: definition) allInputs.
 		
 	self assert: operations size equals: 2.
 	self assert: operations first equals: 'in1'.
@@ -1768,10 +1768,10 @@ testGraphOperationsDo
 	self assert: operations fifth equals: 'mul2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:32'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 03:31:00'!
 testGraphOperationsSelect
 	| operations |
-	operations _ self mulGraphTwoInputsInt64 allVariables.
+	operations _ self mulGraphTwoInputsInt64 allInputs.
 		
 	self assert: operations size equals: 2.
 	self assert: operations first equals: 'in1'.
@@ -4425,8 +4425,8 @@ fromString: aString
 add: nameString described: aBlock
 	^self newOperation: 'Add' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:35:36'!
-allVariables
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:30:15'!
+allInputs
 	^ self operationsSelect: [:op | op type = 'Placeholder']! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 23:55:21'!
