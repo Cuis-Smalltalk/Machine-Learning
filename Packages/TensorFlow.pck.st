@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:11:07 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:23:44 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 283!
+!provides: 'TensorFlow' 1 284!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3670,13 +3670,14 @@ testBackpropagationPlanBackguard
 		assert: (result first closeTo: first);
 		assert: (result second closeTo: second)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:11:04'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:21:39'!
 testBackpropagationPlanBackguardChangesWeights
-	| plan const graph w0 weights inputs result |
+	| plan const graph w0 weights inputs result target |
 	plan _ BackpropagationPlan new.
 	graph _ plan graph.
 	
 	inputs _ TF_Tensor fromFloats: {{1}. {2 ln}}.
+	target _ TF_Tensor fromFloats: #((0.5) (0.5)).
 	
 	const _ graph operationNamed: 'weights_initialValue'.
 	w0 _ const tensorAt: 'value'.
@@ -3686,8 +3687,8 @@ testBackpropagationPlanBackguardChangesWeights
 	self assert: weights dimensions equals: #(2 2).
 	self assert: w0 allFloats equals: weights allFloats.
 
-	result _ plan learn: inputs with: (TF_Tensor fromFloats: 0.5).
-	
+	result _ plan learn: inputs with: target.
+
 	self assert: weights allFloats equals: result allFloats.
 	self assert: weights dimensions equals: result dimensions.
 	self deny: weights allFloats = w0 allFloats
