@@ -5120,6 +5120,19 @@ cos
 	^ self unaryOp: 'Cos'
 	! !
 
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/29/2017 15:17:26'!
+descent: delta rate: learningRate
+	| name operation |
+	operation _ 'ApplyGradientDescent'.
+	name _ self nameFor: operation.
+	
+	^ graph newOperation: operation named: name described: [:description |
+		description
+			addInput: (self output: 0);
+			addInput: (learningRate output: 0);
+			addInput: (delta output: 0)].
+! !
+
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
 device
 	^ self library operationDevice: self! !
@@ -5177,6 +5190,10 @@ inverse
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
 	^ self library operationName: self! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/29/2017 15:12:57'!
+nameFor: namePrefix
+	^ namePrefix,'_',graph operationsCount printString.! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
 negated
