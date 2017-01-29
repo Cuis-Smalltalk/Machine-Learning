@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:21:17 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:25:11 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 263!
+!provides: 'TensorFlow' 1 264!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1977,6 +1977,25 @@ testNewStatus
 	self deny: status isNull.
 	status delete.
 	self assert: status isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:25:07'!
+testNewVariableForTensor
+	| graph var assign result session pisTensor pis |
+	graph _ TF_Graph create.
+	pisTensor _ TF_Tensor fromFloats: #(3.14 3.1415 3.141516).
+	var _ graph variable: 'var' forTensor: pisTensor.
+	pis _ graph const: 'pis' value: pisTensor.
+	assign _ graph newOperation: 'Assign' named: 'assign' described: [:description |
+		description
+			addInput: (var output: 0);
+			addInput: (pis output: 0)].
+	
+	session _ TF_Session onGraph: graph.
+	
+	session runOutput: (assign output: 0).
+	result _ session runOutput: (var output: 0).
+
+	self assert: result allFloats equals: pisTensor allFloats! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:20:42'!
 testNewVariableInitialization
@@ -4584,6 +4603,10 @@ rankOf: aTF_OutputOrInput
 	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
 	status check.
 	^ answer! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:23:14'!
+variable: nameString forTensor: aTF_Tensor
+	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:04:54'!
 variable: nameString type: typeInteger shape: anArray
