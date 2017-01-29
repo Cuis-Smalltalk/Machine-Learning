@@ -3623,6 +3623,45 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 04:36:57'!
+testBackpropagationPlanForward
+	| plan inputs rawResult result const graph weights first second sigmoid |
+	plan _ BackpropagationPlan basicNew.
+	plan initializeGraph.
+	plan initializeVariables.
+	plan initializeForwardGraph.
+	
+	inputs _ TF_Tensor fromFloats: {
+		{0}.
+		{2 ln}
+	}.
+	
+	graph _ plan instVarNamed: 'graph'.
+	const _ graph operationNamed: 'weights_initialValue'.
+	weights _ (const tensorAt: 'value') allFloats.
+	
+	sigmoid _ [:x | (x negated exp + 1) reciprocal].
+	first _ sigmoid value: 2 ln * weights second.
+	second _ sigmoid value: 2 ln * weights fourth.
+
+	rawResult _ plan runOn: {inputs}.
+	result _ rawResult allFloats.
+	
+	
+	self
+		assert: (result first closeTo: first);
+		assert: (result second closeTo: second)! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 04:17:42'!
+testBackpropagationPlantInitializeForward
+	| bpp |
+	bpp _ BackpropagationPlan basicNew.
+	bpp initializeGraph.
+	bpp initializeVariables.
+	bpp initializeForwardGraph.
+	
+	self assert: true description: 'No exception should be raised by this test'! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 04:13:30'!
 testBackpropagationPlantInitializeVariables
 	| bpp graph const weights |
@@ -5997,6 +6036,15 @@ initializeGraph
 	activation _ netInput sigmoid.
 	outputs _ {activation output: 0}.
 	inputs _ {inputVariable input: 0. weights input: 0}! !
+
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:22:56'!
+initializeForwardGraph
+	| activation inputVariable netInput |
+	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
+	netInput _ weights * inputVariable.
+	activation _ netInput sigmoid.
+	outputs _ {activation output: 0}.
+	inputs _ {inputVariable input: 0}! !
 
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:05:17'!
 initializeVariables
