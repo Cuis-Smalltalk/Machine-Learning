@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:33:53 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:00:49 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 260!
+!provides: 'TensorFlow' 1 261!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -852,6 +852,13 @@ runFloatAsStringGraph
 setUp
 	library _ TensorFlowCAPI current! !
 
+!TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 1/29/2017 02:51:28'!
+should: aBlock raiseError: aString
+	| message |
+	message _ 'No Error was signaled'.
+	aBlock ifError: [:description :receiver | message _ description].
+	self assert: 'Error: ',aString equals: message.! !
+
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 17:05:41'!
 tesCloseSessionTwiceNoCrash
 	| graph session |
@@ -1117,24 +1124,23 @@ testAttrSetStrings: aAnArrayOfStrings
 
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/26/2017 22:32:06'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:44:49'!
 testAttrSetStringsInvalid
-	| graph template in lastError notAList |
+	| graph template in notAList |
 	graph _ TF_Graph create.
 	template _ #((1 2 3) (4 5 6) (7 8 9)).
 	in _ graph const: 'in' value: (TF_Tensor fromFloats: template).
-	[
-		graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
-			description at: 'tensor_name' putStrings: #('hola' 'como' 'estas?').
-			description addInput: (in output: 0)].
-	] ifError: [:description :receiver | lastError _ description].
-
-	notAList _ 'Error: INVALID_ARGUMENT: AttrValue had value with type ''list(string)'' when ''string'' expected
+	
+	notAList _ 'INVALID_ARGUMENT: AttrValue had value with type ''list(string)'' when ''string'' expected
 	 for attr ''tensor_name''
 	; NodeDef: out = DebugIdentity[T=DT_FLOAT, _class=[], debug_urls=[], tensor_name=["hola", "como", "estas?"]](in); Op<name=DebugIdentity; signature=input:T -> output:T; attr=T:type; attr=tensor_name:string,default=""; attr=debug_urls:list(string),default=[]; allows_uninitialized_input=true>'.
-	
-	self assert: notAList equals: lastError.
-	! !
+
+	self
+		should: [
+			graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
+				description at: 'tensor_name' putStrings: #('hola' 'como' 'estas?').
+				description addInput: (in output: 0)]]
+		raiseError: notAList.	! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:20'!
 testBufferDataBytes
@@ -1174,18 +1180,22 @@ testCloseSession
 	self shouldnt: [session delete] raise: Error.
 	self assert: session isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/21/2017 18:30:32'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:53:17'!
 testConcatGraphInputList
-	| wrongSize wrongType lastError |
-	wrongSize _ 'Error: INVALID_ARGUMENT: Inconsistent values for attr ''N'' 2 vs. 0 while building NodeDef ''concat'' using Op<name=Concat; signature=concat_dim:int32, values:N*T -> output:T; attr=N:int,min=2; attr=T:type>'.
-	wrongType _ 'Error: INVALID_ARGUMENT: Inconsistent values for attr ''T'' DT_INT64 vs. DT_INT32 while building NodeDef ''concat'' using Op<name=Concat; signature=concat_dim:int32, values:N*T -> output:T; attr=N:int,min=2; attr=T:type>'.
+	| wrongSize wrongType |
+	wrongSize _ 'INVALID_ARGUMENT: Inconsistent values for attr ''N'' 2 vs. 0 while building NodeDef ''concat'' using Op<name=Concat; signature=concat_dim:int32, values:N*T -> output:T; attr=N:int,min=2; attr=T:type>'.
+	wrongType _ 'INVALID_ARGUMENT: Inconsistent values for attr ''T'' DT_INT64 vs. DT_INT32 while building NodeDef ''concat'' using Op<name=Concat; signature=concat_dim:int32, values:N*T -> output:T; attr=N:int,min=2; attr=T:type>'.
 	
 	self concatGraphInputListNoSizeNoType.
 	self concatGraphInputList.
-	[self concatGraphInputListWrongSize] ifError: [:description :receiver | lastError _ description].
-	self assert: wrongSize equals: lastError.
-	[self concatGraphInputListWrongType] ifError: [:description :receiver | lastError _ description].
-	self assert: wrongType equals: lastError.! !
+	self
+		should: [self concatGraphInputListWrongSize]
+		raiseError: wrongSize.
+		
+	self
+		should: [self concatGraphInputListWrongType]
+		raiseError: wrongType.
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/5/2017 23:56:22'!
 testCreateGraphAddTwoInputs
@@ -1276,9 +1286,9 @@ testDecodeCSVGraphRunOneLine
 	self assert: cols fourth equals: #(44444444).
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/22/2017 18:08:45'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:54:16'!
 testDescriptionDevice
-	| graph in op expected lastError |
+	| graph in op expected |
 	graph _ TF_Graph create.
 	in _ graph const: 'const' value: (TF_Tensor fromInt64: 12345678).
 	op _ graph newOperation: 'Mul' named: 'out' described: [:description |
@@ -1287,12 +1297,12 @@ testDescriptionDevice
 			addInput: (in output: 0);
 			addInput: (in output: 0)].
 	
-	[(TF_Session onGraph: graph) runOutput: (op output: 0)] ifError: [:description :receiver | lastError _ description].
-	
-	expected _  'Error: INVALID_ARGUMENT: Malformed device specification ''anInvalidDevice''
+	expected _  'INVALID_ARGUMENT: Malformed device specification ''anInvalidDevice''
 	 [[Node: out = Mul[T=DT_INT64, _class=[], _device="anInvalidDevice"](const, const)]]'.
-	
-	self assert: expected equals: lastError.! !
+
+	self
+		should: [(TF_Session onGraph: graph) runOutput: (op output: 0)]
+		raiseError: expected.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:52:54'!
 testDimensionOfInput
@@ -1344,9 +1354,9 @@ testDimensionOfOutputSet
 	self assert: dimensions equals: #(3 3 -1).
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 15:14:46'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:54:53'!
 testDimensionOfOutputSetInvalid
-	| graph template const output invalidDimensions lastError |
+	| graph template const output |
 	graph _ TF_Graph create.
 	template _ TF_Tensor fromFloats: #(
 		((1) (2) (3)) 
@@ -1355,15 +1365,14 @@ testDimensionOfOutputSetInvalid
 	const _ graph const: 'const' value: template.
 	output _ const output: 0.
 	
-	[graph dimensionsOf: output set: #(1 2 3)] ifError: [:description :receiver | lastError _ description].
-	
-	invalidDimensions _ 'Error: INVALID_ARGUMENT: Dimension 0 in both shapes must be equal, but are 2 and 1'.
-	self assert: invalidDimensions equals: lastError.
+	self
+		should: [graph dimensionsOf: output set: #(1 2 3)] 
+		raiseError: 'INVALID_ARGUMENT: Dimension 0 in both shapes must be equal, but are 2 and 1'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 15:17:46'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:55:22'!
 testDimensionOfOutputSetInvalidRank
-	| graph template const output invalidDimensions lastError |
+	| graph template const output |
 	graph _ TF_Graph create.
 	template _ TF_Tensor fromFloats: #(
 		((1) (2) (3)) 
@@ -1372,11 +1381,9 @@ testDimensionOfOutputSetInvalidRank
 	const _ graph const: 'const' value: template.
 	output _ const output: 0.
 	
-	[graph dimensionsOf: output set: #(1 2 3 -1)] ifError: [:description :receiver | lastError _ description].
-	
-	invalidDimensions _ 'Error: INVALID_ARGUMENT: Shapes must be equal rank, but are 3 and 4'.
-	self assert: invalidDimensions equals: lastError.
-! !
+	self
+		should: [graph dimensionsOf: output set: #(1 2 3 -1)]
+		raiseError: 'INVALID_ARGUMENT: Shapes must be equal rank, but are 3 and 4'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
 testDimensions
@@ -1574,13 +1581,14 @@ testGetOperationOnConstantGraph
 	self assert: op InputsCount equals: 0.
 	self assert: op outputsCount equals: 1.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/21/2017 18:31:15'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:58:40'!
 testGetOperationOnEmptyGraph
-	| graph notFound lastError |
-	notFound _ 'Error: Operation not found'.
+	| graph |
 	graph _ self emptyGraph.
-	[graph operationNamed: 'something'] ifError: [:description :receiver | lastError _ description].
-	self assert: notFound equals: lastError.! !
+	
+	self
+		should: [graph operationNamed: 'something']
+		raiseError: 'Operation not found'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:12:12'!
 testGraph: aTF_Graph outputType: anInteger
@@ -1780,15 +1788,16 @@ testGraphOperationsSelectEmpty
 	self assert: operations size equals: 0.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/21/2017 18:31:54'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 02:56:35'!
 testImportBad
-	| graph buffer wrongFormat lastError |
-	wrongFormat _ 'Error: INVALID_ARGUMENT: Invalid GraphDef'.
+	| graph buffer |
 	graph _ TF_Graph create.
 	buffer _ TF_Buffer fromString: 'ouch'.
 	
-	[graph import: buffer] ifError: [:description :receiver | lastError _ description].
-	self assert: wrongFormat equals: lastError.
+	self
+		should: [graph import: buffer]
+		raiseError: 'INVALID_ARGUMENT: Invalid GraphDef'.
+	
 	buffer delete.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:06:41'!
@@ -1932,15 +1941,14 @@ testNewOperationPlaceholder
 	self assert: operation outputsCount equals: 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:32:23'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:57:17'!
 testNewOperationPlaceholderNoType
-	| graph lastError noType |
-	noType _ 'Error: INVALID_ARGUMENT: NodeDef missing attr ''dtype'' from Op<name=Placeholder; signature= -> output:dtype; attr=dtype:type; attr=shape:shape,default=[]>; NodeDef: placeholder = Placeholder[_class=[], shape=[]]()'.
+	| graph noType |
+	noType _ 'INVALID_ARGUMENT: NodeDef missing attr ''dtype'' from Op<name=Placeholder; signature= -> output:dtype; attr=dtype:type; attr=shape:shape,default=[]>; NodeDef: placeholder = Placeholder[_class=[], shape=[]]()'.
 	graph _ TF_Graph create.
-	[(graph newOperationDescription: 'Placeholder' named: 'placeholder') finish] ifError: [:description :receiver |
-		lastError _ description].
-	self assert: noType equals: lastError.
-	! !
+	self
+		should: [(graph newOperationDescription: 'Placeholder' named: 'placeholder') finish]
+		raiseError: noType.! !
 
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/7/2017 20:29:25'!
 testNewSession
@@ -2202,25 +2210,23 @@ testSessionDeletionDoesntDeleteGraphs
 		description: 'The FFI call would crash if the graph was released by deleting the session'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/21/2017 18:34:41'!
+!TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/29/2017 02:57:52'!
 testSessionOnEmptyGraph
-	| session lastError noTarget |
-	noTarget _ 'Error: INVALID_ARGUMENT: Must specify at least one target to fetch or execute.'.
+	| session |
 	session _ TF_Session onGraph: self emptyGraph.
-	[session run] ifError: [:description :receiver | lastError _ description].
-	self assert: noTarget equals: lastError.! !
+	self
+		should: [session run]
+		raiseError: 'INVALID_ARGUMENT: Must specify at least one target to fetch or execute.'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 17:34:16'!
 testSessionOptionsFromProtoBufEmpty
 	TF_SessionOptions fromProtoBuf: ''.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 18:37:58'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/29/2017 02:58:33'!
 testSessionOptionsFromProtoBufInvalid
-	| expected lastError |
-	expected _ 'Error: INVALID_ARGUMENT: Unparseable ConfigProto'.
-	
-	[TF_SessionOptions fromProtoBuf: '.'] ifError: [:description :receiver | lastError _ description].
-	self assert: expected equals: lastError.! !
+	self
+		should: [TF_SessionOptions fromProtoBuf: '.']
+		raiseError: 'INVALID_ARGUMENT: Unparseable ConfigProto'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/21/2017 18:18:28'!
 testSessionOptionsFromProtoBufValid
@@ -2303,9 +2309,9 @@ testSizes
 	self assertSizeOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: 4*3.
 	self assertSizeOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: 3*3*1.! !
 
-!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/21/2017 18:36:42'!
+!TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/29/2017 02:59:54'!
 testStatusCodes
-	| status  msg lastError |
+	| status  msg |
 	status _ TF_Status create.
 	
 	self assert: status isOk.
@@ -2315,8 +2321,10 @@ testStatusCodes
 	msg _ 'You cancelled it!!'.
 	status code: 1 message: msg.
 	self assert: status codeText equals: 'CANCELLED'.
-	[status check] ifError: [:description :receiver | lastError _ description].
-	self assert: 'Error: CANCELLED: ',msg equals: lastError! !
+	
+	self
+		should: [status check]
+		raiseError: 'CANCELLED: ', msg! !
 
 !TensorFlowCAPITest methodsFor: 'testing status' stamp: 'gera 1/13/2017 10:16:12'!
 testStatusGetMessage
@@ -2540,15 +2548,14 @@ testTensorFromFloatsDimensions
 		self assert: (templ closeTo: actual)]
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 16:16:34'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 03:00:29'!
 testTensorFromFloatsDimensionsUndefinedSize
-	| template invalidDimension lastError |
+	| template |
 	template _ #(1.23456 0.0 -1.234567 1.1).
 	
-	[TF_Tensor fromFloats: template dimensions: #(2 2 -1)] ifError: [:description :receiver | lastError _ description].
-	
-	invalidDimension _ 'Error: Inferred size and real size don''t match.'.
-	self assert: invalidDimension equals: lastError! !
+	self
+		should: [TF_Tensor fromFloats: template dimensions: #(2 2 -1)]
+		raiseError: 'Inferred size and real size don''t match.'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
 testTensorFromFloatsScalar
