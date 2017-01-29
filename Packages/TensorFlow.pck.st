@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:53:33 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:13:33 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 269!
+!provides: 'TensorFlow' 1 271!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -270,6 +270,16 @@ ExamplePlan subclass: #BackpropagationForwardPlan
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'BackpropagationForwardPlan class' category: #'TensorFlow-Examples'!
 BackpropagationForwardPlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #BackpropagationPlan category: #'TensorFlow-Examples'!
+ExamplePlan subclass: #BackpropagationPlan
+	instanceVariableNames: 'weights'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'BackpropagationPlan class' category: #'TensorFlow-Examples'!
+BackpropagationPlan class
 	instanceVariableNames: ''!
 
 !classDefinition: #ExampleNearestNeighborPlan category: #'TensorFlow-Examples'!
@@ -3606,6 +3616,26 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 04:13:30'!
+testBackpropagationPlantInitializeVariables
+	| bpp graph const weights |
+	bpp _ BackpropagationPlan basicNew.
+	bpp initializeGraph.
+	bpp initializeVariables.
+	
+	graph _ bpp instVarNamed: 'graph'.
+	
+	self assert: graph allInitializers size = 1.
+	self assert: graph allVariables size = 1.
+	self assert: graph allVariables first name = 'weights'.
+
+	const _ graph operationNamed: 'weights_initialValue'.
+	weights _ const tensorAt: 'value'.
+	
+	self assert: weights dimensions equals: #(2 2).
+	weights allFloats do: [:each |
+		self assert: (each between: 0 and: 1)].! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 02:01:59'!
 testForward
 	| inputs plan rawResult result weights |
@@ -5957,6 +5987,15 @@ initializeGraph
 	activation _ netInput sigmoid.
 	outputs _ {activation output: 0}.
 	inputs _ {inputVariable input: 0. weights input: 0}! !
+
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:05:17'!
+initializeVariables
+	| initialWeights |
+	Random withDefaultDo: [:random |
+		initialWeights _ (1 to: 4) collect: [:unused | random next]].
+	initialWeights _ TF_Tensor fromFloats: initialWeights dimensions: #(2 2).
+	
+	weights _ graph variable: 'weights' initialValue: initialWeights.! !
 
 !ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:49'!
 initializeGraph
