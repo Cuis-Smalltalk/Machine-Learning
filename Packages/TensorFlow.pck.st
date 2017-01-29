@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:53:35 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:34:04 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 289!
+!provides: 'TensorFlow' 1 290!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -274,7 +274,7 @@ BackpropagationForwardPlan class
 
 !classDefinition: #BackpropagationPlan category: #'TensorFlow-Examples'!
 ExamplePlan subclass: #BackpropagationPlan
-	instanceVariableNames: 'weights activation target learn deltaOperation lastDelta'
+	instanceVariableNames: 'weights activation target learn delta lastDelta'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -6248,9 +6248,9 @@ delta
 graph
 	^ graph! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 11:16:26'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 15:34:03'!
 initializeBackwardGraph
-	| actual learningRate newWeights learningRateValue one input |
+	| actual learningRate learningRateValue one input |
 	actual _ activation.
 	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1).
 	
@@ -6261,9 +6261,12 @@ initializeBackwardGraph
 	
 	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
 	
-	deltaOperation _ (target - actual) negated @* actual @* (one - actual) @* input.
-	newWeights _ weights - (learningRate @* deltaOperation).
-	learn _ weights assign: newWeights.! !
+	delta _ (target - actual) negated @* actual @* (one - actual) @* input.
+	
+	learn _ weights assign: weights - learningRate @* delta.
+	"learn _ weights -= learningRate @* delta."
+	"learn _ weights descent: delta rate: learningRate."
+! !
 
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 11:39:43'!
 initializeForwardGraph
@@ -6291,13 +6294,13 @@ initializeVariables
 	
 	weights _ graph variable: 'weights' initialValue: initialWeights.! !
 
-!BackpropagationPlan methodsFor: 'training' stamp: 'gera 1/29/2017 11:17:16'!
+!BackpropagationPlan methodsFor: 'training' stamp: 'gera 1/29/2017 15:09:30'!
 learn: sample with: expected
 	| results |	
 	results _ session
 		runInputs: {inputs first. target input: 0}
 		values: {sample. expected}
-		outputs: {learn output: 0. deltaOperation output: 0}.
+		outputs: {learn output: 0. delta output: 0}.
 	
 	lastDelta _ results at: 2.
 	^ results first
