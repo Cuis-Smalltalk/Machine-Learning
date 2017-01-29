@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:37:00 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:55:41 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 273!
+!provides: 'TensorFlow' 1 274!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4773,18 +4773,12 @@ rankOf: aTF_OutputOrInput
 variable: nameString forTensor: aTF_Tensor
 	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:49:45'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 04:55:16'!
 variable: nameString initialValue: aTF_Tensor
 	| const var |
 	var _ self variable: nameString forTensor: aTF_Tensor.
 	const _ self const: nameString, '_initialValue' value: aTF_Tensor.
-	self
-		newOperation: 'Assign'
-		named: nameString, '_initializer'
-		described: [:description |
-			description
-				addInput: (var output: 0);
-				addInput: (const output: 0)].
+	var assign: const.
 	^ var! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:04:54'!
@@ -4880,6 +4874,13 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:52:38'!
+assign: aTF_Operation
+	^ self
+		binaryOp: 'Assign'
+		with: aTF_Operation
+		named: self name, '_initializer'! !
+
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
 attrMetadata: nameString
 	| status answer |
@@ -4893,11 +4894,19 @@ binaryOp: aString with: aTF_Operation
 	^ self binaryOp: aString with: aTF_Operation described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:20:55'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:53:43'!
 binaryOp: aString with: aTF_Operation described: oneArgBlock
 	| name |
 	name _ aString,'_',graph operationsCount printString.
-	
+	^ self binaryOp: aString with: aTF_Operation named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:54:08'!
+binaryOp: aString with: aTF_Operation named: name
+	^ self binaryOp: aString with: aTF_Operation named: name described: [:nothing]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:52:59'!
+binaryOp: aString with: aTF_Operation named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
 		description
 			addInput: (self output: 0);
