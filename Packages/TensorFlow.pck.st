@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:50:56 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:53:33 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 268!
+!provides: 'TensorFlow' 1 269!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2042,6 +2042,20 @@ testNewVariableInitialValue
 	session _ TF_Session onGraph: graph.
 	
 	session runOutput: (assign output: 0).
+	result _ session runOutput: (var output: 0).
+
+	self assert: result allFloats equals: pisTensor allFloats! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:54:13'!
+testNewVariableInitialValueAutomaticInitialization
+	| graph var result session pisTensor |
+	graph _ TF_Graph create.
+	pisTensor _ TF_Tensor fromFloats: #(3.14 3.1415 3.141516).
+	var _ graph variable: 'var' initialValue: pisTensor.
+	
+	session _ TF_Session onGraph: graph.
+	
+	graph initializeOn: session.
 	result _ session runOutput: (var output: 0).
 
 	self assert: result allFloats equals: pisTensor allFloats! !
@@ -4573,6 +4587,13 @@ importString: aString
 	| buffer |
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 1/29/2017 03:54:07'!
+initializeOn: aTF_Session
+	| initializers |
+	initializers _ self allInitializers collect: [:each | each output: 0].
+	aTF_Session runOutputs: initializers.
+! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
 mul: nameString described: aBlock
