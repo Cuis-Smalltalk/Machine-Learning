@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:26:47 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:33:53 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 258!
+!provides: 'TensorFlow' 1 260!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1879,11 +1879,11 @@ testNewImportGraphDefOptions
 	options delete.
 	self assert: options isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 12/28/2016 00:24:17'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:32:20'!
 testNewOperationDescription
 	| graph description |
 	graph _ TF_Graph create.
-	description _ graph newOperation: 'Const' named: 'first_operation'.
+	description _ graph newOperationDescription: 'Const' named: 'first_operation'.
 	self deny: description isNull.
 	self should: [description finish] raise: Error description: 'This should have complained of missing attributes'.! !
 
@@ -1932,12 +1932,12 @@ testNewOperationPlaceholder
 	self assert: operation outputsCount equals: 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/21/2017 18:33:36'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:32:23'!
 testNewOperationPlaceholderNoType
 	| graph lastError noType |
 	noType _ 'Error: INVALID_ARGUMENT: NodeDef missing attr ''dtype'' from Op<name=Placeholder; signature= -> output:dtype; attr=dtype:type; attr=shape:shape,default=[]>; NodeDef: placeholder = Placeholder[_class=[], shape=[]]()'.
 	graph _ TF_Graph create.
-	[(graph newOperation: 'Placeholder' named: 'placeholder') finish] ifError: [:description :receiver |
+	[(graph newOperationDescription: 'Placeholder' named: 'placeholder') finish] ifError: [:description :receiver |
 		lastError _ description].
 	self assert: noType equals: lastError.
 	! !
@@ -3783,8 +3783,8 @@ newImportGraphDefOptions
 	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/27/2016 23:15:02'!
-newOperationOn: graph type: type named: name
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/29/2017 02:33:28'!
+newOperationDescriptionOn: graph type: type named: name
 	<cdecl: TF_OperationDescription* 'TF_NewOperation' (TF_Graph* char* char*)>
 	^ self externalCallFailed
 	! !
@@ -4432,19 +4432,19 @@ importString: aString
 mul: nameString described: aBlock
 	^self newOperation: 'Mul' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/27/2016 23:16:19'!
-newOperation: typeString named: aString
-	^ self library newOperationOn: self type: typeString named: aString
-! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/19/2017 10:34:58'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:32:14'!
 newOperation: typeString named: aString described: aBlock
 	| description answer |
-	description _ self newOperation: typeString named: aString.
+	description _ self newOperationDescription: typeString named: aString.
 	aBlock value: description.
 	answer _ description finish.
 	answer graph: self.
 	^ answer! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:33:39'!
+newOperationDescription: typeString named: aString
+	^ self library newOperationDescriptionOn: self type: typeString named: aString
+! !
 
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:20:02'!
 newOperationIteratorContext
