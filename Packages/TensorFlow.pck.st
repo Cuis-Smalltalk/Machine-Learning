@@ -1978,11 +1978,22 @@ testNewStatus
 	status delete.
 	self assert: status isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:15:33'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:51:48'!
 testNewVariableNoAttributes
-	| graph |
+	| graph error |
 	graph _ TF_Graph create.
-	graph variable: 'var1'.! !
+	error _  'INVALID_ARGUMENT: NodeDef missing attrs ''dtype'', ''shape'' from Op<name=Variable; signature= -> ref:Ref(dtype); attr=shape:shape; attr=dtype:type; attr=container:string,default=""; attr=shared_name:string,default=""; is_stateful=true>; NodeDef: var = Variable[_class=[], container="", shared_name=""]()'.
+	self
+		should: [graph newOperation: 'Variable' named: 'var']
+		raiseError: error.! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:30:47'!
+testNewVariableNoInitialization
+	| graph var |
+	graph _ TF_Graph create.
+	var _ graph variable: 'var'.
+	(TF_Session onGraph: graph)
+		runOutput: (var output: 0).! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:22'!
 testOperationOutputTypeFloat
@@ -4439,6 +4450,10 @@ importString: aString
 mul: nameString described: aBlock
 	^self newOperation: 'Mul' named: nameString described: aBlock! !
 
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:35:44'!
+newOperation: typeString named: aString
+	^ self newOperation: typeString named: aString described: [:unused | ]! !
+
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:32:14'!
 newOperation: typeString named: aString described: aBlock
 	| description answer |
@@ -4528,10 +4543,10 @@ rankOf: aTF_OutputOrInput
 	status check.
 	^ answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:13:16'!
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:43:01'!
 variable: nameString
 	^ self
-		newOperation: 'VariableV2'
+		newOperation: 'Variable'
 		named: nameString! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
