@@ -5013,6 +5013,10 @@ create
 - aTF_Operation
 	^ self + aTF_Operation negated! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:21:14'!
+-= aTF_Operation
+	^ self binaryOp: 'AssignSub' with: aTF_Operation! !
+
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
 @* aTF_Operation
 	^ self binaryOp: 'Mul' with: aTF_Operation! !
