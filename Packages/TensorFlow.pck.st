@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:31:15 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:41:51 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 266!
+!provides: 'TensorFlow' 1 267!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1610,15 +1610,15 @@ testGraphCreationConst
 	self assert: operation outputsCount equals: 1.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 03:30:49'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 03:41:44'!
 testGraphDefinition
 	| definition operations |
 	definition _ self mulGraphTwoInputsInt64 definition.
 	operations _ (TF_Graph fromString: definition) allInputs.
 		
 	self assert: operations size equals: 2.
-	self assert: operations first equals: 'in1'.
-	self assert: operations second equals: 'in2'.
+	self assert: operations first name equals: 'in2'.
+	self assert: operations second name equals: 'in1'.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:12:48'!
@@ -1768,14 +1768,14 @@ testGraphOperationsDo
 	self assert: operations fifth equals: 'mul2'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 03:31:00'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 03:41:15'!
 testGraphOperationsSelect
 	| operations |
 	operations _ self mulGraphTwoInputsInt64 allInputs.
 		
 	self assert: operations size equals: 2.
-	self assert: operations first equals: 'in1'.
-	self assert: operations second equals: 'in2'.
+	self assert: operations first name equals: 'in1'.
+	self assert: operations second name equals: 'in2'.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:13:43'!
@@ -2070,6 +2070,15 @@ testNewVariableNoInitialization
 	self
 		assert: expectedError equals: lastError lines first
 		! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:37:37'!
+testOperationEquals
+	| graph in1 |
+	graph _ TF_Graph create.
+	in1 _ graph placeholder: 'in1' type: TF_Tensor typeFloat.
+	
+	self assert: in1 = in1.
+	self deny: in1 = 'in1'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/6/2017 00:04:22'!
 testOperationOutputTypeFloat
@@ -4120,9 +4129,10 @@ current
 moduleName
 	^ 'libtensorflow'! !
 
-!TF_Structure methodsFor: 'testing' stamp: 'gera 12/25/2016 19:14:16'!
+!TF_Structure methodsFor: 'testing' stamp: 'gera 1/29/2017 03:39:43'!
 = aTF_Structure
-	^ handle = self getHandle! !
+	^ self class = aTF_Structure class
+		and: [handle = aTF_Structure getHandle]! !
 
 !TF_Structure methodsFor: 'private' stamp: 'gera 12/21/2016 02:52:42'!
 library
