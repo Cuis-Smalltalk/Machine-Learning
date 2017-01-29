@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 7:49:24 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 8:30:58 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 291!
+!provides: 'TensorFlow' 1 292!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -6294,11 +6294,11 @@ delta
 graph
 	^ graph! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 15:34:03'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 20:30:41'!
 initializeBackwardGraph
 	| actual learningRate learningRateValue one input |
 	actual _ activation.
-	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1).
+	one _ graph const: 'one' value: (TF_Tensor fromFloats: #((1 1) (1 1))).
 	
 	learningRateValue _ TF_Tensor fromFloats: 0.9.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
@@ -6309,10 +6309,9 @@ initializeBackwardGraph
 	
 	delta _ (target - actual) negated @* actual @* (one - actual) @* input.
 	
-	learn _ weights assign: weights - learningRate @* delta.
+	"learn _ weights assign: weights - learningRate @* delta."
 	"learn _ weights -= learningRate @* delta."
-	"learn _ weights descent: delta rate: learningRate."
-! !
+	learn _ weights descent: delta rate: learningRate.! !
 
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 11:39:43'!
 initializeForwardGraph
