@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:34:51 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:37:00 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 272!
+!provides: 'TensorFlow' 1 273!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5956,10 +5956,12 @@ initializeGraph
 	graph _ TF_Graph create
 	! !
 
-!ExamplePlan methodsFor: 'running' stamp: 'gera 1/22/2017 17:26:12'!
+!ExamplePlan methodsFor: 'running' stamp: 'gera 1/29/2017 04:24:33'!
 runOn: inputValues
 	| session results |	
 	session _ TF_Session onGraph: graph.
+	
+	graph initializeOn: session.
 	
 	results _ session
 		runInputs: inputs
