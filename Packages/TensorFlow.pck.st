@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:05:04 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 28 January 2017 at 1:11:29 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 258!
+!provides: 'TensorFlow' 1 256!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -956,6 +956,20 @@ testAttrGetString
 	self assert: (op stringAt: 'fill') equals: ''.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/28/2017 00:59:03'!
+testAttrGetStrings
+	| graph template in op strings |
+	graph _ TF_Graph create.
+	template _ #('hola' 'como' 'estas?').
+	in _ graph const: 'in' value: (TF_Tensor fromFloats: 1).
+	op _ graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
+			description at: 'debug_urls' putStrings: template.
+			description addInput: (in output: 0)].
+	
+	strings _ op stringsAt: 'debug_urls'.
+	
+	self assert: template equals: strings.! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 10:08:53'!
 testAttrGetTensor
 	| op graph tensor |
@@ -1047,7 +1061,7 @@ testAttrSetShape: anIntegerArray
 	self assert: (op shapeAt: 'shape') equals: anIntegerArray.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/10/2017 20:59:12'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/24/2017 18:57:10'!
 testAttrSetString
 	self testAttrSetString: '1'.
 	self testAttrSetString: '12'.
@@ -1055,21 +1069,62 @@ testAttrSetString
 	self testAttrSetString: '1234567'.
 	self testAttrSetString: '12345678'.
 	self testAttrSetString: '123456789'.
-! !
+	self testAttrSetString: ((ByteArray new: 100) atAllPut: 65) asString.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:09:57'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/24/2017 18:57:40'!
 testAttrSetString: aString
-	| graph in op |
+	| graph in op copy |
 	graph _ TF_Graph create.
+	copy _ aString asByteArray.
+	
 	in _ graph placeholder: 'in' type: TF_Tensor typeDouble.
 	op _ graph newOperation: 'AsString' named: 'out' described: [:description |
-		description at: 'fill' putString: aString.
+		description at: 'fill' putString: copy.
 		description addInput: (in output: 0)].
 	
-	Smalltalk garbageCollect.	" Force releasing the string, to see if the API makes a copy or not"
+	copy at: 1 put: 65.	"Change Smalltalk String to see if TensorFlow makes a copy"	
 	
 	self assert: (op stringAt: 'fill') equals: aString.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/25/2017 10:58:07'!
+testAttrSetStrings
+	self testAttrSetStrings: #('file://tmp/TFDebug.log').
+	self testAttrSetStrings: #('file://tmp/TFDebug.log' 'file://tmp/TFDebug.2.log').! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/28/2017 01:09:40'!
+testAttrSetStrings: aAnArrayOfStrings
+	| graph template in op |
+	graph _ TF_Graph create.
+	template _ #((1 2 3) (4 5 6) (7 8 9)).
+	in _ graph const: 'in' value: (TF_Tensor fromFloats: template).
+	op _ graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
+		description at: 'debug_urls' putStrings: aAnArrayOfStrings.
+		description addInput: (in output: 0)].
+	
+	(TF_Session onGraph: graph)
+		runOutput: (op output: 0).
+
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/26/2017 22:32:06'!
+testAttrSetStringsInvalid
+	| graph template in lastError notAList |
+	graph _ TF_Graph create.
+	template _ #((1 2 3) (4 5 6) (7 8 9)).
+	in _ graph const: 'in' value: (TF_Tensor fromFloats: template).
+	[
+		graph newOperation: 'DebugIdentity' named: 'out' described: [:description |
+			description at: 'tensor_name' putStrings: #('hola' 'como' 'estas?').
+			description addInput: (in output: 0)].
+	] ifError: [:description :receiver | lastError _ description].
+
+	notAList _ 'Error: INVALID_ARGUMENT: AttrValue had value with type ''list(string)'' when ''string'' expected
+	 for attr ''tensor_name''
+	; NodeDef: out = DebugIdentity[T=DT_FLOAT, _class=[], debug_urls=[], tensor_name=["hola", "como", "estas?"]](in); Op<name=DebugIdentity; signature=input:T -> output:T; attr=T:type; attr=tensor_name:string,default=""; attr=debug_urls:list(string),default=[]; allows_uninitialized_input=true>'.
+	
+	self assert: notAList equals: lastError.
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:20'!
 testBufferDataBytes
@@ -1256,6 +1311,61 @@ testDimensionOfOutput
 	dimensions _ graph dimensionsOf: (const output: 0).
 	
 	self assert: template dimensions equals: dimensions.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 16:09:52'!
+testDimensionOfOutputSet
+	| graph var dimensions output |
+	graph _ TF_Graph create.
+	
+	var _ graph newOperation: 'Placeholder' named: 'var' described: [:description |
+		description
+			at: 'dtype' putType: TF_Tensor typeInt64;
+			at: 'shape' putShape: #(3 -1 -1)].
+	
+	output _ var output: 0.
+	
+	dimensions _ graph dimensionsOf: output.
+	self assert: dimensions equals: #(3 -1 -1).
+
+	graph dimensionsOf: output set: #(-1 3 -1).
+
+	dimensions _ graph dimensionsOf: output.
+	self assert: dimensions equals: #(3 3 -1).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 15:14:46'!
+testDimensionOfOutputSetInvalid
+	| graph template const output invalidDimensions lastError |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	output _ const output: 0.
+	
+	[graph dimensionsOf: output set: #(1 2 3)] ifError: [:description :receiver | lastError _ description].
+	
+	invalidDimensions _ 'Error: INVALID_ARGUMENT: Dimension 0 in both shapes must be equal, but are 2 and 1'.
+	self assert: invalidDimensions equals: lastError.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 15:17:46'!
+testDimensionOfOutputSetInvalidRank
+	| graph template const output invalidDimensions lastError |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	output _ const output: 0.
+	
+	[graph dimensionsOf: output set: #(1 2 3 -1)] ifError: [:description :receiver | lastError _ description].
+	
+	invalidDimensions _ 'Error: INVALID_ARGUMENT: Shapes must be equal rank, but are 3 and 4'.
+	self assert: invalidDimensions equals: lastError.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
@@ -2532,6 +2642,30 @@ testTensorFromFloats2x2SameElementsOrder
 	consts with: values do: [:const :value |
 		self assert: (const closeTo: value)].! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 15:29:55'!
+testTensorFromFloatsDimensions
+	| tensor template values |
+	template _ #(1.23456 0.0 -1.234567 1.1).
+	tensor _ TF_Tensor fromFloats: template dimensions: #(2 2).
+	values _ tensor allFloats.
+		
+	self assert: tensor dimensions equals: #(2 2).
+	self assert: tensor size equals: 4.
+	self assert: tensor byteSize equals: (tensor size*4).
+	template with: values do: [:templ :actual |
+		self assert: (templ closeTo: actual)]
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 16:16:34'!
+testTensorFromFloatsDimensionsUndefinedSize
+	| template invalidDimension lastError |
+	template _ #(1.23456 0.0 -1.234567 1.1).
+	
+	[TF_Tensor fromFloats: template dimensions: #(2 2 -1)] ifError: [:description :receiver | lastError _ description].
+	
+	invalidDimension _ 'Error: Inferred size and real size don''t match.'.
+	self assert: invalidDimension equals: lastError! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
 testTensorFromFloatsScalar
 	| tensor template values |
@@ -3493,9 +3627,14 @@ description: aTF_OperationDescription set: aString toShape: anInt64Array size: s
 	<cdecl: void 'TF_SetAttrShape' (TF_OperationDescription* char* Int64Array* ulonglong)>
 	^ self externalCallFailed.! !
 
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 08:45:47'!
-description: aTF_OperationDescription set: aString toString: anInt size: size
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/23/2017 17:18:33'!
+description: aTF_OperationDescription set: nameString toString: valueString size: size
 	<cdecl: void 'TF_SetAttrString' (TF_OperationDescription* char* char* ulonglong)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/24/2017 01:24:05'!
+description: aTF_OperationDescription set: aString toStrings: anArrayOfString sizes: sizes count: count
+	<cdecl: void 'TF_SetAttrStringList' (TF_OperationDescription* char* void* Int64Array* longlong)>
 	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
@@ -3587,6 +3726,12 @@ graph: aTF_Graph operationAtAsVoid: contextULongLongPtr
 	^ self externalCallFailed
 ! !
 
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 15:12:33'!
+graph: aTF_Graph setDimensionsOf:  aTF_OutputOrInput to: anInt64Array size: anInteger status: status
+	<cdecl: void 'TF_GraphSetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
+	^ self externalCallFailed
+! !
+
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/5/2017 20:47:43'!
 graph: aTF_Graph toGraphDef: aTF_Buffer status: aTF_Status
 	<cdecl: void 'TF_GraphToGraphDef' (TF_Graph* TF_Buffer* TF_Status*)>
@@ -3670,6 +3815,13 @@ operation: aTF_Operation attr: nameZString getShape: int64array size: maxSize st
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 09:00:54'!
 operation: aTF_Operation attr: nameZString getString: valueString size: maxSize status: status
 	<cdecl: void 'TF_OperationGetAttrString' (TF_Operation* char* void* ulonglong TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/26/2017 22:36:48'!
+operation: aTF_Operation attr: nameZString getStrings: valueStringArray sizes: sizesArray maxCount: maxCount storage: aBytaArray size: storageSize status: status
+	<cdecl: void 'TF_OperationGetAttrStringList' (TF_Operation* char* void* Int64Array* ulonglong void* size_t TF_Status*)>
 	^ self externalCallFailed
 
 ! !
@@ -4214,6 +4366,20 @@ dimensionsOf: aTF_OutputOrInput
 	answer _ (1 to: size) collect: [:i | value at: i].
 	^ answer! !
 
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 15:08:37'!
+dimensionsOf: aTF_OutputOrInput set: dimensions
+	| status value |
+	value _ Int64Array externalFromArray: dimensions.
+	status _ TF_Status create.
+	
+	self library
+		graph: self
+		setDimensionsOf: aTF_OutputOrInput
+		to: value
+		size: dimensions size
+		status: status.
+	status check.! !
+
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
 finalize
 	self delete! !
@@ -4418,11 +4584,11 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/12/2017 18:46:27'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
 attrMetadata: nameString
 	| status answer |
 	status _ TF_Status create.
-	answer _ self library operation: self getMetadataFor: nameString status: status.
+	answer _ self library operation: self getMetadataFor: nameString asAsciiZ status: status.
 	status check.
 	^ answer! !
 
@@ -4570,16 +4736,47 @@ squared
 	^ self @* self
 	! !
 
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 09:03:57'!
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:59:40'!
 stringAt: nameString
-	| value status size |
-	size _ 100.
+	| metadata value status |
+	metadata _ self attrMetadata: nameString.
 	status _ TF_Status create.
-	value _ ByteArray new: size.
-	self library operation: self attr: nameString asAsciiZ getString: value size: size status: status.
+	value _ ByteArray new: metadata totalSize .
+	self library
+		operation: self
+		attr: nameString asAsciiZ
+		getString: value
+		size: metadata totalSize 
+		status: status.
 	status check.
 	^ (value upTo: 0) asString
 ! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/28/2017 01:11:05'!
+stringsAt: nameString
+	| status pointers sizes spaceRequired storage metadata valuesCount |
+	metadata _ self attrMetadata: nameString.
+	spaceRequired _ metadata totalSize.
+	valuesCount _ metadata listSize.
+	pointers _ ByteArray new: Smalltalk wordSize * valuesCount.
+	sizes _ (Int64Array externalNew: valuesCount) useFinalization.
+	storage _ ExternalAddress gcallocate: spaceRequired.
+	status _ TF_Status create.
+	self library
+		operation: self
+		attr: nameString asAsciiZ 
+		getStrings: pointers
+		sizes: sizes
+		maxCount: valuesCount
+		storage: storage
+		size: spaceRequired
+		status: status.
+	status check.
+	^ (1 to: valuesCount) collect: [:i |
+		| one |
+		one _ pointers pointerAt: i-1*Smalltalk wordSize+1.
+		one _ one structAt: 1 length: (sizes at: i).
+		one asString]! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:30:55'!
 sumOn: aTF_Operation
@@ -4701,6 +4898,27 @@ at: attribute putString: aString
 		set: attribute asAsciiZ
 		toString: aString
 		size: aString size.
+	status check
+	! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/24/2017 23:40:04'!
+at: attribute putStrings: anArrayOfStrings
+	| status sizes strings pointers |
+	sizes _ anArrayOfStrings collect: [:str | str size].
+	sizes _ Int64Array externalFromArray: sizes.
+	sizes useFinalization.
+	strings _ anArrayOfStrings collect: [:each | (self library externalizeString: each) useFinalization].
+	pointers _ ByteArray new: Smalltalk wordSize * strings size.
+	strings withIndexDo: [:each :index |
+		pointers pointerAt: index-1*Smalltalk wordSize+1 put: each].
+	 
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toStrings: pointers
+		sizes: sizes
+		count: anArrayOfStrings size.
 	status check
 	! !
 
@@ -5200,15 +5418,21 @@ floatArray: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/19/2017 11:26:11'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 15:22:48'!
 fromFloats: values
-	| answer dimensions size count |
-	size _ self sizeOf: values.
+	| dimensions |
 	dimensions _ self dimensionsOf: values.
+	^ self fromFloats: values dimensions: dimensions.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:09'!
+fromFloats: values dimensions: dimensions
+	| answer size count |
+	size _ self sizeOf: values.
 	count _ dimensions inject: 1 into: [:a :b | a * b].
 	count = size ifFalse: [
 		self error: 'Inferred size and real size don''t match.'].
-	
+		
 	answer _ self type: self typeFloat dimensions: dimensions.
 	self floatArray: values into: answer data getHandle.
 	^ answer! !
@@ -5347,7 +5571,7 @@ sizeOf: aMultidimensionalTensor
 sizeOfString: aString.
 	^ TensorFlowCAPI current stringEncodedSize: aString.! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 01:42:58'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:51'!
 type: anInteger dimensions: anIntegerArray
 	" I understand dimenssions are:
 		#()		-> Scalar
