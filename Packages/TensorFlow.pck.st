@@ -5061,9 +5061,11 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 08:10:04'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:13:38'!
 assign: aTF_Operation
-	^ self assign: aTF_Operation named: self name, '_assignment_', self graph operationsCount printString! !
+	| name |
+	name _ self nameFor: self name, '_assignment'.
+	^ self assign: aTF_Operation named: name! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 08:14:03'!
 assign: aTF_Operation named: aString
@@ -5085,10 +5087,10 @@ binaryOp: aString with: aTF_Operation
 	^ self binaryOp: aString with: aTF_Operation described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:53:43'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:14:52'!
 binaryOp: aString with: aTF_Operation described: oneArgBlock
 	| name |
-	name _ aString,'_',graph operationsCount printString.
+	name _ self nameFor: aString.
 	^ self binaryOp: aString with: aTF_Operation named: name described: oneArgBlock! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:54:08'!
@@ -5324,10 +5326,10 @@ typeAt: nameString
 	^ value unsignedLongLongAt: 1
 ! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 12:01:10'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 15:14:27'!
 unaryOp: aString
 	| name |
-	name _ aString,'_',graph operationsCount printString.
+	name _ self nameFor: aString.
 	^ self unaryOp: aString named: name! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 12:00:58'!
