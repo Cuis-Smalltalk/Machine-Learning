@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:55:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 5:04:14 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 274!
+!provides: 'TensorFlow' 1 275!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -897,7 +897,7 @@ testAddControlInput
 	self assert: 12345678*12345678 equals: result allInt64s first.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:50:46'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 05:02:06'!
 testAllInitializers
 	| graph pisTensor initializers |
 	graph _ TF_Graph create.
@@ -909,9 +909,9 @@ testAllInitializers
 	initializers _ graph allInitializers.
 	
 	self assert: initializers size = 3.
-	self assert: initializers first name = 'var1_initializer'.
-	self assert: initializers second name = 'var2_initializer'.
-	self assert: initializers third name = 'var3_initializer'.
+	self assert: (initializers first name beginsWith: 'var1_initializer').
+	self assert: (initializers second name beginsWith: 'var2_initializer').
+	self assert: (initializers third name beginsWith: 'var3_initializer').
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:40:39'!
@@ -2048,13 +2048,13 @@ testNewVariableForTensor
 
 	self assert: result allFloats equals: pisTensor allFloats! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:49:55'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 05:04:05'!
 testNewVariableInitialValue
 	| graph var assign result session pisTensor |
 	graph _ TF_Graph create.
 	pisTensor _ TF_Tensor fromFloats: #(3.14 3.1415 3.141516).
 	var _ graph variable: 'var' initialValue: pisTensor.
-	assign _ graph operationNamed: 'var_initializer'.
+	assign _ graph operationNamed: 'var_initializer_2'.
 	
 	session _ TF_Session onGraph: graph.
 	
@@ -4874,12 +4874,12 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:52:38'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 05:01:09'!
 assign: aTF_Operation
 	^ self
 		binaryOp: 'Assign'
 		with: aTF_Operation
-		named: self name, '_initializer'! !
+		named: self name, '_initializer_', self graph operationsCount printString! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
 attrMetadata: nameString
