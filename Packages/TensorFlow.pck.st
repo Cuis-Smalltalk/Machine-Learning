@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:34:04 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 7:49:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 290!
+!provides: 'TensorFlow' 1 291!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3588,6 +3588,29 @@ testOperationSquared
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 19:49:15'!
+testOperationSub
+	| graph a b session constA constB result sub template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (3.14 3.14)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	sub _ constA - constB.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (sub output: 0).
+	
+	template _ a allFloats - b allFloats.
+
+	self assert: result dimensions equals: a dimensions.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 21:56:35'!
 testOperationSum
 	| graph a session const result output0 output1 axis0 axis1 template sumOn1 sumOn0 |
@@ -5009,9 +5032,9 @@ create
 + aTF_Operation
 	^ self binaryOp: 'Add' with: aTF_Operation! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'JB 1/23/2017 10:48:37'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 19:47:10'!
 - aTF_Operation
-	^ self + aTF_Operation negated! !
+	^ self binaryOp: 'Sub' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:21:14'!
 -= aTF_Operation
