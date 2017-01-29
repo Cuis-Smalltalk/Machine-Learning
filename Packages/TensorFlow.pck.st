@@ -887,6 +887,23 @@ testAddControlInput
 	self assert: 12345678*12345678 equals: result allInt64s first.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:40:39'!
+testAllVariables
+	| graph pisTensor var1 vars var2 var3 |
+	graph _ TF_Graph create.
+	pisTensor _ TF_Tensor fromFloats: #(3.14 3.1415 3.141516).
+	var1 _ graph variable: 'var1' initialValue: pisTensor.
+	var2 _ graph variable: 'var2' initialValue: pisTensor.
+	var3 _ graph variable: 'var3' initialValue: pisTensor.
+
+	vars _ graph allVariables.
+	
+	self assert: vars size = 3.
+	self assert: vars first = var1.
+	self assert: vars second = var2.
+	self assert: vars third = var3.
+	! !
+
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:44'!
 testAsStringGraphRunOn: tensor
 	| graph session in out result |
@@ -4438,6 +4455,10 @@ add: nameString described: aBlock
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:30:15'!
 allInputs
 	^ self operationsSelect: [:op | op type = 'Placeholder']! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:34:38'!
+allVariables
+	^ self operationsSelect: [:op | op type = 'Variable']! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 23:55:21'!
 asString: nameString described: aBlock
