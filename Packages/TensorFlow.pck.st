@@ -274,7 +274,7 @@ BackpropagationForwardPlan class
 
 !classDefinition: #BackpropagationPlan category: #'TensorFlow-Examples'!
 ExamplePlan subclass: #BackpropagationPlan
-	instanceVariableNames: 'weights activation target gradient'
+	instanceVariableNames: 'weights activation target learn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -6134,7 +6134,7 @@ initializeBackwardGraph
 	
 	delta _ (target - actual) negated @* actual @* (one - actual) @* input.
 	newWeights _ weights - (learningRate @* delta).
-	gradient _ weights assign: newWeights.! !
+	learn _ weights assign: newWeights.! !
 
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:43:10'!
 initializeForwardGraph
