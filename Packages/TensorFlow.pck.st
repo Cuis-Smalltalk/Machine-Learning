@@ -274,7 +274,7 @@ BackpropagationForwardPlan class
 
 !classDefinition: #BackpropagationPlan category: #'TensorFlow-Examples'!
 ExamplePlan subclass: #BackpropagationPlan
-	instanceVariableNames: 'weights activation target learn'
+	instanceVariableNames: 'weights activation target learn deltaOperation lastDelta'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -6139,13 +6139,17 @@ initializeGraph
 	outputs _ {activation output: 0}.
 	inputs _ {inputVariable input: 0. weights input: 0}! !
 
+!BackpropagationPlan methodsFor: 'accessing' stamp: 'gera 1/29/2017 11:17:26'!
+delta
+	^ lastDelta! !
+
 !BackpropagationPlan methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:32:19'!
 graph
 	^ graph! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 08:26:08'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 11:16:26'!
 initializeBackwardGraph
-	| actual delta learningRate newWeights learningRateValue one input |
+	| actual learningRate newWeights learningRateValue one input |
 	actual _ activation.
 	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1).
 	
@@ -6156,8 +6160,8 @@ initializeBackwardGraph
 	
 	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
 	
-	delta _ (target - actual) negated @* actual @* (one - actual) @* input.
-	newWeights _ weights - (learningRate @* delta).
+	deltaOperation _ (target - actual) negated @* actual @* (one - actual) @* input.
+	newWeights _ weights - (learningRate @* deltaOperation).
 	learn _ weights assign: newWeights.! !
 
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:43:10'!
@@ -6186,15 +6190,16 @@ initializeVariables
 	
 	weights _ graph variable: 'weights' initialValue: initialWeights.! !
 
-!BackpropagationPlan methodsFor: 'training' stamp: 'gera 1/29/2017 10:52:47'!
+!BackpropagationPlan methodsFor: 'training' stamp: 'gera 1/29/2017 11:17:16'!
 learn: sample with: expected
-	| result |	
-	result _ session
+	| results |	
+	results _ session
 		runInputs: {inputs first. target input: 0}
 		values: {sample. expected}
-		outputs: {learn output: 0}.
-		
-	^ result first
+		outputs: {learn output: 0. deltaOperation output: 0}.
+	
+	lastDelta _ results at: 2.
+	^ results first
 	! !
 
 !BackpropagationPlan methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:40:28'!
