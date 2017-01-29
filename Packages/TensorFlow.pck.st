@@ -4567,6 +4567,10 @@ allInitializers
 allInputs
 	^ self operationsSelect: [:op | op type = 'Placeholder']! !
 
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 05:03:52'!
+allOperations
+	^ self operationsSelect: [:op | true]! !
+
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:34:38'!
 allVariables
 	^ self operationsSelect: [:op | op type = 'Variable']! !
