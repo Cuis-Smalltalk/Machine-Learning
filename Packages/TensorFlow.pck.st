@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 8:30:58 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 8:44:51 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 292!
+!provides: 'TensorFlow' 1 293!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -6052,6 +6052,10 @@ int64Array: values into: anExternalAddressOrByteArray
 		anExternalAddressOrByteArray signedLongLongAt: index*size + 1 put: value.
 		index _ index + 1].
 ! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 20:42:36'!
+pi
+	^ self fromFloats: Float pi! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:45:52'!
 rankOf: aMultidimensionalTensor
