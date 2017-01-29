@@ -3694,6 +3694,28 @@ testBackpropagationPlanBackguardChangesWeights
 	self deny: weights allFloats = w0 allFloats
 ! !
 
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:23:38'!
+testBackpropagationPlanBackguardConverges
+	| plan const graph w0 weights inputs target |
+	plan _ BackpropagationPlan new.
+	graph _ plan graph.
+	
+	inputs _ TF_Tensor fromFloats: {{1}. {2 ln}}.
+	target _ TF_Tensor fromFloats: #((0.5) (0.5)).
+	
+	const _ graph operationNamed: 'weights_initialValue'.
+	w0 _ const tensorAt: 'value'.
+	weights _ plan weights.
+	
+	self assert: w0 dimensions equals: #(2 2).
+	self assert: weights dimensions equals: #(2 2).
+	self assert: w0 allFloats equals: weights allFloats.
+
+	100 timesRepeat: [plan learn: inputs with: target].
+
+	self assert: (plan delta allFloats squared sum closeTo: 0)
+! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:46'!
 testBackpropagationPlanForward
 	| plan inputs rawResult result const graph weights first second sigmoid |
