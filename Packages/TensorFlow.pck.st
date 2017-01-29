@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 8:21:45 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:11:07 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 280!
+!provides: 'TensorFlow' 1 283!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3644,7 +3644,7 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:27:20'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:30'!
 testBackpropagationPlanBackguard
 	| plan inputs rawResult result const graph weights first second sigmoid |
 	plan _ BackpropagationPlan new.
@@ -3654,7 +3654,7 @@ testBackpropagationPlanBackguard
 		{2 ln}
 	}.
 	
-	graph _ plan instVarNamed: 'graph'.
+	graph _ plan graph.
 	const _ graph operationNamed: 'weights_initialValue'.
 	weights _ (const tensorAt: 'value') allFloats.
 	
@@ -3682,7 +3682,7 @@ testBackpropagationPlanForward
 		{2 ln}
 	}.
 	
-	graph _ plan instVarNamed: 'graph'.
+	graph _ plan graph.
 	const _ graph operationNamed: 'weights_initialValue'.
 	weights _ (const tensorAt: 'value') allFloats.
 	
@@ -3719,14 +3719,14 @@ testBackpropagationPlantInitializeForward
 	
 	self assert: true description: 'No exception should be raised by this test'! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:48'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:33:02'!
 testBackpropagationPlantInitializeVariables
 	| bpp graph const weights |
 	bpp _ BackpropagationPlan basicNew.
 	bpp instVarNamed: 'graph' put: TF_Graph create.
 	bpp initializeVariables.
 	
-	graph _ bpp instVarNamed: 'graph'.
+	graph _ bpp graph.
 	
 	self assert: graph allInitializers size = 1.
 	self assert: graph allVariables size = 1.
@@ -6115,7 +6115,11 @@ initializeGraph
 	outputs _ {activation output: 0}.
 	inputs _ {inputVariable input: 0. weights input: 0}! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:24:50'!
+!BackpropagationPlan methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:32:19'!
+graph
+	^ graph! !
+
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 08:26:08'!
 initializeBackwardGraph
 	| actual delta learningRate newWeights learningRateValue one input |
 	actual _ activation.
