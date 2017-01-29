@@ -3131,6 +3131,20 @@ testOperationAsin
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 20:44:49'!
+testOperationAssignSub
+	| graph var output pi result session |
+	graph _ TF_Graph create.
+	var _ graph variable: 'var' initialValue: (TF_Tensor fromFloats: 1).
+	pi _ graph const: 'pi' value: (TF_Tensor pi).
+	output _ var -= pi.
+	
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.
+	result _ session runOutput: (output output: 0).
+	
+	self assert: (1-Float pi closeTo: result allFloats first)! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:14'!
 testOperationAtan
 	| graph template session const result output intput |
