@@ -274,7 +274,7 @@ BackpropagationForwardPlan class
 
 !classDefinition: #BackpropagationPlan category: #'TensorFlow-Examples'!
 ExamplePlan subclass: #BackpropagationPlan
-	instanceVariableNames: 'weights'
+	instanceVariableNames: 'weights activation target gradient'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -3644,13 +3644,37 @@ tensorFrom: points
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:20:32'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:27:20'!
+testBackpropagationPlanBackguard
+	| plan inputs rawResult result const graph weights first second sigmoid |
+	plan _ BackpropagationPlan new.
+	
+	inputs _ TF_Tensor fromFloats: {
+		{0}.
+		{2 ln}
+	}.
+	
+	graph _ plan instVarNamed: 'graph'.
+	const _ graph operationNamed: 'weights_initialValue'.
+	weights _ (const tensorAt: 'value') allFloats.
+	
+	sigmoid _ [:x | (x negated exp + 1) reciprocal].
+	first _ sigmoid value: 2 ln * weights second.
+	second _ sigmoid value: 2 ln * weights fourth.
+
+	rawResult _ plan runOn: {inputs}.
+	result _ rawResult allFloats.
+	
+	
+	self
+		assert: (result first closeTo: first);
+		assert: (result second closeTo: second)! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:32:27'!
 testBackpropagationPlanForward
 	| plan inputs rawResult result const graph weights first second sigmoid |
 	plan _ BackpropagationPlan basicNew.
 	plan initializeGraph.
-	plan initializeVariables.
-	plan initializeForwardGraph.
 	plan initializeSession.
 	
 	inputs _ TF_Tensor fromFloats: {
@@ -3674,21 +3698,32 @@ testBackpropagationPlanForward
 		assert: (result first closeTo: first);
 		assert: (result second closeTo: second)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 04:17:42'!
-testBackpropagationPlantInitializeForward
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:58'!
+testBackpropagationPlantInitializeBackguard
 	| bpp |
 	bpp _ BackpropagationPlan basicNew.
-	bpp initializeGraph.
+	bpp instVarNamed: 'graph' put: TF_Graph create.
+	bpp initializeVariables.
+	bpp initializeForwardGraph.
+	bpp initializeBackwardGraph.
+	
+	self assert: true description: 'No exception should be raised by this test'! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:33'!
+testBackpropagationPlantInitializeForward
+	| bpp |
+	bpp _ BackpropagationPlan new.
+	bpp instVarNamed: 'graph' put: TF_Graph create.
 	bpp initializeVariables.
 	bpp initializeForwardGraph.
 	
 	self assert: true description: 'No exception should be raised by this test'! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 04:13:30'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:48'!
 testBackpropagationPlantInitializeVariables
 	| bpp graph const weights |
 	bpp _ BackpropagationPlan basicNew.
-	bpp initializeGraph.
+	bpp instVarNamed: 'graph' put: TF_Graph create.
 	bpp initializeVariables.
 	
 	graph _ bpp instVarNamed: 'graph'.
@@ -6080,14 +6115,39 @@ initializeGraph
 	outputs _ {activation output: 0}.
 	inputs _ {inputVariable input: 0. weights input: 0}! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:22:56'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:24:50'!
+initializeBackwardGraph
+	| actual delta learningRate newWeights learningRateValue one input |
+	actual _ activation.
+	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1).
+	
+	learningRateValue _ TF_Tensor fromFloats: 0.9.
+	learningRate _ graph const: 'learningRate' value: learningRateValue.
+
+	input _ inputs first operation.
+	
+	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
+	
+	delta _ (target - actual) negated @* actual @* (one - actual) @* input.
+	newWeights _ weights - (learningRate @* delta).
+	gradient _ weights assign: newWeights.! !
+
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:43:10'!
 initializeForwardGraph
-	| activation inputVariable netInput |
+	| inputVariable netInput |
 	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
 	netInput _ weights * inputVariable.
 	activation _ netInput sigmoid.
 	outputs _ {activation output: 0}.
 	inputs _ {inputVariable input: 0}! !
+
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:28:36'!
+initializeGraph
+	super initializeGraph.
+	self
+		initializeVariables;
+		initializeForwardGraph;
+		initializeBackwardGraph.! !
 
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:05:17'!
 initializeVariables
