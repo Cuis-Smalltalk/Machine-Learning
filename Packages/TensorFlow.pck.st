@@ -3670,7 +3670,30 @@ testBackpropagationPlanBackguard
 		assert: (result first closeTo: first);
 		assert: (result second closeTo: second)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 05:32:27'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:11:04'!
+testBackpropagationPlanBackguardChangesWeights
+	| plan const graph w0 weights inputs result |
+	plan _ BackpropagationPlan new.
+	graph _ plan graph.
+	
+	inputs _ TF_Tensor fromFloats: {{1}. {2 ln}}.
+	
+	const _ graph operationNamed: 'weights_initialValue'.
+	w0 _ const tensorAt: 'value'.
+	weights _ plan weights.
+	
+	self assert: w0 dimensions equals: #(2 2).
+	self assert: weights dimensions equals: #(2 2).
+	self assert: w0 allFloats equals: weights allFloats.
+
+	result _ plan learn: inputs with: (TF_Tensor fromFloats: 0.5).
+	
+	self assert: weights allFloats equals: result allFloats.
+	self assert: weights dimensions equals: result dimensions.
+	self deny: weights allFloats = w0 allFloats
+! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:46'!
 testBackpropagationPlanForward
 	| plan inputs rawResult result const graph weights first second sigmoid |
 	plan _ BackpropagationPlan basicNew.
