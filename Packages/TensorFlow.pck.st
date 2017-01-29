@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 5:04:14 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 5:09:01 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 275!
+!provides: 'TensorFlow' 1 276!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -912,6 +912,27 @@ testAllInitializers
 	self assert: (initializers first name beginsWith: 'var1_initializer').
 	self assert: (initializers second name beginsWith: 'var2_initializer').
 	self assert: (initializers third name beginsWith: 'var3_initializer').
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 05:08:57'!
+testAllOperations
+	| graph pisTensor operations names |
+	graph _ TF_Graph create.
+	pisTensor _ TF_Tensor fromFloats: #(3.14 3.1415 3.141516).
+	graph variable: 'var1' initialValue: pisTensor.
+	graph variable: 'var2' initialValue: pisTensor.
+	graph variable: 'var3' initialValue: pisTensor.
+
+	operations _ graph allOperations.
+	
+	self assert: operations size = 9.
+	names _ #(
+		'var1' 'var1_initialValue' 'var1_initializer_2'
+		'var2' 'var2_initialValue' 'var2_initializer_5'
+		'var3' 'var3_initialValue' 'var3_initializer_8').
+		
+	names with: operations do: [:name :op |
+		self assert: name equals: op name].
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:40:39'!
