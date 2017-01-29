@@ -6162,6 +6162,21 @@ initializeVariables
 	
 	weights _ graph variable: 'weights' initialValue: initialWeights.! !
 
+!BackpropagationPlan methodsFor: 'training' stamp: 'gera 1/29/2017 10:52:47'!
+learn: sample with: expected
+	| result |	
+	result _ session
+		runInputs: {inputs first. target input: 0}
+		values: {sample. expected}
+		outputs: {learn output: 0}.
+		
+	^ result first
+	! !
+
+!BackpropagationPlan methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:40:28'!
+weights
+	^ session runOutput: (weights output: 0)! !
+
 !ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:49'!
 initializeGraph
 	| neg add abs axis axisValue distance testing training prediction |
