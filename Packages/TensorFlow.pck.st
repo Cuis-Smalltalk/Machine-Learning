@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:21:09 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 3:21:17 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 263!
 !requires: 'FFI' 1 18 nil!
@@ -4584,12 +4584,6 @@ rankOf: aTF_OutputOrInput
 	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
 	status check.
 	^ answer! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:43:01'!
-variable: nameString
-	^ self
-		newOperation: 'Variable'
-		named: nameString! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:04:54'!
 variable: nameString type: typeInteger shape: anArray
