@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 12:03:08 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 12:17:15 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 286!
+!provides: 'TensorFlow' 1 288!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1750,6 +1750,36 @@ testGraphDeletionDoesntBreakSessions
 
 	results first delete.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 12:15:45'!
+testGraphFromBlockIdentity
+	| graph output inputs results |
+	graph _ TF_Graph fromBlock: [:a | a ].
+	
+	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
+	output _ graph operationNamed: 'output'.
+	
+	results _ (TF_Session onGraph: graph)
+		runInputs: inputs
+		values: {TF_Tensor fromFloats: 3.1415}
+		outputs: {output output: 0}.
+		
+	self assert: (results first allFloats first closeTo: 3.1415)! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 12:17:11'!
+testGraphFromBlockSimple
+	| graph output inputs results |
+	graph _ TF_Graph fromBlock: [:a :b | a + b].
+	
+	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
+	output _ graph operationNamed: 'output'.
+	
+	results _ (TF_Session onGraph: graph)
+		runInputs: inputs
+		values: {TF_Tensor fromFloats: 3.1415. TF_Tensor fromFloats: 1.2345.}
+		outputs: {output output: 0}.
+		
+	self assert: (results first allFloats first closeTo: 3.1415 + 1.2345)! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:04:24'!
 testGraphNotFinalizedWhenHeldByOperations
@@ -3718,7 +3748,7 @@ testBackpropagationPlanBackguardChangesWeights
 	self deny: weights allFloats = w0 allFloats
 ! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:23:38'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:39:51'!
 testBackpropagationPlanBackguardConverges
 	| plan const graph w0 weights inputs target |
 	plan _ BackpropagationPlan new.
@@ -4771,6 +4801,15 @@ dimensionsOf: aTF_OutputOrInput set: dimensions
 finalize
 	self delete! !
 
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/29/2017 11:59:08'!
+fromBlock: aBlockClosure
+	| inputNames inputs output |
+	inputNames _ aBlockClosure decompile arguments collect: [:each | each name].
+	inputs _ inputNames collect: [:each | self placeholder: each type: TF_Tensor typeFloat].
+	output _ aBlockClosure valueWithArguments: inputs.
+	output alias: 'output'
+! !
+
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
 import: aTF_Buffer
 	| options status |
@@ -4925,6 +4964,10 @@ variable: nameString type: typeInteger shape: anArray
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
 create
 	^ TensorFlowCAPI current newGraph useFinalization! !
+
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 11:51:48'!
+fromBlock: aBlockClosure
+	^ self create fromBlock: aBlockClosure ! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:26'!
 fromFileNamed: aString
@@ -6217,7 +6260,7 @@ initializeBackwardGraph
 	newWeights _ weights - (learningRate @* deltaOperation).
 	learn _ weights assign: newWeights.! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:43:10'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 11:39:43'!
 initializeForwardGraph
 	| inputVariable netInput |
 	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
