@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:13:33 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 4:34:51 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 271!
+!provides: 'TensorFlow' 1 272!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1857,6 +1857,13 @@ testImportConstantGraph
 testImportEmpty
 	self shouldnt: [self emptyGraph] raise: Error.
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 04:34:40'!
+testInitializeOn
+	| graph session |
+	graph _ TF_Graph create.
+	session _ TF_Session onGraph: graph.
+	self shouldnt: [graph initializeOn: session] raise: Error.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:08'!
 testInt64AsStringGraph
@@ -4618,11 +4625,12 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
-!TF_Graph methodsFor: 'running' stamp: 'gera 1/29/2017 03:54:07'!
+!TF_Graph methodsFor: 'running' stamp: 'gera 1/29/2017 04:32:04'!
 initializeOn: aTF_Session
 	| initializers |
 	initializers _ self allInitializers collect: [:each | each output: 0].
-	aTF_Session runOutputs: initializers.
+	initializers size > 0 ifTrue: [
+		aTF_Session runOutputs: initializers]
 ! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
