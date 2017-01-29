@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 12:17:15 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 2:53:35 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 288!
+!provides: 'TensorFlow' 1 289!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3748,9 +3748,9 @@ testBackpropagationPlanBackguardChangesWeights
 	self deny: weights allFloats = w0 allFloats
 ! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:39:51'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 14:53:31'!
 testBackpropagationPlanBackguardConverges
-	| plan const graph w0 weights inputs target |
+	| plan const graph w0 weights inputs target result |
 	plan _ BackpropagationPlan new.
 	graph _ plan graph.
 	
@@ -3765,9 +3765,14 @@ testBackpropagationPlanBackguardConverges
 	self assert: weights dimensions equals: #(2 2).
 	self assert: w0 allFloats equals: weights allFloats.
 
-	100 timesRepeat: [plan learn: inputs with: target].
+	200 timesRepeat: [plan learn: inputs with: target].
 
-	self assert: (plan delta allFloats squared sum closeTo: 0)
+	self assert: (plan delta allFloats squared sum closeTo: 0).
+
+	result _ (plan runOn: {inputs}) allFloats.
+	
+	self assert: (result first closeTo: 0.5).
+	self assert: (result second closeTo: 0.5).
 ! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:46'!
