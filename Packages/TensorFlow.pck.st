@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:21:44 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:22:55 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 296!
+!provides: 'TensorFlow' 1 297!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3143,12 +3143,12 @@ testOperationAsin
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 23:20:19'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 23:22:48'!
 testOperationAssignSub
 	| graph var output pi result session |
 	graph _ TF_Graph create.
 	var _ graph variable: 'var' initialValue: 1.0 asTensor.
-	pi _ graph const: 'pi' value: (TF_Tensor pi).
+	pi _ graph const: 'pi' value: TF_Tensor pi.
 	output _ var -= pi.
 	
 	session _ TF_Session onGraph: graph.
@@ -6094,9 +6094,9 @@ int64Array: values into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 20:42:36'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 23:22:39'!
 pi
-	^ self fromFloats: Float pi! !
+	^ Float pi asTensor! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:45:52'!
 rankOf: aMultidimensionalTensor
