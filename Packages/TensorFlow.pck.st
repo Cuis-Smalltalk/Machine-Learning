@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:22:55 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 30 January 2017 at 5:57:39 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 297!
+!provides: 'TensorFlow' 1 299!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -352,6 +352,10 @@ asTensor
 
 !Fraction methodsFor: '*TensorFlow' stamp: 'gera 1/29/2017 23:19:41'!
 asTensor
+	^ TF_Tensor fromFloats: self! !
+
+!SequenceableCollection methodsFor: '*TensorFlow' stamp: 'gera 1/30/2017 16:19:25'!
+asFloatTensor
 	^ TF_Tensor fromFloats: self! !
 
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
@@ -963,6 +967,26 @@ testAllVariables
 	self assert: vars second = var2.
 	self assert: vars third = var3.
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 16:23:58'!
+testAsFloatTensor
+	self testAsFloatTensor: 1 dimensions: #().
+	self testAsFloatTensor: #(1 2 3 4) dimensions: #(4).
+	self testAsFloatTensor: #((1 2 3 4) (3.14 1.71 2.12 -7.8)) dimensions: #(2 4).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 17:37:38'!
+testAsFloatTensor: anArray dimensions: dims
+	| tensor index floats |
+	tensor _ anArray asFloatTensor.
+	
+	index _ 1.
+	floats _ tensor allFloats.
+	TF_Tensor elementsOf: anArray do: [:each |
+		self assert: ((floats at: index) closeTo: each).
+		index _ index + 1].
+
+	self assert: tensor dimensions equals: dims! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:44'!
 testAsStringGraphRunOn: tensor
@@ -6304,17 +6328,16 @@ runOn: inputValues
 	^ results first
 	! !
 
-!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 02:04:46'!
+!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'gera 1/30/2017 17:55:11'!
 initializeGraph
-	| inputVariable weights actual delta learningRate newWeights target learningRateValue one |
+	| inputVariable weights actual delta learningRate newWeights target one |
 	super initializeGraph.
 	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
 	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
 	actual _ graph placeholder: 'actual' type: TF_Tensor typeFloat.
 	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
-	learningRateValue _ TF_Tensor fromFloats: 0.9.
-	learningRate _ graph const: 'learningRate' value: learningRateValue.
-	one _ graph const: 'one' value: (TF_Tensor fromFloats: 1).
+	learningRate _ graph const: 'learningRate' value: 0.9 asTensor.
+	one _ graph const: 'one' value: 1.0 asTensor.
 	delta _ (target - actual) negated @* actual @* (one - actual) @* inputVariable.
 	newWeights _ weights - (learningRate @* delta).
 	outputs _ {newWeights output: 0}.
@@ -6339,13 +6362,13 @@ delta
 graph
 	^ graph! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 20:30:41'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/30/2017 17:38:24'!
 initializeBackwardGraph
 	| actual learningRate learningRateValue one input |
 	actual _ activation.
-	one _ graph const: 'one' value: (TF_Tensor fromFloats: #((1 1) (1 1))).
+	one _ graph const: 'one' value: #((1 1) (1 1)) asFloatTensor.
 	
-	learningRateValue _ TF_Tensor fromFloats: 0.9.
+	learningRateValue _ 0.9 asTensor.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
 
 	input _ inputs first operation.
@@ -6358,14 +6381,15 @@ initializeBackwardGraph
 	"learn _ weights -= learningRate @* delta."
 	learn _ weights descent: delta rate: learningRate.! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 11:39:43'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/30/2017 00:37:21'!
 initializeForwardGraph
-	| inputVariable netInput |
-	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
-	netInput _ weights * inputVariable.
-	activation _ netInput sigmoid.
+	| input |
+	input _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
+	
+	activation _ (weights * input) sigmoid.
+	
 	outputs _ {activation output: 0}.
-	inputs _ {inputVariable input: 0}! !
+	inputs _ {input input: 0}! !
 
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:28:36'!
 initializeGraph
@@ -6569,17 +6593,17 @@ loadDataSet
 			decodeCSV: csv
 			graphRun: description ].! !
 
-!NearestNeighbor methodsFor: 'running' stamp: 'JB 1/19/2017 10:49:44'!
+!NearestNeighbor methodsFor: 'running' stamp: 'gera 1/30/2017 17:56:34'!
 run
 	| covariatesTr covariatesTe predictions size dataset testing training |
 	dataset _ self loadDataSet.
 	training _ dataset first.
 	testing _ dataset second.
-	covariatesTr _  TF_Tensor fromFloats: training allButLast.
+	covariatesTr _ training allButLast asFloatTensor.
 	size _ testing first size.
 	predictions _ (1 to: size) collect: [ :i | | covariates index predicted results trueValue |
 		covariates _ testing  collect:[:col| {col at: i}].
-		covariatesTe _ TF_Tensor fromFloats: covariates allButLast.
+		covariatesTe _ covariates allButLast asFloatTensor.
 		results _ plan predict: covariatesTe from: covariatesTr.
 		index _ results first.
 		trueValue _ covariates fifth first.
@@ -6627,9 +6651,9 @@ regress: x on: y
 	result _ plan runOn: {x. y}.
 	^ result allFloats! !
 
-!SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'JB 1/25/2017 15:23:33'!
+!SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
-	weights _ TF_Tensor fromFloats: aCollection! !
+	weights _ aCollection asFloatTensor! !
 
 !SimpleNeuralNetworkExample methodsFor: 'initialization' stamp: 'JB 1/25/2017 15:22:27'!
 initialize
