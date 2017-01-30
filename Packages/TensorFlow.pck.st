@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 8:44:51 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:12:01 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 293!
+!provides: 'TensorFlow' 1 294!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3184,6 +3184,21 @@ testOperationCos
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 23:11:55'!
+testOperationDescentRate
+	| graph var output pi result session rate |
+	graph _ TF_Graph create.
+	var _ graph variable: 'var' initialValue: (TF_Tensor fromFloats: 1).
+	pi _ graph const: 'pi' value: (TF_Tensor pi).
+	rate _ graph const: 'rate' value: (TF_Tensor fromFloats: 0.7).
+	output _ var descent: pi rate: rate.
+	
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.
+	result _ session runOutput: (output output: 0).
+	
+	self assert: (1-(Float pi * 0.7) closeTo: result allFloats first)! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/23/2017 10:44:28'!
 testOperationExp
