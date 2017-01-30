@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:12:01 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 29 January 2017 at 11:21:44 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 294!
+!provides: 'TensorFlow' 1 296!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -341,6 +341,18 @@ ignoreFinalization
 !Object methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 20:18:16'!
 useFinalization
 	self finalizationRegistry add: self! !
+
+!Number methodsFor: '*TensorFlow' stamp: 'gera 1/29/2017 23:18:09'!
+asFloatTensor
+	^ TF_Tensor fromFloats: self! !
+
+!Float methodsFor: '*TensorFlow' stamp: 'gera 1/29/2017 23:19:32'!
+asTensor
+	^ TF_Tensor fromFloats: self! !
+
+!Fraction methodsFor: '*TensorFlow' stamp: 'gera 1/29/2017 23:19:41'!
+asTensor
+	^ TF_Tensor fromFloats: self! !
 
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
@@ -3131,11 +3143,11 @@ testOperationAsin
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 20:44:49'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 23:20:19'!
 testOperationAssignSub
 	| graph var output pi result session |
 	graph _ TF_Graph create.
-	var _ graph variable: 'var' initialValue: (TF_Tensor fromFloats: 1).
+	var _ graph variable: 'var' initialValue: 1.0 asTensor.
 	pi _ graph const: 'pi' value: (TF_Tensor pi).
 	output _ var -= pi.
 	
@@ -3185,13 +3197,13 @@ testOperationCos
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 23:11:55'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 23:20:01'!
 testOperationDescentRate
 	| graph var output pi result session rate |
 	graph _ TF_Graph create.
-	var _ graph variable: 'var' initialValue: (TF_Tensor fromFloats: 1).
+	var _ graph variable: 'var' initialValue: 1.0 asTensor.
 	pi _ graph const: 'pi' value: (TF_Tensor pi).
-	rate _ graph const: 'rate' value: (TF_Tensor fromFloats: 0.7).
+	rate _ graph const: 'rate' value: 0.7 asTensor.
 	output _ var descent: pi rate: rate.
 	
 	session _ TF_Session onGraph: graph.
