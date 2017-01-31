@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 4:46:42 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 4:50:21 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 307!
+!provides: 'TensorFlow' 1 309!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1009,6 +1009,28 @@ testAsFloatTensor: anArray dimensions: dims
 		index _ index + 1].
 
 	self assert: tensor dimensions equals: dims! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:50:15'!
+testAsInt32Tensor
+	self testAsInt32Tensor: 1 dimensions: #().
+	self testAsInt32Tensor: #(1 2 3 4) dimensions: #(4).
+	self testAsInt32Tensor: #((1 2 3 4) (-314 171 -212 -78)) dimensions: #(2 4).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:48:59'!
+testAsInt32Tensor: anArray dimensions: dims
+	| tensor index ints |
+	tensor _ anArray asInt32Tensor.
+	
+	self assert: tensor dimensions equals: dims.
+	
+	index _ 1.
+	ints _ tensor allInt32s.
+	TF_Tensor elementsOf: anArray do: [:each |
+		self assert: (ints at: index) equals: each.
+		index _ index + 1].
+
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:44'!
 testAsStringGraphRunOn: tensor
