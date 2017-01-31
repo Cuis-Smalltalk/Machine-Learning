@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 12:47:23 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 1:37:32 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 301!
+!provides: 'TensorFlow' 1 302!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3606,6 +3606,27 @@ testOperationPlusNegatedNegatedPlus
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/31/2017 01:37:28'!
+testOperationRelu
+	| graph template session const result output |
+	
+	template _ #(
+		(-1.1	1.2)
+		(-2.1	2.2)
+		(0		-0)) asFloatTensor.
+		
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'const' value: template.
+	output _ const rectified output: 0.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: output.
+	
+	self assert: result dimensions equals: template dimensions.
+	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
+! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'Javier Burroni 1/24/2017 21:35:47'!
 testOperationSigmoid
 	| graph inputs template session const result output transformed |
@@ -5324,6 +5345,10 @@ printOn: strm
 			print: self type;
 			space;
 			print: self name]! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 01:33:48'!
+rectified
+	^ self unaryOp: 'Relu'! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/23/2017 09:47:55'!
 shapeAt: nameString
