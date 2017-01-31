@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 2:01:44 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 2:09:52 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 303!
+!provides: 'TensorFlow' 1 305!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -300,6 +300,16 @@ ExamplePlan subclass: #ExampleOLSPlan
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'ExampleOLSPlan class' category: #'TensorFlow-Examples'!
 ExampleOLSPlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #MNISTExamplePlan category: #'TensorFlow-Examples'!
+Object subclass: #MNISTExamplePlan
+	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNISTExamplePlan class' category: #'TensorFlow-Examples'!
+MNISTExamplePlan class
 	instanceVariableNames: ''!
 
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
@@ -4032,6 +4042,19 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 02:09:17'!
+testMNISTForwardGraph
+	| mnist result |
+	mnist _ MNISTExamplePlan new.
+	
+	result _ mnist predict: #((-1)).
+	result allFloats inspect.
+	! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 01:43:37'!
+testMNISTInitialization
+	MNISTExamplePlan new.! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
 testNearesNeighbor
 	| plan |
@@ -6609,6 +6632,65 @@ initializeGraphWithOperations
 	
 	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
+
+!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:44:41'!
+graph
+	^ graph! !
+
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:09:05'!
+initialize
+	self
+		initializeGraph;
+		initializeInferenceGraph;
+		initializeLossGraph;
+		initializeLearningGraph;
+		initializeSession.! !
+
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:08:54'!
+initializeGraph
+	graph _ TF_Graph create! !
+
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 02:08:53'!
+initializeInferenceGraph
+	| hidden1 hidden2 |
+	weights1 _ graph variable: 'weights1' initialValue: #((1.1)) asFloatTensor.
+	biases1 _ graph variable: 'biases1' initialValue: #((1.0)) asFloatTensor.
+	weights2 _ graph variable: 'weights2' initialValue: #((1.01)) asFloatTensor.
+	biases2 _ graph variable: 'biases2' initialValue: #((0.2)) asFloatTensor.
+	weights3 _ graph variable: 'weights3' initialValue: #((1.0001)) asFloatTensor.
+	biases3 _ graph variable: 'biases3' initialValue: #((0.004)) asFloatTensor.
+	
+	graph fromBlock: [:image |
+		hidden1 _ (image * weights1 + biases1) rectified.
+		hidden2 _ (hidden1 * weights2 + biases2) rectified.
+		hidden2 * weights3 + biases3].
+	
+	input _ graph allInputs first.
+	prediction _ graph operationNamed: 'output'.! !
+
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
+initializeLearningGraph! !
+
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:44'!
+initializeLossGraph! !
+
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
+initializeSession
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.! !
+
+!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:47:08'!
+intput
+	^ input! !
+
+!MNISTExamplePlan methodsFor: 'running' stamp: 'gera 1/31/2017 02:06:26'!
+predict: inputs
+	| results |
+	results _ session
+		runInputs: {input input: 0}
+		values: {inputs asFloatTensor}
+		outputs: {prediction output: 0}.
+	^ results first! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
 decodeCSV: csvLines graphRun: description
