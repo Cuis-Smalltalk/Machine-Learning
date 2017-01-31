@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 2:09:52 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 3:09:43 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 305!
+!provides: 'TensorFlow' 1 306!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3074,6 +3074,19 @@ should: aBlock raiseError: aString
 	aBlock ifError: [:description :receiver | message _ description].
 	self assert: 'Error: ',aString equals: message.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 15:09:33'!
+testGraphUnnamedConst
+	| graph session result const |	
+	graph _ TF_Graph create.
+	
+	const _ graph const: #(1 2 3 4) asFloatTensor.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (const output: 0).
+	
+	self assert: result dimensions equals: #(4).
+	self assert: result allFloats equals: #(1 2 3 4).! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:20:40'!
 testOperationAbs
 	| graph template session const result output |
@@ -4938,7 +4951,13 @@ asString: nameString described: aBlock
 concat: nameString described: aBlock
 	^self newOperation: 'Concat' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'basic operations' stamp: 'gera 12/28/2016 02:07:25'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 15:07:44'!
+const: aTF_Tensor
+	| name |
+	name _ self nameFor: 'constant'.
+	^ self const: name value: aTF_Tensor! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 12/28/2016 02:07:25'!
 const: nameString value: aTF_Tensor
 	^ self
 		newOperation: 'Const'
