@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 3:09:43 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 4:46:42 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 306!
+!provides: 'TensorFlow' 1 307!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -356,6 +356,10 @@ useFinalization
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
 
+!Number methodsFor: '*TensorFlow' stamp: 'gera 1/31/2017 16:41:27'!
+asInt32Tensor
+	^ TF_Tensor fromInt32: self! !
+
 !Float methodsFor: '*TensorFlow' stamp: 'gera 1/29/2017 23:19:32'!
 asTensor
 	^ TF_Tensor fromFloats: self! !
@@ -367,6 +371,10 @@ asTensor
 !SequenceableCollection methodsFor: '*TensorFlow' stamp: 'gera 1/30/2017 16:19:25'!
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
+
+!SequenceableCollection methodsFor: '*TensorFlow' stamp: 'gera 1/31/2017 16:41:49'!
+asInt32Tensor
+	^ TF_Tensor fromInt32s: self! !
 
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
@@ -2842,6 +2850,18 @@ testTensorFromFloatsScalar
 	
 	self assert: (template closeTo: values first).! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:46:04'!
+testTensorFromInt32
+	| tensor template values |
+	template _ #(0 -1 1 -2 2 32768 65536 -1123123123).
+	tensor _ TF_Tensor fromInt32s: template.
+	values _ tensor allInt32s.
+		
+	self assert: tensor dimensions equals: {template size}.
+	self assert: tensor size equals: template size.
+	self assert: tensor byteSize equals: (template size*4).
+	self assert: values equals: template.! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
 testTensorFromInt64Array
 	| tensor template values |
@@ -5063,7 +5083,7 @@ initializeOn: aTF_Session
 mul: nameString described: aBlock
 	^self newOperation: 'Mul' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/30/2017 23:39:38'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/30/2017 23:39:38'!
 nameFor: namePrefix
 	^ namePrefix,'_',self operationsCount printString.! !
 
@@ -5144,7 +5164,7 @@ outputDimenssionsCount: aTF_Output
 	status check.
 	^answer! !
 
-!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/6/2017 17:21:53'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/6/2017 17:21:53'!
 placeholder: nameString type: typeInteger
 	^ self
 		newOperation: 'Placeholder'
@@ -5160,11 +5180,15 @@ rankOf: aTF_OutputOrInput
 	status check.
 	^ answer! !
 
-!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/29/2017 03:23:14'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 15:05:46'!
+truncatedRandom: nameString shape: aTF_Tensor
+	! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
 variable: nameString forTensor: aTF_Tensor
 	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
 
-!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/29/2017 08:10:34'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 08:10:34'!
 variable: nameString initialValue: aTF_Tensor
 	| const var |
 	var _ self variable: nameString forTensor: aTF_Tensor.
@@ -5172,7 +5196,7 @@ variable: nameString initialValue: aTF_Tensor
 	var assign: const named: nameString, '_initializer'.
 	^ var! !
 
-!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/29/2017 03:04:54'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:04:54'!
 variable: nameString type: typeInteger shape: anArray
 	^ self
 		newOperation: 'Variable'
@@ -6055,6 +6079,20 @@ allFloats
 	
 	^ answer contents! !
 
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/31/2017 16:45:03'!
+allInt32s
+	| total answer data byteSize |
+	total _ self size.
+	answer _ WriteStream on: (Array new: total).
+	data _ self data getHandle.
+	byteSize _ self class sizeForType: self class typeInt32.
+	1 to: total do: [:i |
+		| value |
+		value _ data signedLongAt: i-1*byteSize+1..
+		answer nextPut: value].
+	
+	^ answer contents! !
+
 !TF_Tensor methodsFor: 'converting' stamp: 'jb 1/15/2017 18:02:38'!
 allInt64s
 	| total answer data byteSize |
@@ -6182,6 +6220,25 @@ fromInt32: value
 	answer data getHandle signedLongAt: 1 put: value.
 	^ answer! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/31/2017 16:42:18'!
+fromInt32s: values
+	| dimensions |
+	dimensions _ self dimensionsOf: values.
+	^ self fromInt32s: values dimensions: dimensions.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/31/2017 16:42:45'!
+fromInt32s: values dimensions: dimensions
+	| answer size count |
+	size _ self sizeOf: values.
+	count _ dimensions inject: 1 into: [:a :b | a * b].
+	count = size ifFalse: [
+		self error: 'Inferred size and real size don''t match.'].
+		
+	answer _ self type: self typeInt32 dimensions: dimensions.
+	self int32Array: values into: answer data getHandle.
+	^ answer! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
 fromInt64: value
 	| answer |
@@ -6236,6 +6293,18 @@ fromStringArray: aStringArray
 			to: answer data getHandle + offset
 			size: bytesize - offset].
 	^ answer
+! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/31/2017 16:43:18'!
+int32Array: values into: anExternalAddressOrByteArray
+	| size index |
+
+	size _ self sizeForType: self typeInt32.
+	
+	index _ 0.
+	self elementsOf: values do: [:value |
+		anExternalAddressOrByteArray signedLongAt: index*size + 1 put: value.
+		index _ index + 1].
 ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:32:18'!
