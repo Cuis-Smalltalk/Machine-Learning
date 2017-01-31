@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 30 January 2017 at 11:41:21 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 12:47:23 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 300!
+!provides: 'TensorFlow' 1 301!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -361,6 +361,10 @@ asFloatTensor
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
 	^self, Character null asString! !
+
+!String methodsFor: '*TensorFlow' stamp: 'gera 1/31/2017 00:46:29'!
+asTensor
+	^ TF_Tensor fromString: self! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -2600,6 +2604,16 @@ testStatusSetGetCode
 	code _ status code.
 	self assert: code equals: 2.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/31/2017 00:47:19'!
+testStringAsTensor
+	| tensor template |
+	template _ 'hola manola'.
+	
+	tensor _ template asTensor.
+	
+	self assert: tensor dataBytes first equals: template size.
+	self assert: tensor dataBytes allButFirst asString equals: template.! !
 
 !TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:16:37'!
 testStringDecode
