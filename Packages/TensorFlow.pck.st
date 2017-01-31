@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 30 January 2017 at 5:57:39 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 30 January 2017 at 11:41:21 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 299!
+!provides: 'TensorFlow' 1 300!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -968,7 +968,7 @@ testAllVariables
 	self assert: vars third = var3.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 16:23:58'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 18:09:11'!
 testAsFloatTensor
 	self testAsFloatTensor: 1 dimensions: #().
 	self testAsFloatTensor: #(1 2 3 4) dimensions: #(4).
@@ -4833,7 +4833,7 @@ asString: nameString described: aBlock
 concat: nameString described: aBlock
 	^self newOperation: 'Concat' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:07:25'!
+!TF_Graph methodsFor: 'basic operations' stamp: 'gera 12/28/2016 02:07:25'!
 const: nameString value: aTF_Tensor
 	^ self
 		newOperation: 'Const'
@@ -4939,6 +4939,10 @@ initializeOn: aTF_Session
 mul: nameString described: aBlock
 	^self newOperation: 'Mul' named: nameString described: aBlock! !
 
+!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/30/2017 23:39:38'!
+nameFor: namePrefix
+	^ namePrefix,'_',self operationsCount printString.! !
+
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:35:44'!
 newOperation: typeString named: aString
 	^ self newOperation: typeString named: aString described: [:unused | ]! !
@@ -5016,7 +5020,7 @@ outputDimenssionsCount: aTF_Output
 	status check.
 	^answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/6/2017 17:21:53'!
+!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/6/2017 17:21:53'!
 placeholder: nameString type: typeInteger
 	^ self
 		newOperation: 'Placeholder'
@@ -5032,11 +5036,11 @@ rankOf: aTF_OutputOrInput
 	status check.
 	^ answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:23:14'!
+!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/29/2017 03:23:14'!
 variable: nameString forTensor: aTF_Tensor
 	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 08:10:34'!
+!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/29/2017 08:10:34'!
 variable: nameString initialValue: aTF_Tensor
 	| const var |
 	var _ self variable: nameString forTensor: aTF_Tensor.
@@ -5044,7 +5048,7 @@ variable: nameString initialValue: aTF_Tensor
 	var assign: const named: nameString, '_initializer'.
 	^ var! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:04:54'!
+!TF_Graph methodsFor: 'basic operations' stamp: 'gera 1/29/2017 03:04:54'!
 variable: nameString type: typeInteger shape: anArray
 	^ self
 		newOperation: 'Variable'
@@ -5281,9 +5285,9 @@ inverse
 name
 	^ self library operationName: self! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/29/2017 15:12:57'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/30/2017 23:39:24'!
 nameFor: namePrefix
-	^ namePrefix,'_',graph operationsCount printString.! !
+	^ graph nameFor: namePrefix! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
 negated
