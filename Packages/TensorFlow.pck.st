@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 1:37:32 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 2:01:44 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 302!
+!provides: 'TensorFlow' 1 303!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3057,6 +3057,13 @@ testTensorFinalizationReleasesExternalMemory
 setUp
 	library _ TensorFlowCAPI current! !
 
+!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 1/31/2017 02:00:03'!
+should: aBlock raiseError: aString
+	| message |
+	message _ 'No Error was signaled'.
+	aBlock ifError: [:description :receiver | message _ description].
+	self assert: 'Error: ',aString equals: message.! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:20:40'!
 testOperationAbs
 	| graph template session const result output |
@@ -3335,6 +3342,46 @@ testOperationMatMul
 	self assert: result dimensions equals: a dimensions.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 02:04:22'!
+testOperationMatMul1x1
+	| graph a b session constA constB output result |
+	
+	a _ #((1.1)) asFloatTensor.
+	b _ #((3.14)) asFloatTensor.
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+
+	output _ constA * constB.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (output output: 0).
+
+	self assert: (1.1 * 3.14 closeTo: result allFloats first)! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 02:02:45'!
+testOperationMatMul1x1Wrong
+	| graph a b session constA constB output |
+	
+	a _ #(1.1) asFloatTensor.
+	b _ #(2.02) asFloatTensor.
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+
+	output _ constA * constB.
+
+	session _ TF_Session onGraph: graph.
+	self
+		should: [session runOutput: (output output: 0)]
+		raiseError: 'INVALID_ARGUMENT: In[0] is not a matrix
+	 [[Node: MatMul_2 = MatMul[T=DT_FLOAT, _class=[], transpose_a=false, transpose_b=false, _device="/job:localhost/replica:0/task:0/cpu:0"](a, b)]]'
+! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:09'!
 testOperationMatMulATransposed
