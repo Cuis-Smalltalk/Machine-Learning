@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 5:36:37 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 5:44:36 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 310!
+!provides: 'TensorFlow' 1 311!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3133,6 +3133,23 @@ testGraphTruncatedNormal
 	self assert: 2 - values max < 0.01.
 	self assert: values mean abs < 0.01.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 17:44:34'!
+testGraphTruncatedNormalStddev
+	| graph session result random values |	
+	graph _ TF_Graph create.
+	
+	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: 3.14.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (random output: 0).
+	
+	values _ result allFloats.
+	self assert: result dimensions equals: #(100 100 10).
+	self assert: values size equals: 100*100*10.
+	self assert: values min + 3.14 < 0.01.
+	self assert: 3.14 - values max < 0.01.
+	self assert: values mean abs < 0.01.! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 15:09:33'!
 testGraphUnnamedConst
 	| graph session result const |	
@@ -5219,12 +5236,18 @@ rankOf: aTF_OutputOrInput
 	status check.
 	^ answer! !
 
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 16:55:54'!
-truncatedNormalRandomShaped: dimmensionsArray
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:43:13'!
+truncatedNormalRandomShaped: dimensionsArray
 	| shape |
-	shape _ self const: dimmensionsArray asInt32Tensor.
+	shape _ self const: dimensionsArray asInt32Tensor.
 	^ shape unaryOp: 'TruncatedNormal' described: [:description |
 		description at: 'dtype' putType: TF_Tensor typeFloat]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:44:21'!
+truncatedNormalRandomShaped: dimensionsArray stddev: aNumber
+	| random |
+	random _ self truncatedNormalRandomShaped: dimensionsArray.
+	^ random @* (self const: aNumber asTensor)! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
 variable: nameString forTensor: aTF_Tensor
