@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 4:50:21 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 5:36:37 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 309!
+!provides: 'TensorFlow' 1 310!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3116,6 +3116,23 @@ should: aBlock raiseError: aString
 	aBlock ifError: [:description :receiver | message _ description].
 	self assert: 'Error: ',aString equals: message.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 17:36:21'!
+testGraphTruncatedNormal
+	| graph session result random values |	
+	graph _ TF_Graph create.
+	
+	random _ graph truncatedNormalRandomShaped: #(100 100 10).
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (random output: 0).
+	
+	values _ result allFloats.
+	self assert: result dimensions equals: #(100 100 10).
+	self assert: values size equals: 100*100*10.
+	self assert: values min + 2 < 0.01.
+	self assert: 2 - values max < 0.01.
+	self assert: values mean abs < 0.01.! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 15:09:33'!
 testGraphUnnamedConst
 	| graph session result const |	
@@ -5202,9 +5219,12 @@ rankOf: aTF_OutputOrInput
 	status check.
 	^ answer! !
 
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 15:05:46'!
-truncatedRandom: nameString shape: aTF_Tensor
-	! !
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 16:55:54'!
+truncatedNormalRandomShaped: dimmensionsArray
+	| shape |
+	shape _ self const: dimmensionsArray asInt32Tensor.
+	^ shape unaryOp: 'TruncatedNormal' described: [:description |
+		description at: 'dtype' putType: TF_Tensor typeFloat]! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
 variable: nameString forTensor: aTF_Tensor
@@ -5598,11 +5618,22 @@ unaryOp: aString
 	name _ self nameFor: aString.
 	^ self unaryOp: aString named: name! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 12:00:58'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:53:48'!
+unaryOp: aString described: oneArgBlock
+	| name |
+	name _ self nameFor: aString.
+	^ self unaryOp: aString named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:06'!
 unaryOp: aString named: name
-	^ graph newOperation: aString named: name described: [:description |
-		description addInput: (self output: 0)].
+	^ self unaryOp: aString named: name described: [:description | ].
 	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:24'!
+unaryOp: aString named: name described: oneArgBlock
+	^ graph newOperation: aString named: name described: [:description |
+		description addInput: (self output: 0).
+		oneArgBlock value: description]! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
