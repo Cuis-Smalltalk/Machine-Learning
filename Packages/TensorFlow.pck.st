@@ -4131,12 +4131,12 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 02:09:17'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 09:56:14'!
 testMNISTForwardGraph
 	| mnist result |
 	mnist _ MNISTExamplePlan new.
 	
-	result _ mnist predict: #((-1)).
+	result _ mnist predict: #((-1) (1) (0)).
 	result allFloats inspect.
 	! !
 
