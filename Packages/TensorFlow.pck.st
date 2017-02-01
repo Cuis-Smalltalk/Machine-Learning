@@ -6804,7 +6804,15 @@ initializeGraphWithOperations
 graph
 	^ graph! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:09:05'!
+!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:15'!
+hidden1Size
+	^ 128! !
+
+!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:18'!
+hidden2Size
+	^ 32! !
+
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:56:01'!
 initialize
 	self
 		initializeGraph;
@@ -6835,14 +6843,32 @@ initializeLearningGraph! !
 !MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:44'!
 initializeLossGraph! !
 
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:55:16'!
+initializeParameters
+	weights1 _ graph variable: 'weights1' initialValue: #((1.1)) asFloatTensor.
+	biases1 _ graph variable: 'biases1' initialValue: #((1.0)) asFloatTensor.
+	weights2 _ graph variable: 'weights2' initialValue: #((1.01)) asFloatTensor.
+	biases2 _ graph variable: 'biases2' initialValue: #((0.2)) asFloatTensor.
+	weights3 _ graph variable: 'weights3' initialValue: #((1.0001)) asFloatTensor.
+	biases3 _ graph variable: 'biases3' initialValue: #((0.004)) asFloatTensor.
+! !
+
 !MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
 initializeSession
 	session _ TF_Session onGraph: graph.
 	graph initializeOn: session.! !
 
+!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
+inputSize
+	^ 28*28! !
+
 !MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:47:08'!
 intput
 	^ input! !
+
+!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:30'!
+outputSize
+	^ 10! !
 
 !MNISTExamplePlan methodsFor: 'running' stamp: 'gera 1/31/2017 02:06:26'!
 predict: inputs
