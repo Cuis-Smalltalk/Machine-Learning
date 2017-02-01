@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 1:35:06 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 1:51:58 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 312!
+!provides: 'TensorFlow' 1 313!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3162,6 +3162,31 @@ testGraphUnnamedConst
 	
 	self assert: result dimensions equals: #(4).
 	self assert: result allFloats equals: #(1 2 3 4).! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/1/2017 01:51:45'!
+testGraphVariableFromTruncatedNormalStddev
+	| graph session result1 result2 var random values1 values2 init |	
+	graph _ TF_Graph create.
+	
+	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: 3.14.
+	var _ graph variable: 'var' initialValueFrom: random.
+	
+	session _ TF_Session onGraph: graph.
+	init _ graph operationNamed: 'var_initializer'.
+	result1 _ session runOutput: (init output: 0).
+	result2 _ session runOutput: (var output: 0).
+
+	self assert: result1 dimensions equals: #(100 100 10).
+	
+	values1 _ result1 allFloats.
+	self assert: values1 size equals: 100*100*10.
+	self assert: values1 min + 3.14 < 0.01.
+	self assert: 3.14 - values1 max < 0.01.
+	self assert: values1 mean abs < 0.01.
+	
+	self assert: result1 dimensions equals: result2 dimensions.
+	values2 _ result2 allFloats.
+	self assert: values1 equals: values2! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:20:40'!
 testOperationAbs
