@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 31 January 2017 at 5:44:36 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 1:35:06 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 311!
+!provides: 'TensorFlow' 1 312!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5253,12 +5253,21 @@ truncatedNormalRandomShaped: dimensionsArray stddev: aNumber
 variable: nameString forTensor: aTF_Tensor
 	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
 
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 08:10:34'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:02:23'!
 variable: nameString initialValue: aTF_Tensor
 	| const var |
 	var _ self variable: nameString forTensor: aTF_Tensor.
 	const _ self const: nameString, '_initialValue' value: aTF_Tensor.
-	var assign: const named: nameString, '_initializer'.
+	var assign: const.
+	^ var! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:22:52'!
+variable: nameString initialValueFrom: aTF_Operation
+	| output var shape |
+	output _ aTF_Operation output: 0.
+	shape _ self dimensionsOf: output.
+	var _ self variable: nameString type: output type shape: shape..
+	var assign: aTF_Operation.
 	^ var! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:04:54'!
@@ -5366,18 +5375,12 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:13:38'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/1/2017 01:02:16'!
 assign: aTF_Operation
-	| name |
-	name _ self nameFor: self name, '_assignment'.
-	^ self assign: aTF_Operation named: name! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 08:14:03'!
-assign: aTF_Operation named: aString
 	^ self
 		binaryOp: 'Assign'
 		with: aTF_Operation
-		named: aString! !
+		named: self name, '_initializer'! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
 attrMetadata: nameString
