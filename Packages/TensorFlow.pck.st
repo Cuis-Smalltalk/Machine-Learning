@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 2:23:47 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 2:28:40 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 314!
+!provides: 'TensorFlow' 1 315!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4173,18 +4173,24 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/1/2017 02:23:41'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/1/2017 02:28:37'!
 testMNISTForwardGraph
-	| mnist |
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist result |
 	mnist _ MNISTExamplePlan new.
 	
 	self 
 		shouldnt: [
-			mnist predict: {
-				ByteArray new: 28*28
+			result _ mnist predict: {
+				ByteArray new: mnist inputSize
 			}]
 		raise: Error.
-! !
+
+	self assert: {1. mnist outputSize} equals: result dimensions.
+	self assert: 0 equals: result allFloats abs sum.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 01:43:37'!
 testMNISTInitialization
