@@ -4173,14 +4173,18 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 09:56:14'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/1/2017 02:23:41'!
 testMNISTForwardGraph
-	| mnist result |
+	| mnist |
 	mnist _ MNISTExamplePlan new.
 	
-	result _ mnist predict: #((-1) (1) (0)).
-	result allFloats inspect.
-	! !
+	self 
+		shouldnt: [
+			mnist predict: {
+				ByteArray new: 28*28
+			}]
+		raise: Error.
+! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 01:43:37'!
 testMNISTInitialization
@@ -6892,14 +6896,23 @@ initializeLearningGraph! !
 !MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:44'!
 initializeLossGraph! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:55:16'!
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
 initializeParameters
-	weights1 _ graph variable: 'weights1' initialValue: #((1.1)) asFloatTensor.
-	biases1 _ graph variable: 'biases1' initialValue: #((1.0)) asFloatTensor.
-	weights2 _ graph variable: 'weights2' initialValue: #((1.01)) asFloatTensor.
-	biases2 _ graph variable: 'biases2' initialValue: #((0.2)) asFloatTensor.
-	weights3 _ graph variable: 'weights3' initialValue: #((1.0001)) asFloatTensor.
-	biases3 _ graph variable: 'biases3' initialValue: #((0.004)) asFloatTensor.
+	| aux |
+	aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
+	weights1 _ graph variable: 'weights1' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self hidden1Size}.
+	biases1 _ graph variable: 'biases1' initialValueFrom: aux.
+
+	aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
+	weights2 _ graph variable: 'weights2' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self hidden2Size}.
+	biases2 _ graph variable: 'biases2' initialValueFrom: aux.
+
+	aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
+	weights3 _ graph variable: 'weights3' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self outputSize}.
+	biases3 _ graph variable: 'biases3' initialValueFrom: aux.
 ! !
 
 !MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
