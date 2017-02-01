@@ -6808,6 +6808,7 @@ graph
 initialize
 	self
 		initializeGraph;
+		initializeParameters;
 		initializeInferenceGraph;
 		initializeLossGraph;
 		initializeLearningGraph;
@@ -6817,16 +6818,9 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 02:08:53'!
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:55:26'!
 initializeInferenceGraph
 	| hidden1 hidden2 |
-	weights1 _ graph variable: 'weights1' initialValue: #((1.1)) asFloatTensor.
-	biases1 _ graph variable: 'biases1' initialValue: #((1.0)) asFloatTensor.
-	weights2 _ graph variable: 'weights2' initialValue: #((1.01)) asFloatTensor.
-	biases2 _ graph variable: 'biases2' initialValue: #((0.2)) asFloatTensor.
-	weights3 _ graph variable: 'weights3' initialValue: #((1.0001)) asFloatTensor.
-	biases3 _ graph variable: 'biases3' initialValue: #((0.004)) asFloatTensor.
-	
 	graph fromBlock: [:image |
 		hidden1 _ (image * weights1 + biases1) rectified.
 		hidden2 _ (hidden1 * weights2 + biases2) rectified.
