@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 1:51:58 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 2:23:47 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 313!
+!provides: 'TensorFlow' 1 314!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3188,6 +3188,23 @@ testGraphVariableFromTruncatedNormalStddev
 	values2 _ result2 allFloats.
 	self assert: values1 equals: values2! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/1/2017 02:02:44'!
+testGraphZeros
+	| graph session result zeros values |	
+	graph _ TF_Graph create.
+	
+	zeros _ graph zerosShaped: #(100 100 10).
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (zeros output: 0).
+	
+	values _ result allFloats.
+	self assert: #(100 100 10) equals: result dimensions.
+	self assert: 100*100*10 equals: values size.
+	self assert: 0 equals: values min.
+	self assert: 0 equals: values max.
+! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:20:40'!
 testOperationAbs
 	| graph template session const result output |
@@ -5304,6 +5321,13 @@ variable: nameString type: typeInteger shape: anArray
 			description
 				at: 'dtype' putType: typeInteger;
 				at: 'shape' putShape: anArray]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 02:15:35'!
+zerosShaped: dimensionsArray
+	| shape value |
+	shape _ self const: dimensionsArray asInt32Tensor.
+	value _ self const: 0.0 asTensor.
+	^ shape binaryOp: 'Fill' with: value! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
 create
