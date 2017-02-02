@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 1:59:29 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 2:27:28 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 317!
+!provides: 'TensorFlow' 1 318!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4844,6 +4844,14 @@ first: anExternalStructure
 	self at: 1 put: anExternalStructure
 ! !
 
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:59'!
+fourth
+	^ self at: 4! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:49'!
+second
+	^ self at: 2! !
+
 !ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
 template
 	"This method was automatically generated. See PointerArray class>>fields."
@@ -4853,6 +4861,10 @@ template
 template: anObject
 	"This method was automatically generated. See PointerArray class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:53'!
+third
+	^ self at: 3! !
 
 !ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 18:35:06'!
 externalFromArray: anArray
