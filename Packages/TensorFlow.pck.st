@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 2:48:13 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 7:24:50 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 319!
+!provides: 'TensorFlow' 1 320!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -302,14 +302,14 @@ ExamplePlan subclass: #ExampleOLSPlan
 ExampleOLSPlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #MNISTExamplePlan category: #'TensorFlow-Examples'!
-Object subclass: #MNISTExamplePlan
+!classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
+Object subclass: #MNIST3LayersNNExamplePlan
 	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'MNISTExamplePlan class' category: #'TensorFlow-Examples'!
-MNISTExamplePlan class
+!classDefinition: 'MNIST3LayersNNExamplePlan class' category: #'TensorFlow-Examples'!
+MNIST3LayersNNExamplePlan class
 	instanceVariableNames: ''!
 
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
@@ -4225,14 +4225,14 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 02:21:15'!
-testMNISTForwardGraph
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:17'!
+testMNIST3LayersNNForwardGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
 	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
 	
 	| mnist result |
-	mnist _ MNISTExamplePlan new.
+	mnist _ MNIST3LayersNNExamplePlan new.
 	
 	self 
 		shouldnt: [
@@ -4246,18 +4246,18 @@ testMNISTForwardGraph
 	self assert: 0 equals: (result allFloats first: 10) abs sum.
 	self assert: (result allFloats last: 10) abs sum > 0.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 01:43:37'!
-testMNISTInitialization
-	MNISTExamplePlan new.! !
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
+testMNIST3LayersNNInitialization
+	MNIST3LayersNNExamplePlan new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 02:26:24'!
-testMNISTLossGraph
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:43'!
+testMNIST3LayersNNLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
 	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
 	
 	| mnist results |
-	mnist _ MNISTExamplePlan new.
+	mnist _ MNIST3LayersNNExamplePlan new.
 	
 	self 
 		shouldnt: [
@@ -6971,19 +6971,19 @@ initializeGraphWithOperations
 	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
-!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:44:41'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:44:41'!
 graph
 	^ graph! !
 
-!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:15'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:15'!
 hidden1Size
 	^ 128! !
 
-!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:18'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:18'!
 hidden2Size
 	^ 32! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:56:01'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:56:01'!
 initialize
 	self
 		initializeGraph;
@@ -6993,11 +6993,11 @@ initialize
 		initializeLearningGraph;
 		initializeSession.! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:08:54'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:08:54'!
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:03:56'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:03:56'!
 initializeInferenceGraph
 	| hidden1 hidden2 |
 	prediction _ graph fromBlock: [:image |
@@ -7007,10 +7007,10 @@ initializeInferenceGraph
 		hidden2 * weights3 + biases3].
 ! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
 initializeLearningGraph! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:18:16'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:18:16'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
@@ -7018,7 +7018,7 @@ initializeLossGraph
 			prediction sparseSoftmaxCrossEntropyWithLogits: expected]
 		inputTypes: {TF_Tensor typeInt32}! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
 initializeParameters
 	| aux |
 	aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
@@ -7037,28 +7037,28 @@ initializeParameters
 	biases3 _ graph variable: 'biases3' initialValueFrom: aux.
 ! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
 initializeSession
 	session _ TF_Session onGraph: graph.
 	graph initializeOn: session.! !
 
-!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
 inputSize
 	^ 28*28! !
 
-!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:47:08'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:47:08'!
 intput
 	^ input! !
 
-!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:27:05'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:27:05'!
 lossGradient
 	^ (loss output: 1)! !
 
-!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:30'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:30'!
 outputSize
 	^ 10! !
 
-!MNISTExamplePlan methodsFor: 'running' stamp: 'gera 1/31/2017 02:06:26'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 1/31/2017 02:06:26'!
 predict: inputs
 	| results |
 	results _ session
@@ -7067,7 +7067,7 @@ predict: inputs
 		outputs: {prediction output: 0}.
 	^ results first! !
 
-!MNISTExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
