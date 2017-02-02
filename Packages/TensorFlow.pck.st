@@ -304,7 +304,7 @@ ExampleOLSPlan class
 
 !classDefinition: #MNISTExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNISTExamplePlan
-	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input'
+	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -6984,8 +6984,13 @@ initializeInferenceGraph
 !MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
 initializeLearningGraph! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:44'!
-initializeLossGraph! !
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:18:16'!
+initializeLossGraph
+	loss _ graph
+		fromBlock: [:expected |
+			expectedLabel _ expected.
+			prediction sparseSoftmaxCrossEntropyWithLogits: expected]
+		inputTypes: {TF_Tensor typeInt32}! !
 
 !MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
 initializeParameters
@@ -7019,6 +7024,10 @@ inputSize
 intput
 	^ input! !
 
+!MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:27:05'!
+lossGradient
+	^ (loss output: 1)! !
+
 !MNISTExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:30'!
 outputSize
 	^ 10! !
@@ -7031,6 +7040,15 @@ predict: inputs
 		values: {inputs asFloatTensor}
 		outputs: {prediction output: 0}.
 	^ results first! !
+
+!MNISTExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
+predict: inputs andCompareTo: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asInt32Tensor}
+		outputs: {prediction output: 0. loss output: 0}.
+	^ results! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
 decodeCSV: csvLines graphRun: description
