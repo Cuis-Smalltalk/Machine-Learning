@@ -6971,15 +6971,15 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 01:56:28'!
+!MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:03:56'!
 initializeInferenceGraph
 	| hidden1 hidden2 |
 	prediction _ graph fromBlock: [:image |
+		input _ image.
 		hidden1 _ (image * weights1 + biases1) rectified.
 		hidden2 _ (hidden1 * weights2 + biases2) rectified.
 		hidden2 * weights3 + biases3].
-	
-	input _ graph allInputs first.! !
+! !
 
 !MNISTExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
 initializeLearningGraph! !
