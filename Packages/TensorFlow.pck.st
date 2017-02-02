@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 7:24:50 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 7:46:42 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 320!
+!provides: 'TensorFlow' 1 323!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5245,14 +5245,13 @@ fromBlock: aBlockClosure
 	types atAllPut: TF_Tensor typeFloat.
 	^ self fromBlock: aBlockClosure inputTypes: types! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 02:15:01'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 19:46:21'!
 fromBlock: aBlockClosure inputTypes: anArray
-	| inputNames inputs index |
-	inputNames _ aBlockClosure decompile arguments collect: [:each | each name].
+	| inputs index |
 	index _ 0.
-	inputs _ inputNames collect: [:each |
+	inputs _ (1 to: aBlockClosure argumentCount) collect: [:each |
 		index _ index + 1.
-		self placeholder: each type: (anArray at: index)].
+		self inputType: (anArray at: index)].
 	^ aBlockClosure valueWithArguments: inputs.
 ! !
 
@@ -5287,6 +5286,14 @@ initializeOn: aTF_Session
 	initializers size > 0 ifTrue: [
 		aTF_Session runOutputs: initializers]
 ! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/2/2017 19:45:59'!
+inputType: typeInteger
+	^ self
+		newOperation: 'Placeholder'
+		named: (self nameFor: 'input')
+		described: [:description |
+			description at: 'dtype' putType: typeInteger]! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
 mul: nameString described: aBlock
