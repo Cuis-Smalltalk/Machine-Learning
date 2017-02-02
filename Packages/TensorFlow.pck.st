@@ -5188,11 +5188,21 @@ dimensionsOf: aTF_OutputOrInput set: dimensions
 finalize
 	self delete! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 01:54:36'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 02:14:06'!
 fromBlock: aBlockClosure
-	| inputNames inputs |
+	| types |
+	types _ Array new: aBlockClosure argumentCount.
+	types atAllPut: TF_Tensor typeFloat.
+	^ self fromBlock: aBlockClosure inputTypes: types! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 02:15:01'!
+fromBlock: aBlockClosure inputTypes: anArray
+	| inputNames inputs index |
 	inputNames _ aBlockClosure decompile arguments collect: [:each | each name].
-	inputs _ inputNames collect: [:each | self placeholder: each type: TF_Tensor typeFloat].
+	index _ 0.
+	inputs _ inputNames collect: [:each |
+		index _ index + 1.
+		self placeholder: each type: (anArray at: index)].
 	^ aBlockClosure valueWithArguments: inputs.
 ! !
 
