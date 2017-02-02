@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 1 February 2017 at 2:28:40 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 1:59:29 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 315!
+!provides: 'TensorFlow' 1 317!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1846,6 +1846,20 @@ testGraphFromBlockIdentity
 		
 	self assert: (results first allFloats first closeTo: 3.1415)! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/2/2017 01:58:54'!
+testGraphFromBlockIdentityInstance
+	| graph output inputs results |
+	graph _ TF_Graph create.
+	output _ graph fromBlock: [:a | a alias: 'a_1'].	
+	inputs _ graph allInputs collect: [:input | input input: 0].
+	
+	results _ (TF_Session onGraph: graph)
+		runInputs: inputs
+		values: {TF_Tensor fromFloats: 3.1415}
+		outputs: {output output: 0}.
+		
+	self assert: (results first allFloats first closeTo: 3.1415)! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 12:17:11'!
 testGraphFromBlockSimple
 	| graph output inputs results |
@@ -1853,6 +1867,20 @@ testGraphFromBlockSimple
 	
 	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
 	output _ graph operationNamed: 'output'.
+	
+	results _ (TF_Session onGraph: graph)
+		runInputs: inputs
+		values: {TF_Tensor fromFloats: 3.1415. TF_Tensor fromFloats: 1.2345.}
+		outputs: {output output: 0}.
+		
+	self assert: (results first allFloats first closeTo: 3.1415 + 1.2345)! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/2/2017 01:59:23'!
+testGraphFromBlockSimpleInstance
+	| graph output inputs results |
+	graph _ TF_Graph create.
+	output _ graph fromBlock: [:a :b | a + b].	
+	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
 	
 	results _ (TF_Session onGraph: graph)
 		runInputs: inputs
@@ -5146,13 +5174,12 @@ dimensionsOf: aTF_OutputOrInput set: dimensions
 finalize
 	self delete! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/29/2017 11:59:08'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 01:54:36'!
 fromBlock: aBlockClosure
-	| inputNames inputs output |
+	| inputNames inputs |
 	inputNames _ aBlockClosure decompile arguments collect: [:each | each name].
 	inputs _ inputNames collect: [:each | self placeholder: each type: TF_Tensor typeFloat].
-	output _ aBlockClosure valueWithArguments: inputs.
-	output alias: 'output'
+	^ aBlockClosure valueWithArguments: inputs.
 ! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
@@ -5343,9 +5370,13 @@ zerosShaped: dimensionsArray
 create
 	^ TensorFlowCAPI current newGraph useFinalization! !
 
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 11:51:48'!
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/2/2017 01:55:59'!
 fromBlock: aBlockClosure
-	^ self create fromBlock: aBlockClosure ! !
+	| output graph |
+	graph _ self create.
+	output _ graph fromBlock: aBlockClosure .
+	output alias: 'output'.
+	^ graph! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:26'!
 fromFileNamed: aString
