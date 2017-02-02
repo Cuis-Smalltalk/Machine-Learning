@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 2:27:28 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 2:48:13 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 318!
+!provides: 'TensorFlow' 1 319!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3884,6 +3884,30 @@ testOperationSin
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/2/2017 02:48:05'!
+testOperationSparseSoftmaxCrossEntropyWithLogits
+	| graph label prediction result session xentropy |
+	" I'm not sure this is a good test. I don't fully understand the operation"
+	
+	graph _ TF_Graph create.
+	prediction _ graph const: #(
+		(0.1 0.2 0.3 0.9 0.0 0.5 0.4)
+		(0.1 0.2 0.1 0.1 0.8 0.1 0.1)
+		(0 0 0 0 0 0 1)
+	) asFloatTensor.
+	label _ graph const: #(3 4 6) asInt32Tensor.
+	
+	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (xentropy output: 0).
+	
+	self assert: #(3) equals: result dimensions.
+	self assert: (result allFloats first between: 1 and: 1.5).
+	self assert: (result allFloats second between: 1 and: 1.5).
+	self assert: (result allFloats third between: 1 and: 1.2).
+! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/25/2017 11:52:06'!
 testOperationSquared
