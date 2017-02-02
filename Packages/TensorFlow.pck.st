@@ -4201,7 +4201,7 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/1/2017 02:28:37'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 02:21:15'!
 testMNISTForwardGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -4213,12 +4213,14 @@ testMNISTForwardGraph
 	self 
 		shouldnt: [
 			result _ mnist predict: {
-				ByteArray new: mnist inputSize
+				ByteArray new: mnist inputSize.
+				(ByteArray new: mnist inputSize) + 1.
 			}]
 		raise: Error.
 
-	self assert: {1. mnist outputSize} equals: result dimensions.
-	self assert: 0 equals: result allFloats abs sum.! !
+	self assert: {2. mnist outputSize} equals: result dimensions.
+	self assert: 0 equals: (result allFloats first: 10) abs sum.
+	self assert: (result allFloats last: 10) abs sum > 0.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 1/31/2017 01:43:37'!
 testMNISTInitialization
