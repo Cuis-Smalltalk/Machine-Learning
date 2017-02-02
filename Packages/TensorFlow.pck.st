@@ -4250,6 +4250,32 @@ testMNISTForwardGraph
 testMNISTInitialization
 	MNISTExamplePlan new.! !
 
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 02:26:24'!
+testMNISTLossGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist results |
+	mnist _ MNISTExamplePlan new.
+	
+	self 
+		shouldnt: [
+			results _ mnist
+				predict: {
+					ByteArray new: mnist inputSize.
+					(ByteArray new: mnist inputSize) + 1}
+				andCompareTo: #(1 2).
+				]
+		raise: Error.
+
+	self assert: {2. mnist outputSize} equals: results first dimensions.
+	self assert: 0 equals: (results first allFloats first: 10) abs sum.
+	self assert: (results first allFloats last: 10) abs sum > 0.
+	
+	self assert: #(2) equals: results second dimensions.
+	self assert: (results second allFloats sum abs > 0).! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
 testNearesNeighbor
 	| plan |
