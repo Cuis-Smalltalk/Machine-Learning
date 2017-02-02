@@ -5672,6 +5672,13 @@ sin
 	^ self unaryOp: 'Sin'
 	! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 02:09:13'!
+sparseSoftmaxCrossEntropyWithLogits: aTF_Operation
+	^ self
+		binaryOp: 'SparseSoftmaxCrossEntropyWithLogits'
+		with: aTF_Operation
+		named: (self nameFor: 'SparseSoftmaxCrossEntropyWithLogits')! !
+
 !TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/25/2017 11:50:16'!
 squared
 	^ self @* self
