@@ -3634,6 +3634,41 @@ testOperationMatrixInverse
 	
 	identity free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/3/2017 12:21:24'!
+testOperationMeanOn
+	| graph a session mean0 mean01 mean1 results meanNone |
+	
+	graph _ TF_Graph create.
+	a _ graph const: #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	) asFloatTensor.
+		
+	mean0 _ a meanOn: #(0) asInt32Tensor.
+	mean1 _ a meanOn: #(1) asInt32Tensor.
+	mean01 _ a meanOn: #(0 1) asInt32Tensor.
+	meanNone _ a meanOn: #() asInt32Tensor.
+		
+	session _ TF_Session onGraph: graph.
+	results _ session runOutputs: {mean0 output: 0. mean1 output: 0. mean01 output: 0. meanNone output: 0}." mean01bis output: 0}."
+	
+	self assert: #(2) equals: results first dimensions.
+	self assert: #(3) equals: results second dimensions.
+	self assert: #() equals: results third dimensions.
+	self assert: #(3 2) equals: results fourth dimensions.
+
+	self assertAll: #(2.1 1.2) closeTo: results first allFloats.
+	self assertAll: #(1.15 2.15 1.65) closeTo: results second allFloats.
+	self assertAll: #(1.65) closeTo: results third allFloats.
+	self
+		assertAll: #(
+			1.1 1.2
+			2.1 2.2
+			3.1 0.2)
+		closeTo: results fourth allFloats.
+	! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 1/23/2017 10:46:06'!
 testOperationMinus
 	| graph a b session constA constB result sum template |
@@ -5679,6 +5714,12 @@ intAt: nameString
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/21/2017 05:15:34'!
 inverse
 	^ self unaryOp: 'MatrixInverse'! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 23:50:53'!
+meanOn: dimensionsTensor
+	| const |
+	const _ graph const: dimensionsTensor.
+	^ self binaryOp: 'Mean' with: const! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
