@@ -4297,7 +4297,7 @@ testMNIST3LayersNNForwardGraph
 testMNIST3LayersNNInitialization
 	MNIST3LayersNNExamplePlan new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:43'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/3/2017 12:26:33'!
 testMNIST3LayersNNLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -4320,7 +4320,7 @@ testMNIST3LayersNNLossGraph
 	self assert: 0 equals: (results first allFloats first: 10) abs sum.
 	self assert: (results first allFloats last: 10) abs sum > 0.
 	
-	self assert: #(2) equals: results second dimensions.
+	self assert: #() equals: results second dimensions.
 	self assert: (results second allFloats sum abs > 0).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
@@ -7075,12 +7075,12 @@ initializeInferenceGraph
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
 initializeLearningGraph! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:18:16'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/3/2017 12:25:04'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
-			prediction sparseSoftmaxCrossEntropyWithLogits: expected]
+			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
 		inputTypes: {TF_Tensor typeInt32}! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
