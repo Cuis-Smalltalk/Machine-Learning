@@ -6439,10 +6439,12 @@ sizeOn: dimension
 type
 	^self library tensorType: self.! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:55:11'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
 dimensionsOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
-		ifTrue: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]
+		ifTrue: [aMultidimensionalTensor isEmpty
+			ifTrue: [#(0)]
+			ifFalse: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
@@ -6496,7 +6498,7 @@ fromInt32s: values
 	^ self fromInt32s: values dimensions: dimensions.
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/31/2017 16:42:45'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/3/2017 12:10:05'!
 fromInt32s: values dimensions: dimensions
 	| answer size count |
 	size _ self sizeOf: values.
@@ -6641,10 +6643,13 @@ sizeForType: anInteger
 
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:02:29'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:06:44'!
 sizeOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
-		ifTrue: [aMultidimensionalTensor sum: [:each | self sizeOf: each]]
+		ifTrue: [
+			aMultidimensionalTensor isEmpty
+				ifTrue: [0]
+				ifFalse: [aMultidimensionalTensor sum: [:each | self sizeOf: each]]]
 		ifFalse: [1].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 03:17:43'!
