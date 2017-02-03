@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 3 February 2017 at 12:26:53 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 3 February 2017 at 12:34:06 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 324!
+!provides: 'TensorFlow' 1 325!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -310,6 +310,16 @@ Object subclass: #MNIST3LayersNNExamplePlan
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'MNIST3LayersNNExamplePlan class' category: #'TensorFlow-Examples'!
 MNIST3LayersNNExamplePlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
+Object subclass: #MNISTSoftMaxExamplePlan
+	instanceVariableNames: 'session graph weights biases prediction input loss expectedLabel'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNISTSoftMaxExamplePlan class' category: #'TensorFlow-Examples'!
+MNISTSoftMaxExamplePlan class
 	instanceVariableNames: ''!
 
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
@@ -4323,6 +4333,57 @@ testMNIST3LayersNNLossGraph
 	self assert: #() equals: results second dimensions.
 	self assert: (results second allFloats sum abs > 0).! !
 
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/3/2017 12:32:33'!
+testMNIST3SoftMaxLossGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist results |
+	mnist _ MNISTSoftMaxExamplePlan new.
+	
+	self 
+		shouldnt: [
+			results _ mnist
+				predict: {
+					ByteArray new: mnist inputSize.
+					(ByteArray new: mnist inputSize) + 1}
+				andCompareTo: #(1 2).
+				]
+		raise: Error.
+
+	self assert: {2. mnist outputSize} equals: results first dimensions.
+	self assert: 0 equals: (results first allFloats first: 10) abs sum.
+	self assert: 0 equals: (results first allFloats last: 10) abs sum.
+	
+	self assert: #() equals: results second dimensions.
+	self assert: (results second allFloats sum abs > 0).! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:40:21'!
+testMNISTSoftMaxForwardGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist result |
+	mnist _ MNISTSoftMaxExamplePlan new.
+	
+	self 
+		shouldnt: [
+			result _ mnist predict: {
+				ByteArray new: mnist inputSize.
+				(ByteArray new: mnist inputSize) + 1.
+			}]
+		raise: Error.
+
+	self assert: {2. mnist outputSize} equals: result dimensions.
+	self assert: 0 equals: (result allFloats first: 10) abs sum.
+	self assert: 0 equals: (result allFloats last: 10) abs sum.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:33:39'!
+testMNISTSoftMaxnitialization
+	MNISTSoftMaxExamplePlan new.! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
 testNearesNeighbor
 	| plan |
@@ -7133,6 +7194,82 @@ predict: inputs
 	^ results first! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
+predict: inputs andCompareTo: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asInt32Tensor}
+		outputs: {prediction output: 0. loss output: 0}.
+	^ results! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:26:53'!
+initialize
+	self
+		initializeGraph;
+		initializeParameters;
+		initializeInferenceGraph;
+		initializeLossGraph;
+		initializeLearningGraph;
+		initializeSession.! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:27:02'!
+initializeGraph
+	graph _ TF_Graph create! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:31:47'!
+initializeInferenceGraph
+	prediction _ graph fromBlock: [:image |
+		input _ image.
+		image * weights + biases]
+! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:35:25'!
+initializeLearningGraph
+! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/3/2017 12:31:36'!
+initializeLossGraph
+	loss _ graph
+		fromBlock: [:expected |
+			expectedLabel _ expected.
+			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
+		inputTypes: {TF_Tensor typeInt32}! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:29:23'!
+initializeParameters
+	| aux |
+	aux _ graph zerosShaped: {self inputSize. self outputSize}.
+	weights _ graph variable: 'weights' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self outputSize}.
+	biases _ graph variable: 'biases' initialValueFrom: aux.! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:27:12'!
+initializeSession
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:34:38'!
+initializeTrainingGraph
+! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:30:14'!
+inputSize
+	^ 28*28! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:29:56'!
+outputSize
+	^ 10! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 19:37:26'!
+predict: inputs
+	| results |
+	results _ session
+		runInputs: {input input: 0}
+		values: {inputs asFloatTensor}
+		outputs: {prediction output: 0}.
+	^ results first! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 19:47:56'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
