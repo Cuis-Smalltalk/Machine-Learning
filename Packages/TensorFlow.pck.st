@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 2 February 2017 at 7:46:42 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 3 February 2017 at 12:26:53 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 323!
+!provides: 'TensorFlow' 1 324!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3132,6 +3132,18 @@ testTensorFinalizationReleasesExternalMemory
 
 	self assert: (handles size) < total.
 ! !
+
+!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:01:08'!
+assert: aNumber closeTo: anotherNumber
+	^ self
+		assert: (aNumber closeTo: anotherNumber)
+		description: (self comparingStringBetween: aNumber and: anotherNumber)
+! !
+
+!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:07:26'!
+assertAll: expectedArray closeTo: actualArray
+	expectedArray with: actualArray do: [:expected :actual |
+		self assert: expected closeTo: actual]! !
 
 !TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 1/20/2017 18:23:31'!
 setUp
