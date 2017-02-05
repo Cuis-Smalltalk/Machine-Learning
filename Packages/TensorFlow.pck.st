@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 30 January 2017 at 5:57:39 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 5 February 2017 at 11:46:12 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 299!
+!provides: 'TensorFlow' 1 331!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -302,6 +302,26 @@ ExamplePlan subclass: #ExampleOLSPlan
 ExampleOLSPlan class
 	instanceVariableNames: ''!
 
+!classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
+Object subclass: #MNIST3LayersNNExamplePlan
+	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNIST3LayersNNExamplePlan class' category: #'TensorFlow-Examples'!
+MNIST3LayersNNExamplePlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
+Object subclass: #MNISTSoftMaxExamplePlan
+	instanceVariableNames: 'session graph weights biases prediction input loss expectedLabel'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNISTSoftMaxExamplePlan class' category: #'TensorFlow-Examples'!
+MNISTSoftMaxExamplePlan class
+	instanceVariableNames: ''!
+
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
 Object subclass: #NearestNeighbor
 	instanceVariableNames: 'plan'
@@ -346,6 +366,10 @@ useFinalization
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
 
+!Number methodsFor: '*TensorFlow' stamp: 'gera 1/31/2017 16:41:27'!
+asInt32Tensor
+	^ TF_Tensor fromInt32: self! !
+
 !Float methodsFor: '*TensorFlow' stamp: 'gera 1/29/2017 23:19:32'!
 asTensor
 	^ TF_Tensor fromFloats: self! !
@@ -358,9 +382,17 @@ asTensor
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
 
+!SequenceableCollection methodsFor: '*TensorFlow' stamp: 'gera 1/31/2017 16:41:49'!
+asInt32Tensor
+	^ TF_Tensor fromInt32s: self! !
+
 !String methodsFor: '*TensorFlow' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
 	^self, Character null asString! !
+
+!String methodsFor: '*TensorFlow' stamp: 'gera 1/31/2017 00:46:29'!
+asTensor
+	^ TF_Tensor fromString: self! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -968,7 +1000,7 @@ testAllVariables
 	self assert: vars third = var3.
 	! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 16:23:58'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 18:09:11'!
 testAsFloatTensor
 	self testAsFloatTensor: 1 dimensions: #().
 	self testAsFloatTensor: #(1 2 3 4) dimensions: #(4).
@@ -987,6 +1019,28 @@ testAsFloatTensor: anArray dimensions: dims
 		index _ index + 1].
 
 	self assert: tensor dimensions equals: dims! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:50:15'!
+testAsInt32Tensor
+	self testAsInt32Tensor: 1 dimensions: #().
+	self testAsInt32Tensor: #(1 2 3 4) dimensions: #(4).
+	self testAsInt32Tensor: #((1 2 3 4) (-314 171 -212 -78)) dimensions: #(2 4).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:48:59'!
+testAsInt32Tensor: anArray dimensions: dims
+	| tensor index ints |
+	tensor _ anArray asInt32Tensor.
+	
+	self assert: tensor dimensions equals: dims.
+	
+	index _ 1.
+	ints _ tensor allInt32s.
+	TF_Tensor elementsOf: anArray do: [:each |
+		self assert: (ints at: index) equals: each.
+		index _ index + 1].
+
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/7/2017 20:28:44'!
 testAsStringGraphRunOn: tensor
@@ -1802,6 +1856,20 @@ testGraphFromBlockIdentity
 		
 	self assert: (results first allFloats first closeTo: 3.1415)! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/2/2017 01:58:54'!
+testGraphFromBlockIdentityInstance
+	| graph output inputs results |
+	graph _ TF_Graph create.
+	output _ graph fromBlock: [:a | a alias: 'a_1'].	
+	inputs _ graph allInputs collect: [:input | input input: 0].
+	
+	results _ (TF_Session onGraph: graph)
+		runInputs: inputs
+		values: {TF_Tensor fromFloats: 3.1415}
+		outputs: {output output: 0}.
+		
+	self assert: (results first allFloats first closeTo: 3.1415)! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 12:17:11'!
 testGraphFromBlockSimple
 	| graph output inputs results |
@@ -1809,6 +1877,20 @@ testGraphFromBlockSimple
 	
 	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
 	output _ graph operationNamed: 'output'.
+	
+	results _ (TF_Session onGraph: graph)
+		runInputs: inputs
+		values: {TF_Tensor fromFloats: 3.1415. TF_Tensor fromFloats: 1.2345.}
+		outputs: {output output: 0}.
+		
+	self assert: (results first allFloats first closeTo: 3.1415 + 1.2345)! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/2/2017 01:59:23'!
+testGraphFromBlockSimpleInstance
+	| graph output inputs results |
+	graph _ TF_Graph create.
+	output _ graph fromBlock: [:a :b | a + b].	
+	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
 	
 	results _ (TF_Session onGraph: graph)
 		runInputs: inputs
@@ -2601,6 +2683,16 @@ testStatusSetGetCode
 	self assert: code equals: 2.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/31/2017 00:47:19'!
+testStringAsTensor
+	| tensor template |
+	template _ 'hola manola'.
+	
+	tensor _ template asTensor.
+	
+	self assert: tensor dataBytes first equals: template size.
+	self assert: tensor dataBytes allButFirst asString equals: template.! !
+
 !TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:16:37'!
 testStringDecode
 	| size string encoded decoded status |
@@ -2817,6 +2909,18 @@ testTensorFromFloatsScalar
 	self assert: tensor byteSize equals: (1*4).
 	
 	self assert: (template closeTo: values first).! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:46:04'!
+testTensorFromInt32
+	| tensor template values |
+	template _ #(0 -1 1 -2 2 32768 65536 -1123123123).
+	tensor _ TF_Tensor fromInt32s: template.
+	values _ tensor allInt32s.
+		
+	self assert: tensor dimensions equals: {template size}.
+	self assert: tensor size equals: template size.
+	self assert: tensor byteSize equals: (template size*4).
+	self assert: values equals: template.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
 testTensorFromInt64Array
@@ -3039,9 +3143,132 @@ testTensorFinalizationReleasesExternalMemory
 	self assert: (handles size) < total.
 ! !
 
+!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:01:08'!
+assert: aNumber closeTo: anotherNumber
+	^ self
+		assert: (aNumber closeTo: anotherNumber)
+		description: (self comparingStringBetween: aNumber and: anotherNumber)
+! !
+
+!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:07:26'!
+assertAll: expectedArray closeTo: actualArray
+	expectedArray with: actualArray do: [:expected :actual |
+		self assert: expected closeTo: actual]! !
+
 !TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 1/20/2017 18:23:31'!
 setUp
 	library _ TensorFlowCAPI current! !
+
+!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 1/31/2017 02:00:03'!
+should: aBlock raiseError: aString
+	| message |
+	message _ 'No Error was signaled'.
+	aBlock ifError: [:description :receiver | message _ description].
+	self assert: 'Error: ',aString equals: message.! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/5/2017 11:10:01'!
+testGraphTruncatedNormal
+	| graph session result random values std theoreticalDecile |	
+	graph _ TF_Graph create.
+	
+	random _ graph truncatedNormalRandomShaped: #(100 100 10).
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (random output: 0).
+	
+	values _ result allFloats.
+	theoreticalDecile _ -1.1840324666939051.
+	std _ values standardDeviation.
+	self assert: result dimensions equals: #(100 100 10).
+	self assert: values size equals: 100*100*10.
+	self assert: values min + 2 < 0.01.
+	self assert: 2 - values max < 0.01.
+	self assert: values mean abs < (0.01*std).
+	self assert: ((values percentile: 0.1) - theoreticalDecile) abs < 0.1.
+	self assert: ((values percentile: 0.9) - theoreticalDecile negated) abs < 0.1.
+	! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/5/2017 11:45:59'!
+testGraphTruncatedNormalStddev
+	| graph session result random values sigma twoSigma std theoreticalDecile |	
+	graph _ TF_Graph create.
+	
+	sigma _ 3.14.
+	twoSigma _ 2 * sigma.
+	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: sigma.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (random output: 0).
+	values _ result allFloats.
+	
+	std _ values standardDeviation.
+	theoreticalDecile _ -1.1840324666939051.
+		
+	self assert: result dimensions equals: #(100 100 10).
+	self assert: values size equals: 100*100*10.
+	self assert: twoSigma - (values min abs)  < 0.1.
+	self assert: twoSigma - values max < 0.1.
+	self assert: values mean abs < (0.01 * std).
+	self assert: ((values percentile: 0.1) - (theoreticalDecile * sigma)) abs < 0.1.
+	self assert: ((values percentile: 0.9) - (theoreticalDecile negated * sigma)) abs < 0.1.
+	self assert: ((values percentile: 0.25) - -2) abs < 0.1.
+	self assert: ((values percentile: 0.75) - 2) abs < 0.1.
+	! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 15:09:33'!
+testGraphUnnamedConst
+	| graph session result const |	
+	graph _ TF_Graph create.
+	
+	const _ graph const: #(1 2 3 4) asFloatTensor.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (const output: 0).
+	
+	self assert: result dimensions equals: #(4).
+	self assert: result allFloats equals: #(1 2 3 4).! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/1/2017 01:51:45'!
+testGraphVariableFromTruncatedNormalStddev
+	| graph session result1 result2 var random values1 values2 init |	
+	graph _ TF_Graph create.
+	
+	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: 3.14.
+	var _ graph variable: 'var' initialValueFrom: random.
+	
+	session _ TF_Session onGraph: graph.
+	init _ graph operationNamed: 'var_initializer'.
+	result1 _ session runOutput: (init output: 0).
+	result2 _ session runOutput: (var output: 0).
+
+	self assert: result1 dimensions equals: #(100 100 10).
+	
+	values1 _ result1 allFloats.
+	self assert: values1 size equals: 100*100*10.
+	self assert: values1 min + 3.14 < 0.01.
+	self assert: 3.14 - values1 max < 0.01.
+	self assert: values1 mean abs < 0.01.
+	
+	self assert: result1 dimensions equals: result2 dimensions.
+	values2 _ result2 allFloats.
+	self assert: values1 equals: values2! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/1/2017 02:02:44'!
+testGraphZeros
+	| graph session result zeros values |	
+	graph _ TF_Graph create.
+	
+	zeros _ graph zerosShaped: #(100 100 10).
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (zeros output: 0).
+	
+	values _ result allFloats.
+	self assert: #(100 100 10) equals: result dimensions.
+	self assert: 100*100*10 equals: values size.
+	self assert: 0 equals: values min.
+	self assert: 0 equals: values max.
+! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:20:40'!
 testOperationAbs
@@ -3322,6 +3549,46 @@ testOperationMatMul
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 02:04:22'!
+testOperationMatMul1x1
+	| graph a b session constA constB output result |
+	
+	a _ #((1.1)) asFloatTensor.
+	b _ #((3.14)) asFloatTensor.
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+
+	output _ constA * constB.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (output output: 0).
+
+	self assert: (1.1 * 3.14 closeTo: result allFloats first)! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 02:02:45'!
+testOperationMatMul1x1Wrong
+	| graph a b session constA constB output |
+	
+	a _ #(1.1) asFloatTensor.
+	b _ #(2.02) asFloatTensor.
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+
+	output _ constA * constB.
+
+	session _ TF_Session onGraph: graph.
+	self
+		should: [session runOutput: (output output: 0)]
+		raiseError: 'INVALID_ARGUMENT: In[0] is not a matrix
+	 [[Node: MatMul_2 = MatMul[T=DT_FLOAT, _class=[], transpose_a=false, transpose_b=false, _device="/job:localhost/replica:0/task:0/cpu:0"](a, b)]]'
+! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:09'!
 testOperationMatMulATransposed
 	| graph a b session constA constB result output template |
@@ -3391,6 +3658,41 @@ testOperationMatrixInverse
 		self assert: (real closeTo: expected)].
 	
 	identity free.! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/3/2017 12:21:24'!
+testOperationMeanOn
+	| graph a session mean0 mean01 mean1 results meanNone |
+	
+	graph _ TF_Graph create.
+	a _ graph const: #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	) asFloatTensor.
+		
+	mean0 _ a meanOn: #(0) asInt32Tensor.
+	mean1 _ a meanOn: #(1) asInt32Tensor.
+	mean01 _ a meanOn: #(0 1) asInt32Tensor.
+	meanNone _ a meanOn: #() asInt32Tensor.
+		
+	session _ TF_Session onGraph: graph.
+	results _ session runOutputs: {mean0 output: 0. mean1 output: 0. mean01 output: 0. meanNone output: 0}." mean01bis output: 0}."
+	
+	self assert: #(2) equals: results first dimensions.
+	self assert: #(3) equals: results second dimensions.
+	self assert: #() equals: results third dimensions.
+	self assert: #(3 2) equals: results fourth dimensions.
+
+	self assertAll: #(2.1 1.2) closeTo: results first allFloats.
+	self assertAll: #(1.15 2.15 1.65) closeTo: results second allFloats.
+	self assertAll: #(1.65) closeTo: results third allFloats.
+	self
+		assertAll: #(
+			1.1 1.2
+			2.1 2.2
+			3.1 0.2)
+		closeTo: results fourth allFloats.
+	! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 1/23/2017 10:46:06'!
 testOperationMinus
@@ -3592,6 +3894,27 @@ testOperationPlusNegatedNegatedPlus
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/31/2017 01:37:28'!
+testOperationRelu
+	| graph template session const result output |
+	
+	template _ #(
+		(-1.1	1.2)
+		(-2.1	2.2)
+		(0		-0)) asFloatTensor.
+		
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'const' value: template.
+	output _ const rectified output: 0.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: output.
+	
+	self assert: result dimensions equals: template dimensions.
+	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
+! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'Javier Burroni 1/24/2017 21:35:47'!
 testOperationSigmoid
 	| graph inputs template session const result output transformed |
@@ -3633,6 +3956,30 @@ testOperationSin
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/2/2017 02:48:05'!
+testOperationSparseSoftmaxCrossEntropyWithLogits
+	| graph label prediction result session xentropy |
+	" I'm not sure this is a good test. I don't fully understand the operation"
+	
+	graph _ TF_Graph create.
+	prediction _ graph const: #(
+		(0.1 0.2 0.3 0.9 0.0 0.5 0.4)
+		(0.1 0.2 0.1 0.1 0.8 0.1 0.1)
+		(0 0 0 0 0 0 1)
+	) asFloatTensor.
+	label _ graph const: #(3 4 6) asInt32Tensor.
+	
+	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (xentropy output: 0).
+	
+	self assert: #(3) equals: result dimensions.
+	self assert: (result allFloats first between: 1 and: 1.5).
+	self assert: (result allFloats second between: 1 and: 1.5).
+	self assert: (result allFloats third between: 1 and: 1.2).
+! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/25/2017 11:52:06'!
 testOperationSquared
@@ -3949,6 +4296,108 @@ testForward
 	
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:17'!
+testMNIST3LayersNNForwardGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist result |
+	mnist _ MNIST3LayersNNExamplePlan new.
+	
+	self 
+		shouldnt: [
+			result _ mnist predict: {
+				ByteArray new: mnist inputSize.
+				(ByteArray new: mnist inputSize) + 1.
+			}]
+		raise: Error.
+
+	self assert: {2. mnist outputSize} equals: result dimensions.
+	self assert: 0 equals: (result allFloats first: 10) abs sum.
+	self assert: (result allFloats last: 10) abs sum > 0.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
+testMNIST3LayersNNInitialization
+	MNIST3LayersNNExamplePlan new.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/3/2017 12:26:33'!
+testMNIST3LayersNNLossGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist results |
+	mnist _ MNIST3LayersNNExamplePlan new.
+	
+	self 
+		shouldnt: [
+			results _ mnist
+				predict: {
+					ByteArray new: mnist inputSize.
+					(ByteArray new: mnist inputSize) + 1}
+				andCompareTo: #(1 2).
+				]
+		raise: Error.
+
+	self assert: {2. mnist outputSize} equals: results first dimensions.
+	self assert: 0 equals: (results first allFloats first: 10) abs sum.
+	self assert: (results first allFloats last: 10) abs sum > 0.
+	
+	self assert: #() equals: results second dimensions.
+	self assert: (results second allFloats sum abs > 0).! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/3/2017 12:32:33'!
+testMNIST3SoftMaxLossGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist results |
+	mnist _ MNISTSoftMaxExamplePlan new.
+	
+	self 
+		shouldnt: [
+			results _ mnist
+				predict: {
+					ByteArray new: mnist inputSize.
+					(ByteArray new: mnist inputSize) + 1}
+				andCompareTo: #(1 2).
+				]
+		raise: Error.
+
+	self assert: {2. mnist outputSize} equals: results first dimensions.
+	self assert: 0 equals: (results first allFloats first: 10) abs sum.
+	self assert: 0 equals: (results first allFloats last: 10) abs sum.
+	
+	self assert: #() equals: results second dimensions.
+	self assert: (results second allFloats sum abs > 0).! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:40:21'!
+testMNISTSoftMaxForwardGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist result |
+	mnist _ MNISTSoftMaxExamplePlan new.
+	
+	self 
+		shouldnt: [
+			result _ mnist predict: {
+				ByteArray new: mnist inputSize.
+				(ByteArray new: mnist inputSize) + 1.
+			}]
+		raise: Error.
+
+	self assert: {2. mnist outputSize} equals: result dimensions.
+	self assert: 0 equals: (result allFloats first: 10) abs sum.
+	self assert: 0 equals: (result allFloats last: 10) abs sum.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:33:39'!
+testMNISTSoftMaxnitialization
+	MNISTSoftMaxExamplePlan new.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
 testNearesNeighbor
@@ -4570,6 +5019,14 @@ first: anExternalStructure
 	self at: 1 put: anExternalStructure
 ! !
 
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:59'!
+fourth
+	^ self at: 4! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:49'!
+second
+	^ self at: 2! !
+
 !ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
 template
 	"This method was automatically generated. See PointerArray class>>fields."
@@ -4579,6 +5036,10 @@ template
 template: anObject
 	"This method was automatically generated. See PointerArray class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:53'!
+third
+	^ self at: 3! !
 
 !ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 18:35:06'!
 externalFromArray: anArray
@@ -4833,7 +5294,13 @@ asString: nameString described: aBlock
 concat: nameString described: aBlock
 	^self newOperation: 'Concat' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:07:25'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 15:07:44'!
+const: aTF_Tensor
+	| name |
+	name _ self nameFor: 'constant'.
+	^ self const: name value: aTF_Tensor! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 12/28/2016 02:07:25'!
 const: nameString value: aTF_Tensor
 	^ self
 		newOperation: 'Const'
@@ -4894,13 +5361,21 @@ dimensionsOf: aTF_OutputOrInput set: dimensions
 finalize
 	self delete! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/29/2017 11:59:08'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 02:14:06'!
 fromBlock: aBlockClosure
-	| inputNames inputs output |
-	inputNames _ aBlockClosure decompile arguments collect: [:each | each name].
-	inputs _ inputNames collect: [:each | self placeholder: each type: TF_Tensor typeFloat].
-	output _ aBlockClosure valueWithArguments: inputs.
-	output alias: 'output'
+	| types |
+	types _ Array new: aBlockClosure argumentCount.
+	types atAllPut: TF_Tensor typeFloat.
+	^ self fromBlock: aBlockClosure inputTypes: types! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 19:46:21'!
+fromBlock: aBlockClosure inputTypes: anArray
+	| inputs index |
+	index _ 0.
+	inputs _ (1 to: aBlockClosure argumentCount) collect: [:each |
+		index _ index + 1.
+		self inputType: (anArray at: index)].
+	^ aBlockClosure valueWithArguments: inputs.
 ! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
@@ -4935,9 +5410,21 @@ initializeOn: aTF_Session
 		aTF_Session runOutputs: initializers]
 ! !
 
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/2/2017 19:45:59'!
+inputType: typeInteger
+	^ self
+		newOperation: 'Placeholder'
+		named: (self nameFor: 'input')
+		described: [:description |
+			description at: 'dtype' putType: typeInteger]! !
+
 !TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
 mul: nameString described: aBlock
 	^self newOperation: 'Mul' named: nameString described: aBlock! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/30/2017 23:39:38'!
+nameFor: namePrefix
+	^ namePrefix,'_',self operationsCount printString.! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:35:44'!
 newOperation: typeString named: aString
@@ -5016,7 +5503,7 @@ outputDimenssionsCount: aTF_Output
 	status check.
 	^answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/6/2017 17:21:53'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/6/2017 17:21:53'!
 placeholder: nameString type: typeInteger
 	^ self
 		newOperation: 'Placeholder'
@@ -5032,19 +5519,41 @@ rankOf: aTF_OutputOrInput
 	status check.
 	^ answer! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:23:14'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:43:13'!
+truncatedNormalRandomShaped: dimensionsArray
+	| shape |
+	shape _ self const: dimensionsArray asInt32Tensor.
+	^ shape unaryOp: 'TruncatedNormal' described: [:description |
+		description at: 'dtype' putType: TF_Tensor typeFloat]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:44:21'!
+truncatedNormalRandomShaped: dimensionsArray stddev: aNumber
+	| random |
+	random _ self truncatedNormalRandomShaped: dimensionsArray.
+	^ random @* (self const: aNumber asTensor)! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
 variable: nameString forTensor: aTF_Tensor
 	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 08:10:34'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:02:23'!
 variable: nameString initialValue: aTF_Tensor
 	| const var |
 	var _ self variable: nameString forTensor: aTF_Tensor.
 	const _ self const: nameString, '_initialValue' value: aTF_Tensor.
-	var assign: const named: nameString, '_initializer'.
+	var assign: const.
 	^ var! !
 
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 03:04:54'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:22:52'!
+variable: nameString initialValueFrom: aTF_Operation
+	| output var shape |
+	output _ aTF_Operation output: 0.
+	shape _ self dimensionsOf: output.
+	var _ self variable: nameString type: output type shape: shape..
+	var assign: aTF_Operation.
+	^ var! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:04:54'!
 variable: nameString type: typeInteger shape: anArray
 	^ self
 		newOperation: 'Variable'
@@ -5054,13 +5563,24 @@ variable: nameString type: typeInteger shape: anArray
 				at: 'dtype' putType: typeInteger;
 				at: 'shape' putShape: anArray]! !
 
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 02:15:35'!
+zerosShaped: dimensionsArray
+	| shape value |
+	shape _ self const: dimensionsArray asInt32Tensor.
+	value _ self const: 0.0 asTensor.
+	^ shape binaryOp: 'Fill' with: value! !
+
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
 create
 	^ TensorFlowCAPI current newGraph useFinalization! !
 
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 11:51:48'!
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/2/2017 01:55:59'!
 fromBlock: aBlockClosure
-	^ self create fromBlock: aBlockClosure ! !
+	| output graph |
+	graph _ self create.
+	output _ graph fromBlock: aBlockClosure .
+	output alias: 'output'.
+	^ graph! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:26'!
 fromFileNamed: aString
@@ -5149,18 +5669,12 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:13:38'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/1/2017 01:02:16'!
 assign: aTF_Operation
-	| name |
-	name _ self nameFor: self name, '_assignment'.
-	^ self assign: aTF_Operation named: name! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 08:14:03'!
-assign: aTF_Operation named: aString
 	^ self
 		binaryOp: 'Assign'
 		with: aTF_Operation
-		named: aString! !
+		named: self name, '_initializer'! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
 attrMetadata: nameString
@@ -5277,13 +5791,19 @@ intAt: nameString
 inverse
 	^ self unaryOp: 'MatrixInverse'! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 23:50:53'!
+meanOn: dimensionsTensor
+	| const |
+	const _ graph const: dimensionsTensor.
+	^ self binaryOp: 'Mean' with: const! !
+
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
 	^ self library operationName: self! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/29/2017 15:12:57'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/30/2017 23:39:24'!
 nameFor: namePrefix
-	^ namePrefix,'_',graph operationsCount printString.! !
+	^ graph nameFor: namePrefix! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
 negated
@@ -5306,6 +5826,10 @@ printOn: strm
 			print: self type;
 			space;
 			print: self name]! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 01:33:48'!
+rectified
+	^ self unaryOp: 'Relu'! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/23/2017 09:47:55'!
 shapeAt: nameString
@@ -5333,6 +5857,13 @@ sigmoid
 sin
 	^ self unaryOp: 'Sin'
 	! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 02:09:13'!
+sparseSoftmaxCrossEntropyWithLogits: aTF_Operation
+	^ self
+		binaryOp: 'SparseSoftmaxCrossEntropyWithLogits'
+		with: aTF_Operation
+		named: (self nameFor: 'SparseSoftmaxCrossEntropyWithLogits')! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/25/2017 11:50:16'!
 squared
@@ -5420,11 +5951,22 @@ unaryOp: aString
 	name _ self nameFor: aString.
 	^ self unaryOp: aString named: name! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 12:00:58'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:53:48'!
+unaryOp: aString described: oneArgBlock
+	| name |
+	name _ self nameFor: aString.
+	^ self unaryOp: aString named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:06'!
 unaryOp: aString named: name
-	^ graph newOperation: aString named: name described: [:description |
-		description addInput: (self output: 0)].
+	^ self unaryOp: aString named: name described: [:description | ].
 	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:24'!
+unaryOp: aString named: name described: oneArgBlock
+	^ graph newOperation: aString named: name described: [:description |
+		description addInput: (self output: 0).
+		oneArgBlock value: description]! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
@@ -5923,6 +6465,20 @@ allFloats
 	
 	^ answer contents! !
 
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/31/2017 16:45:03'!
+allInt32s
+	| total answer data byteSize |
+	total _ self size.
+	answer _ WriteStream on: (Array new: total).
+	data _ self data getHandle.
+	byteSize _ self class sizeForType: self class typeInt32.
+	1 to: total do: [:i |
+		| value |
+		value _ data signedLongAt: i-1*byteSize+1..
+		answer nextPut: value].
+	
+	^ answer contents! !
+
 !TF_Tensor methodsFor: 'converting' stamp: 'jb 1/15/2017 18:02:38'!
 allInt64s
 	| total answer data byteSize |
@@ -6000,10 +6556,12 @@ sizeOn: dimension
 type
 	^self library tensorType: self.! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:55:11'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
 dimensionsOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
-		ifTrue: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]
+		ifTrue: [aMultidimensionalTensor isEmpty
+			ifTrue: [#(0)]
+			ifFalse: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
@@ -6048,6 +6606,25 @@ fromInt32: value
 	| answer |
 	answer _ self type: self typeInt32 dimensions: #().
 	answer data getHandle signedLongAt: 1 put: value.
+	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/31/2017 16:42:18'!
+fromInt32s: values
+	| dimensions |
+	dimensions _ self dimensionsOf: values.
+	^ self fromInt32s: values dimensions: dimensions.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/3/2017 12:10:05'!
+fromInt32s: values dimensions: dimensions
+	| answer size count |
+	size _ self sizeOf: values.
+	count _ dimensions inject: 1 into: [:a :b | a * b].
+	count = size ifFalse: [
+		self error: 'Inferred size and real size don''t match.'].
+		
+	answer _ self type: self typeInt32 dimensions: dimensions.
+	self int32Array: values into: answer data getHandle.
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
@@ -6104,6 +6681,18 @@ fromStringArray: aStringArray
 			to: answer data getHandle + offset
 			size: bytesize - offset].
 	^ answer
+! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/31/2017 16:43:18'!
+int32Array: values into: anExternalAddressOrByteArray
+	| size index |
+
+	size _ self sizeForType: self typeInt32.
+	
+	index _ 0.
+	self elementsOf: values do: [:value |
+		anExternalAddressOrByteArray signedLongAt: index*size + 1 put: value.
+		index _ index + 1].
 ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:32:18'!
@@ -6171,10 +6760,13 @@ sizeForType: anInteger
 
 	^ self shouldBeImplemented.! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:02:29'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:06:44'!
 sizeOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
-		ifTrue: [aMultidimensionalTensor sum: [:each | self sizeOf: each]]
+		ifTrue: [
+			aMultidimensionalTensor isEmpty
+				ifTrue: [0]
+				ifFalse: [aMultidimensionalTensor sum: [:each | self sizeOf: each]]]
 		ifFalse: [1].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 03:17:43'!
@@ -6519,6 +7111,187 @@ initializeGraphWithOperations
 	
 	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:44:41'!
+graph
+	^ graph! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:15'!
+hidden1Size
+	^ 128! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:18'!
+hidden2Size
+	^ 32! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:56:01'!
+initialize
+	self
+		initializeGraph;
+		initializeParameters;
+		initializeInferenceGraph;
+		initializeLossGraph;
+		initializeLearningGraph;
+		initializeSession.! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:08:54'!
+initializeGraph
+	graph _ TF_Graph create! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:03:56'!
+initializeInferenceGraph
+	| hidden1 hidden2 |
+	prediction _ graph fromBlock: [:image |
+		input _ image.
+		hidden1 _ (image * weights1 + biases1) rectified.
+		hidden2 _ (hidden1 * weights2 + biases2) rectified.
+		hidden2 * weights3 + biases3].
+! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
+initializeLearningGraph! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/3/2017 12:25:04'!
+initializeLossGraph
+	loss _ graph
+		fromBlock: [:expected |
+			expectedLabel _ expected.
+			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
+		inputTypes: {TF_Tensor typeInt32}! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
+initializeParameters
+	| aux |
+	aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
+	weights1 _ graph variable: 'weights1' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self hidden1Size}.
+	biases1 _ graph variable: 'biases1' initialValueFrom: aux.
+
+	aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
+	weights2 _ graph variable: 'weights2' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self hidden2Size}.
+	biases2 _ graph variable: 'biases2' initialValueFrom: aux.
+
+	aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
+	weights3 _ graph variable: 'weights3' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self outputSize}.
+	biases3 _ graph variable: 'biases3' initialValueFrom: aux.
+! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
+initializeSession
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
+inputSize
+	^ 28*28! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:47:08'!
+intput
+	^ input! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:27:05'!
+lossGradient
+	^ (loss output: 1)! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:30'!
+outputSize
+	^ 10! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 1/31/2017 02:06:26'!
+predict: inputs
+	| results |
+	results _ session
+		runInputs: {input input: 0}
+		values: {inputs asFloatTensor}
+		outputs: {prediction output: 0}.
+	^ results first! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
+predict: inputs andCompareTo: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asInt32Tensor}
+		outputs: {prediction output: 0. loss output: 0}.
+	^ results! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:26:53'!
+initialize
+	self
+		initializeGraph;
+		initializeParameters;
+		initializeInferenceGraph;
+		initializeLossGraph;
+		initializeLearningGraph;
+		initializeSession.! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:27:02'!
+initializeGraph
+	graph _ TF_Graph create! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:31:47'!
+initializeInferenceGraph
+	prediction _ graph fromBlock: [:image |
+		input _ image.
+		image * weights + biases]
+! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:35:25'!
+initializeLearningGraph
+! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/3/2017 12:31:36'!
+initializeLossGraph
+	loss _ graph
+		fromBlock: [:expected |
+			expectedLabel _ expected.
+			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
+		inputTypes: {TF_Tensor typeInt32}! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:29:23'!
+initializeParameters
+	| aux |
+	aux _ graph zerosShaped: {self inputSize. self outputSize}.
+	weights _ graph variable: 'weights' initialValueFrom: aux.
+	aux _ graph zerosShaped: {self outputSize}.
+	biases _ graph variable: 'biases' initialValueFrom: aux.! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:27:12'!
+initializeSession
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:34:38'!
+initializeTrainingGraph
+! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:30:14'!
+inputSize
+	^ 28*28! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:29:56'!
+outputSize
+	^ 10! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 19:37:26'!
+predict: inputs
+	| results |
+	results _ session
+		runInputs: {input input: 0}
+		values: {inputs asFloatTensor}
+		outputs: {prediction output: 0}.
+	^ results first! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 19:47:56'!
+predict: inputs andCompareTo: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asInt32Tensor}
+		outputs: {prediction output: 0. loss output: 0}.
+	^ results! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
 decodeCSV: csvLines graphRun: description
