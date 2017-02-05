@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 5 February 2017 at 11:10:27 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 5 February 2017 at 11:46:12 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 329!
+!provides: 'TensorFlow' 1 331!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3188,7 +3188,7 @@ testGraphTruncatedNormal
 	self assert: ((values percentile: 0.9) - theoreticalDecile negated) abs < 0.1.
 	! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/5/2017 11:10:22'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/5/2017 11:45:59'!
 testGraphTruncatedNormalStddev
 	| graph session result random values sigma twoSigma std theoreticalDecile |	
 	graph _ TF_Graph create.
@@ -3211,7 +3211,8 @@ testGraphTruncatedNormalStddev
 	self assert: values mean abs < (0.01 * std).
 	self assert: ((values percentile: 0.1) - (theoreticalDecile * sigma)) abs < 0.1.
 	self assert: ((values percentile: 0.9) - (theoreticalDecile negated * sigma)) abs < 0.1.
-	
+	self assert: ((values percentile: 0.25) - -2) abs < 0.1.
+	self assert: ((values percentile: 0.75) - 2) abs < 0.1.
 	! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 15:09:33'!
