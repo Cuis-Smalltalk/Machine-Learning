@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 5 February 2017 at 10:47:57 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 5 February 2017 at 11:10:27 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 328!
+!provides: 'TensorFlow' 1 329!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3166,9 +3166,9 @@ should: aBlock raiseError: aString
 	aBlock ifError: [:description :receiver | message _ description].
 	self assert: 'Error: ',aString equals: message.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 17:36:21'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/5/2017 11:10:01'!
 testGraphTruncatedNormal
-	| graph session result random values |	
+	| graph session result random values std theoreticalDecile |	
 	graph _ TF_Graph create.
 	
 	random _ graph truncatedNormalRandomShaped: #(100 100 10).
@@ -3177,13 +3177,18 @@ testGraphTruncatedNormal
 	result _ session runOutput: (random output: 0).
 	
 	values _ result allFloats.
+	theoreticalDecile _ -1.1840324666939051.
+	std _ values standardDeviation.
 	self assert: result dimensions equals: #(100 100 10).
 	self assert: values size equals: 100*100*10.
 	self assert: values min + 2 < 0.01.
 	self assert: 2 - values max < 0.01.
-	self assert: values mean abs < 0.01.! !
+	self assert: values mean abs < (0.01*std).
+	self assert: ((values percentile: 0.1) - theoreticalDecile) abs < 0.1.
+	self assert: ((values percentile: 0.9) - theoreticalDecile negated) abs < 0.1.
+	! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/5/2017 10:47:54'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/5/2017 11:10:22'!
 testGraphTruncatedNormalStddev
 	| graph session result random values sigma twoSigma std theoreticalDecile |	
 	graph _ TF_Graph create.
