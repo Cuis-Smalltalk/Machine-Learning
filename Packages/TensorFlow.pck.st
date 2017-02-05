@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 5 February 2017 at 11:46:12 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 5 February 2017 at 3:58:52 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 331!
+!provides: 'TensorFlow' 1 334!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -310,6 +310,36 @@ Object subclass: #MNIST3LayersNNExamplePlan
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'MNIST3LayersNNExamplePlan class' category: #'TensorFlow-Examples'!
 MNIST3LayersNNExamplePlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #MNISTFile category: #'TensorFlow-Examples'!
+Object subclass: #MNISTFile
+	instanceVariableNames: 'magic count items'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNISTFile class' category: #'TensorFlow-Examples'!
+MNISTFile class
+	instanceVariableNames: ''!
+
+!classDefinition: 't10k-labels-idx1-ubyte.gz' category: nil!
+MNISTFile subclass: 't10k-labels-idx1-ubyte.gz'
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'nil'!
+!classDefinition: 't10k-labels-idx1-ubyte.gz class' category: nil!
+t10k-labels-idx1-ubyte.gz class
+	instanceVariableNames: ''!
+
+!classDefinition: #MNISTImageFile category: #'TensorFlow-Examples'!
+MNISTFile subclass: #MNISTImageFile
+	instanceVariableNames: 'rows columns'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNISTImageFile class' category: #'TensorFlow-Examples'!
+MNISTImageFile class
 	instanceVariableNames: ''!
 
 !classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
@@ -7216,6 +7246,109 @@ predict: inputs andCompareTo: label
 		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {prediction output: 0. loss output: 0}.
 	^ results! !
+
+!MNISTFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:04:26'!
+asTensor
+	^ self subclassResponsibility ! !
+
+!MNISTFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:58:05'!
+count
+	^ count! !
+
+!MNISTFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:58:10'!
+items
+	^ items! !
+
+!MNISTFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:58:01'!
+magic
+	^ magic! !
+
+!MNISTFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:37:24'!
+parse: aStream
+	magic _ aStream nextUnsignedInt32BigEndian: true.
+	count _  aStream nextUnsignedInt32BigEndian: true.
+
+	! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:56:42'!
+download: name
+		| url response content file |
+		url _ 'http://yann.lecun.com/exdb/mnist/', name.
+		response _ HTTPClient httpGet: url.
+		content _ response content asByteArray.
+		file _ ('dataset/', name) asFileEntry.
+		file < content.
+		^ file! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:36:27'!
+fromFile: filename
+	| file stream compressed|
+	name _ filename, '.gz'.
+	file _ ('dataset/', name) asFileEntry.
+	file exists ifFalse:[ file _ self download: name].
+	compressed _ file readStream contentsOfEntireFile.
+	stream _ (GZipReadStream on: compressed) upToEnd asByteArray readStream.
+	^ self fromStream: stream
+	! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:26:40'!
+fromStream: aStream
+	| answer |
+	answer _ self new.
+	^ answer parse: aStream! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:07:25'!
+magic
+	^ self subclassResponsibility ! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:16:07'!
+testName
+	^ self subclassResponsibility ! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:28:39'!
+testSet
+	^self fromFile: self testName
+	! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:16:03'!
+trainName
+	^ self subclassResponsibility ! !
+
+!MNISTFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:28:58'!
+trainingSet
+	^self fromFile: self trainName
+	! !
+
+!MNISTImageFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:12:11'!
+asTensor
+	^  TF_Tensor fromFloats:  items dimensions: {rows * columns. count}.! !
+
+!MNISTImageFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:58:35'!
+columns
+	^ columns! !
+
+!MNISTImageFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:10:42'!
+parse: aStream
+	super parse: aStream.
+	rows _ aStream nextUnsignedInt32BigEndian: true.
+	columns _ aStream nextUnsignedInt32BigEndian: true.
+	items _ aStream upToEnd.! !
+
+!MNISTImageFile methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:58:26'!
+rows
+	^ rows! !
+
+!MNISTImageFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:09:23'!
+magic
+	^ 2051! !
+
+!MNISTImageFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:16:30'!
+testName
+	^ 't10k-images-idx3-ubyte'! !
+
+!MNISTImageFile class methodsFor: 'as yet unclassified' stamp: 'JB 2/5/2017 15:16:46'!
+trainName
+	^ 'train-images-idx3-ubyte'! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:26:53'!
 initialize
