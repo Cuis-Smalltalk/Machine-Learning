@@ -322,8 +322,8 @@ Object subclass: #MNISTFile
 MNISTFile class
 	instanceVariableNames: ''!
 
-!classDefinition: 'MNISTImageFile' category: #'TensorFlow-Examples'!
-MNISTFile subclass: 'MNISTImageFile'
+!classDefinition: #MNISTImageFile category: #'TensorFlow-Examples'!
+MNISTFile subclass: #MNISTImageFile
 	instanceVariableNames: 'rows columns'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -332,8 +332,8 @@ MNISTFile subclass: 'MNISTImageFile'
 MNISTImageFile class
 	instanceVariableNames: ''!
 
-!classDefinition: 'MNISTLabelFile' category: #'TensorFlow-Examples'!
-MNISTFile subclass: 'MNISTLabelFile'
+!classDefinition: #MNISTLabelFile category: #'TensorFlow-Examples'!
+MNISTFile subclass: #MNISTLabelFile
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
