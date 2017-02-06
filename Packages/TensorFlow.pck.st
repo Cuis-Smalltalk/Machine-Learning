@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 5 February 2017 at 9:41:16 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 6 February 2017 at 8:17:43 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 336!
+!provides: 'TensorFlow' 1 337!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -7352,9 +7352,9 @@ trainingSet
 	^self fromFile: self trainName
 	! !
 
-!MNISTImageFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:12:11'!
+!MNISTImageFile methodsFor: 'converting' stamp: 'gera 2/6/2017 20:17:27'!
 asTensor
-	^  TF_Tensor fromFloats:  items dimensions: {rows * columns. count}.! !
+	^  TF_Tensor fromFloats:  items dimensions: {count. rows * columns}.! !
 
 !MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:35'!
 columns
