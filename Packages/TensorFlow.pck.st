@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 5 February 2017 at 4:28:04 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 5 February 2017 at 9:41:16 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow' 1 336!
 !requires: 'FFI' 1 18 nil!
@@ -322,24 +322,24 @@ Object subclass: #MNISTFile
 MNISTFile class
 	instanceVariableNames: ''!
 
-!classDefinition: 'train-images-idx3-ubyte.gz' category: nil!
-MNISTFile subclass: 'train-images-idx3-ubyte.gz'
+!classDefinition: 'MNISTImageFile' category: #'TensorFlow-Examples'!
+MNISTFile subclass: 'MNISTImageFile'
 	instanceVariableNames: 'rows columns'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'nil'!
-!classDefinition: 'train-images-idx3-ubyte.gz class' category: nil!
-train-images-idx3-ubyte.gz class
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNISTImageFile class' category: #'TensorFlow-Examples'!
+MNISTImageFile class
 	instanceVariableNames: ''!
 
-!classDefinition: 'train-labels-idx1-ubyte.gz' category: nil!
-MNISTFile subclass: 'train-labels-idx1-ubyte.gz'
+!classDefinition: 'MNISTLabelFile' category: #'TensorFlow-Examples'!
+MNISTFile subclass: 'MNISTLabelFile'
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'nil'!
-!classDefinition: 'train-labels-idx1-ubyte.gz class' category: nil!
-train-labels-idx1-ubyte.gz class
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNISTLabelFile class' category: #'TensorFlow-Examples'!
+MNISTLabelFile class
 	instanceVariableNames: ''!
 
 !classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
@@ -7351,6 +7351,60 @@ trainName
 trainingSet
 	^self fromFile: self trainName
 	! !
+
+!MNISTImageFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:12:11'!
+asTensor
+	^  TF_Tensor fromFloats:  items dimensions: {rows * columns. count}.! !
+
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:35'!
+columns
+	^ columns! !
+
+!MNISTImageFile methodsFor: 'initialization' stamp: 'JB 2/5/2017 15:10:42'!
+parse: aStream
+	super parse: aStream.
+	rows _ aStream nextUnsignedInt32BigEndian: true.
+	columns _ aStream nextUnsignedInt32BigEndian: true.
+	items _ aStream upToEnd.! !
+
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:26'!
+rows
+	^ rows! !
+
+!MNISTImageFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:09:23'!
+magic
+	^ 2051! !
+
+!MNISTImageFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:16:30'!
+testName
+	^ 't10k-images-idx3-ubyte'! !
+
+!MNISTImageFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:16:46'!
+trainName
+	^ 'train-images-idx3-ubyte'! !
+
+!MNISTLabelFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:05:03'!
+asTensor
+	^ TF_Tensor fromFloats: items! !
+
+!MNISTLabelFile methodsFor: 'initialization' stamp: 'JB 2/5/2017 15:01:28'!
+parse: aStream
+	super parse: aStream.
+	items _ aStream upToEnd.
+	
+	! !
+
+!MNISTLabelFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 13:22:30'!
+magic
+	^ 2049! !
+
+!MNISTLabelFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:17:11'!
+testName
+	^ 't10k-labels-idx1-ubyte'! !
+
+!MNISTLabelFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:17:29'!
+trainName
+	^ 'train-labels-idx1-ubyte'! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:26:53'!
 initialize
