@@ -7316,9 +7316,9 @@ download: name
 !MNISTFile class methodsFor: 'instance creation' stamp: 'JB 2/5/2017 15:36:27'!
 fromFile: filename
 	| file stream compressed|
-	name _ filename, '.gz'.
-	file _ ('dataset/', name) asFileEntry.
-	file exists ifFalse:[ file _ self download: name].
+	filename _ filename, '.gz'.
+	file _ ('dataset/', filename) asFileEntry.
+	file exists ifFalse:[ file _ self download: filename].
 	compressed _ file readStream contentsOfEntireFile.
 	stream _ (GZipReadStream on: compressed) upToEnd asByteArray readStream.
 	^ self fromStream: stream
