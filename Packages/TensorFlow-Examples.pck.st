@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 9:42:20 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 10:02:35 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 1!
+!provides: 'TensorFlow-Examples' 1 2!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
@@ -152,6 +152,39 @@ Object subclass: #SimpleNeuralNetworkExample
 SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
+
+!TensorFlowCAPITestSlowTests methodsFor: '*TensorFlow-Examples' stamp: 'gera 2/7/2017 09:12:18'!
+testImages
+	| testing training |
+	testing _ MNISTImageFile testSet.
+	training _ MNISTImageFile trainingSet .
+	
+	self assert: testing count equals: 10000.
+	self assert: training count equals: 60000.
+	self assert: testing rows equals: 28.
+	self assert: testing columns equals: 28.
+	self assert: training rows equals: 28.
+	self assert: training columns equals: 28.
+	self assert: testing asTensor dimensions equals: {10000. 28*28}.
+	self assert: training asTensor dimensions equals: {60000. 28*28}.! !
+
+!TensorFlowCAPITestSlowTests methodsFor: '*TensorFlow-Examples' stamp: 'gera 2/7/2017 09:39:11'!
+testLabels
+	| test training |
+	test _ MNISTLabelFile testSet.
+	training _ MNISTLabelFile trainingSet.
+	
+	self assert: test count equals: 10000.
+	self assert: training count equals: 60000.! !
+
+!TensorFlowCAPITestSlowTests methodsFor: '*TensorFlow-Examples' stamp: 'JB 2/5/2017 16:12:18'!
+testMagic
+	| images labels |
+	images _ MNISTImageFile testSet.
+	labels _ MNISTLabelFile testSet.
+	
+	self assert: images magic = MNISTImageFile magic.
+	self assert: labels magic = MNISTLabelFile magic.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
