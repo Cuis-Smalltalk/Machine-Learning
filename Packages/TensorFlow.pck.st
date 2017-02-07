@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 9:13:01 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 9:39:13 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 339!
+!provides: 'TensorFlow' 1 340!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
@@ -3077,11 +3077,11 @@ testImages
 	self assert: testing asTensor dimensions equals: {10000. 28*28}.
 	self assert: training asTensor dimensions equals: {60000. 28*28}.! !
 
-!TensorFlowCAPITestSlowTests methodsFor: 'testing - MNIST dataset' stamp: 'JB 2/5/2017 16:18:55'!
+!TensorFlowCAPITestSlowTests methodsFor: 'testing - MNIST dataset' stamp: 'gera 2/7/2017 09:39:11'!
 testLabels
 	| test training |
 	test _ MNISTLabelFile testSet.
-	training _ MNISTLabelFile trainingSet .
+	training _ MNISTLabelFile trainingSet.
 	
 	self assert: test count equals: 10000.
 	self assert: training count equals: 60000.! !
@@ -7357,6 +7357,14 @@ trainingSet
 asTensor
 	^  TF_Tensor fromFloats:  items dimensions: {count. rows * columns}.! !
 
+!MNISTImageFile methodsFor: 'accessing' stamp: 'gera 2/7/2017 09:36:02'!
+at: imageIndex
+	| size base bytes |
+	size _ columns * rows.
+	base _ imageIndex - 1 * size + 1.
+	bytes _ items copyFrom: base to: base + size - 1.
+	^ GrayForm extent: rows @ columns bits: bytes! !
+
 !MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:35'!
 columns
 	^ columns! !
@@ -7387,6 +7395,10 @@ trainName
 !MNISTLabelFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:05:03'!
 asTensor
 	^ TF_Tensor fromFloats: items! !
+
+!MNISTLabelFile methodsFor: 'initialization' stamp: 'gera 2/7/2017 09:37:58'!
+at: index
+	^ items at: index! !
 
 !MNISTLabelFile methodsFor: 'initialization' stamp: 'JB 2/5/2017 15:01:28'!
 parse: aStream
