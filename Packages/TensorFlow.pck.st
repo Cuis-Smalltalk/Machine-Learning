@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 8:52:42 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 9:13:01 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 338!
+!provides: 'TensorFlow' 1 339!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
@@ -3062,7 +3062,7 @@ testGraphFinalizationReleasesExternalMemory
 	self assert: (handles size) < total.
 ! !
 
-!TensorFlowCAPITestSlowTests methodsFor: 'testing - MNIST dataset' stamp: 'JB 2/5/2017 16:18:46'!
+!TensorFlowCAPITestSlowTests methodsFor: 'testing - MNIST dataset' stamp: 'gera 2/7/2017 09:12:18'!
 testImages
 	| testing training |
 	testing _ MNISTImageFile testSet.
@@ -3074,8 +3074,8 @@ testImages
 	self assert: testing columns equals: 28.
 	self assert: training rows equals: 28.
 	self assert: training columns equals: 28.
-	self assert: testing asTensor dimensions equals: {28*28. 10000}.
-	self assert: training asTensor dimensions equals: {28*28. 60000}.	! !
+	self assert: testing asTensor dimensions equals: {10000. 28*28}.
+	self assert: training asTensor dimensions equals: {60000. 28*28}.! !
 
 !TensorFlowCAPITestSlowTests methodsFor: 'testing - MNIST dataset' stamp: 'JB 2/5/2017 16:18:55'!
 testLabels
