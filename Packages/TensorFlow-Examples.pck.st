@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 10:02:35 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 11:45:34 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 2!
+!provides: 'TensorFlow-Examples' 1 3!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
@@ -114,7 +114,7 @@ MNISTLabelFile class
 
 !classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNISTSoftMaxExamplePlan
-	instanceVariableNames: 'session graph weights biases prediction input loss expectedLabel'
+	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -413,7 +413,7 @@ testMNIST3LayersNNLossGraph
 	self assert: #() equals: results second dimensions.
 	self assert: (results second allFloats sum abs > 0).! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/3/2017 12:32:33'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/7/2017 11:31:05'!
 testMNIST3SoftMaxLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -433,13 +433,14 @@ testMNIST3SoftMaxLossGraph
 		raise: Error.
 
 	self assert: {2. mnist outputSize} equals: results first dimensions.
-	self assert: 0 equals: (results first allFloats first: 10) abs sum.
-	self assert: 0 equals: (results first allFloats last: 10) abs sum.
+	self assert: ((results first allFloats first: 10) sum closeTo: 1).
+	self assert: ((results first allFloats last: 10) sum closeTo: 1).
+
 	
 	self assert: #() equals: results second dimensions.
 	self assert: (results second allFloats sum abs > 0).! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:40:21'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/7/2017 11:31:55'!
 testMNISTSoftMaxForwardGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -457,8 +458,9 @@ testMNISTSoftMaxForwardGraph
 		raise: Error.
 
 	self assert: {2. mnist outputSize} equals: result dimensions.
-	self assert: 0 equals: (result allFloats first: 10) abs sum.
-	self assert: 0 equals: (result allFloats last: 10) abs sum.! !
+	self assert: ((result allFloats first: 10) sum closeTo: 1).
+	self assert: ((result allFloats last: 10) sum closeTo: 1).
+! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:33:39'!
 testMNISTSoftMaxnitialization
@@ -1035,23 +1037,24 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:31:47'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/7/2017 11:41:29'!
 initializeInferenceGraph
 	prediction _ graph fromBlock: [:image |
 		input _ image.
-		image * weights + biases]
+		netInput _ image * weights + biases.
+		netInput softmax]
 ! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:35:25'!
 initializeLearningGraph
 ! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/3/2017 12:31:36'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/7/2017 11:41:46'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
-			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
+			(netInput sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
 		inputTypes: {TF_Tensor typeInt32}! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:29:23'!

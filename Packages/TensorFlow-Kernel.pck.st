@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 11:23:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 11:42:24 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 345!
+!provides: 'TensorFlow-Kernel' 1 346!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3853,9 +3853,9 @@ testOperationSin
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/2/2017 02:48:05'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/7/2017 11:39:43'!
 testOperationSparseSoftmaxCrossEntropyWithLogits
-	| graph label prediction result session xentropy |
+	| graph label prediction result session xentropy gradient lastVector loss|
 	" I'm not sure this is a good test. I don't fully understand the operation"
 	
 	graph _ TF_Graph create.
@@ -3869,12 +3869,19 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session runOutput: (xentropy output: 0).
+	result _ session runOutputs: {xentropy output: 0. xentropy output: 1}.
 	
-	self assert: #(3) equals: result dimensions.
-	self assert: (result allFloats first between: 1 and: 1.5).
-	self assert: (result allFloats second between: 1 and: 1.5).
-	self assert: (result allFloats third between: 1 and: 1.2).
+	loss _ result first.
+	self assert: #(3) equals: loss dimensions.
+	self assert: (loss allFloats first between: 1 and: 1.5).
+	self assert: (loss allFloats second between: 1 and: 1.5).
+	self assert: (loss allFloats third between: 1 and: 1.2).
+	
+	gradient _ result second.
+	self assert: #(3 7) equals: gradient dimensions.
+	lastVector _ gradient allFloats last:7.
+	self assert: lastVector last < 0.
+	lastVector allButLastDo:[:x| x > 0] 
 ! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/25/2017 11:52:06'!
@@ -4016,6 +4023,29 @@ testOperationTan
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/7/2017 11:29:24'!
+testSoftmax
+	| graph template session const result output denominator |
+	
+	template _ TF_Tensor fromFloats: {{0. 3  ln}}.
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'const' value: template.
+	output _ const softmax output: 0.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: output.
+
+	self assert: result dimensions equals: template dimensions.
+	
+	denominator _ template allFloats exp sum. 
+	result  allFloats with: template  allFloats exp / denominator do: [:res :temp | | delta |
+		delta _ (res  - temp) abs.
+		self assert: delta < 0.001].
+	
+	output free.
+! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
@@ -5381,6 +5411,11 @@ sigmoid
 sin
 	^ self unaryOp: 'Sin'
 	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/7/2017 11:32:45'!
+softmax
+	^ self unaryOp: 'Softmax'
+! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 02:09:13'!
 sparseSoftmaxCrossEntropyWithLogits: aTF_Operation
