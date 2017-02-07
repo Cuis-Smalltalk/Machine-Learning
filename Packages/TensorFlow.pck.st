@@ -1,6 +1,7 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 6 February 2017 at 8:17:43 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 8:52:42 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow' 1 337!
+!provides: 'TensorFlow' 1 338!
+!requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
