@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 11:23:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 12:20:13 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 345!
+!provides: 'TensorFlow-Kernel' 1 346!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3124,12 +3124,14 @@ testGraphUnnamedConst
 	self assert: result dimensions equals: #(4).
 	self assert: result allFloats equals: #(1 2 3 4).! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/1/2017 01:51:45'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/7/2017 12:19:13'!
 testGraphVariableFromTruncatedNormalStddev
-	| graph session result1 result2 var random values1 values2 init |	
+	| graph session result1 result2 var random values1 values2 init sigma std twoSigma |	
 	graph _ TF_Graph create.
 	
-	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: 3.14.
+	sigma _ 3.14.
+	twoSigma _ 2 * sigma.
+	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: sigma.
 	var _ graph variable: 'var' initialValueFrom: random.
 	
 	session _ TF_Session onGraph: graph.
@@ -3140,10 +3142,11 @@ testGraphVariableFromTruncatedNormalStddev
 	self assert: result1 dimensions equals: #(100 100 10).
 	
 	values1 _ result1 allFloats.
-	self assert: values1 size equals: 100*100*10.
-	self assert: values1 min + 3.14 < 0.01.
-	self assert: 3.14 - values1 max < 0.01.
-	self assert: values1 mean abs < 0.01.
+	std _ values1 standardDeviation.
+	self assert: values1 size equals: 100*100*10.	
+	self assert: twoSigma - (values1 min abs)  < 0.1.
+	self assert: twoSigma - values1 max < 0.1.
+	self assert: values1 mean abs < (0.01 * std).	
 	
 	self assert: result1 dimensions equals: result2 dimensions.
 	values2 _ result2 allFloats.
