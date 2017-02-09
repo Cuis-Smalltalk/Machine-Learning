@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 12:20:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 9 February 2017 at 10:51:46 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 346!
+!provides: 'TensorFlow-Kernel' 1 347!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2887,6 +2887,27 @@ testVersion
 	version _ library version.
 	self assert: (#('0.11.head' '0.12.0' '0.12.head' '1.0.0-alpha') includes: version)! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/9/2017 10:50:39'!
+testWriteDefTo
+	| graph strm |
+	graph _ self constantInt64GraphFromDef.
+	strm _ WriteStream on: String new.
+	graph writeDefTo: strm.
+	
+	self assert: self constantInt64GraphDef size equals: strm contents size.! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/9/2017 10:50:45'!
+testWriteDefToFileNamed
+	| graph filename filedata |
+	filename _ 'temporaryGraph.pb'.
+	graph _ self constantInt64GraphFromDef.
+	graph writeDefToFileNamed: filename.
+
+     filedata _ filename asFileEntry readStream upToEnd.
+	filename asFileEntry delete.
+
+	self assert: self constantInt64GraphDef size equals: filedata size.! !
+
 !TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:22:17'!
 mulGraphTwoInputsInt64ConstTensorDeleted
 	^ TensorFlowCAPITest new mulGraphTwoInputsInt64ConstTensorDeleted! !
@@ -5089,6 +5110,15 @@ variable: nameString type: typeInteger shape: anArray
 			description
 				at: 'dtype' putType: typeInteger;
 				at: 'shape' putShape: anArray]! !
+
+!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 09:39:58'!
+writeDefTo: strm
+	strm nextPutAll: self definition! !
+
+!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 10:50:05'!
+writeDefToFileNamed: filename
+	filename asFileEntry writeStreamDo: [:strm |
+		self writeDefTo: strm]! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 02:15:35'!
 zerosShaped: dimensionsArray
