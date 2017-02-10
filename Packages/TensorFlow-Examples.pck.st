@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 10:42:50 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:23:40 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 3!
+!provides: 'TensorFlow-Examples' 1 4!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
@@ -805,26 +805,25 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 02:03:56'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/10/2017 15:44:30'!
 initializeInferenceGraph
 	| hidden1 hidden2 |
-	prediction _ graph fromBlock: [:image |
-		input _ image.
-		hidden1 _ (image * weights1 + biases1) rectified.
-		hidden2 _ (hidden1 * weights2 + biases2) rectified.
-		hidden2 * weights3 + biases3].
+	hidden1 _ graph fromBlock: [:image | (image * weights1 + biases1) rectified] named: 'layer1'.
+	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified] named: 'layer2'.
+	prediction _ graph fromBlock: [hidden2 * weights3 + biases3] named: 'layer3'.
 ! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
 initializeLearningGraph! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/3/2017 12:25:04'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/10/2017 15:45:26'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
 			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
-		inputTypes: {TF_Tensor typeInt32}! !
+		inputTypes: {TF_Tensor typeInt32}
+		named: 'loss'.! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
 initializeParameters
