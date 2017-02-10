@@ -134,7 +134,7 @@ TF_Buffer class
 
 !classDefinition: #TF_Graph category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Graph
-	instanceVariableNames: ''
+	instanceVariableNames: 'context'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
@@ -4957,6 +4957,10 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 11:26:27'!
+initialize
+	context _ ''.! !
+
 !TF_Graph methodsFor: 'running' stamp: 'gera 1/29/2017 04:32:04'!
 initializeOn: aTF_Session
 	| initializers |
@@ -5134,9 +5138,9 @@ zerosShaped: dimensionsArray
 	value _ self const: 0.0 asTensor.
 	^ shape binaryOp: 'Fill' with: value! !
 
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/10/2017 11:26:01'!
 create
-	^ TensorFlowCAPI current newGraph useFinalization! !
+	^ TensorFlowCAPI current newGraph initialize useFinalization! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/2/2017 01:55:59'!
 fromBlock: aBlockClosure
