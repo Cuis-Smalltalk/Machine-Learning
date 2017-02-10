@@ -4981,9 +4981,9 @@ inputType: typeInteger
 mul: nameString described: aBlock
 	^self newOperation: 'Mul' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/30/2017 23:39:38'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/10/2017 11:28:09'!
 nameFor: namePrefix
-	^ namePrefix,'_',self operationsCount printString.! !
+	^ context, namePrefix,'_',self operationsCount printString.! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:35:44'!
 newOperation: typeString named: aString
