@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 9 February 2017 at 10:51:46 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:23:38 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 347!
+!provides: 'TensorFlow-Kernel' 1 349!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4247,9 +4247,16 @@ newBufferFromString: aString size: anInteger
 	<cdecl: TF_Buffer* 'TF_NewBufferFromString' (char* ulong)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/21/2016 22:36:38'!
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:59:21'!
 newGraph
-	<cdecl: TF_Graph* 'TF_NewGraph' (void)>
+	| answer |
+	answer _ self newGraphAsVoid.
+	answer _ TF_Graph fromHandle: answer getHandle.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:58:18'!
+newGraphAsVoid
+	<cdecl: void* 'TF_NewGraph' (void)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:17:45'!
