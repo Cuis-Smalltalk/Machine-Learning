@@ -4933,6 +4933,22 @@ fromBlock: aBlockClosure inputTypes: anArray
 	^ aBlockClosure valueWithArguments: inputs.
 ! !
 
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:26:14'!
+fromBlock: aBlockClosure inputTypes: anArray named: nameString
+	| previousContext answer |
+	previousContext _ context.
+	context _ context, nameString, '/'.
+	answer _ self fromBlock: aBlockClosure inputTypes: anArray.
+	context _ previousContext.
+	^ answer! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:32:38'!
+fromBlock: aBlockClosure named: nameString
+	| types |
+	types _ Array new: aBlockClosure argumentCount.
+	types atAllPut: TF_Tensor typeFloat.
+	^ self fromBlock: aBlockClosure inputTypes: types named: nameString! !
+
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
 import: aTF_Buffer
 	| options status |
