@@ -1,7 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 10:02:35 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 10:42:50 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 2!
+!provides: 'TensorFlow-Examples' 1 3!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
 	instanceVariableNames: ''
