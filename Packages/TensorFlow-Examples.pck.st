@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 11:45:34 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 12:32:02 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 3!
+!provides: 'TensorFlow-Examples' 1 4!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
@@ -114,7 +114,7 @@ MNISTLabelFile class
 
 !classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNISTSoftMaxExamplePlan
-	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel'
+	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel learnWeights learnBiases'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -961,13 +961,18 @@ trainingSet
 asTensor
 	^  TF_Tensor fromFloats:  items dimensions: {count. rows * columns}.! !
 
-!MNISTImageFile methodsFor: 'accessing' stamp: 'gera 2/7/2017 09:36:02'!
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/10/2017 00:50:56'!
 at: imageIndex
-	| size base bytes |
+	| bytes |
+	bytes _ self bytesAt: imageIndex.
+	^ GrayForm extent: rows @ columns bits: bytes! !
+
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/10/2017 00:50:21'!
+bytesAt: imageIndex
+	| size base |
 	size _ columns * rows.
 	base _ imageIndex - 1 * size + 1.
-	bytes _ items copyFrom: base to: base + size - 1.
-	^ GrayForm extent: rows @ columns bits: bytes! !
+	^ items copyFrom: base to: base + size - 1.! !
 
 !MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:35'!
 columns
@@ -996,9 +1001,9 @@ testName
 trainName
 	^ 'train-images-idx3-ubyte'! !
 
-!MNISTLabelFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:05:03'!
+!MNISTLabelFile methodsFor: 'converting' stamp: 'JB 2/10/2017 00:44:04'!
 asTensor
-	^ TF_Tensor fromFloats: items! !
+	^ items asInt32Tensor ! !
 
 !MNISTLabelFile methodsFor: 'initialization' stamp: 'gera 2/7/2017 09:37:58'!
 at: index
@@ -1045,9 +1050,22 @@ initializeInferenceGraph
 		netInput softmax]
 ! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:35:25'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 12:20:32'!
 initializeLearningGraph
-! !
+	| learningRate learningRateValue activation gradient |
+	learningRateValue _ 0.9 asTensor.
+	learningRate _ graph const: 'learningRate' value: learningRateValue.
+	activation _ graph
+		fromBlock: [:expected |
+			expectedLabel _ expected.
+			netInput sparseSoftmaxCrossEntropyWithLogits: expected]
+		inputTypes: {TF_Tensor typeInt32}.	
+	activation useOutput: 1.
+	gradient _ activation meanOn: #(0) asInt32Tensor.
+	"todo: divide by the number of inputs (the batch size)"
+	learnWeights _ weights descent: input \* activation rate: learningRate.
+	learnBiases _ biases descent: gradient rate: learningRate
+	! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/7/2017 11:41:46'!
 initializeLossGraph
@@ -1069,10 +1087,6 @@ initializeParameters
 initializeSession
 	session _ TF_Session onGraph: graph.
 	graph initializeOn: session.! !
-
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:34:38'!
-initializeTrainingGraph
-! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:30:14'!
 inputSize
@@ -1098,6 +1112,15 @@ predict: inputs andCompareTo: label
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {prediction output: 0. loss output: 0}.
+	^ results! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 12:01:17'!
+predict: inputs andLearnFrom: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs. label }
+		outputs: {prediction output. learnWeights output. learnBiases output}.
 	^ results! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
