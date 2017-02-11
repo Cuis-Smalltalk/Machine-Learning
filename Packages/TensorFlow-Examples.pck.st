@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 2:28:32 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 2:56:47 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 8!
+!provides: 'TensorFlow-Examples' 1 10!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
@@ -196,9 +196,9 @@ testMagic
 	self assert: images magic = MNISTImageFile magic.
 	self assert: labels magic = MNISTLabelFile magic.! !
 
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/11/2017 13:18:23'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/11/2017 14:56:16'!
 testPrediction
-	| imageSet images labelSet labels loss plan result |
+	| imageSet images labelSet labels loss plan result prediction |
 	plan _ MNISTSoftMaxExamplePlan new.
 	imageSet _ MNISTImageFile testSet.
 	labelSet _ MNISTLabelFile testSet.
@@ -211,7 +211,10 @@ testPrediction
 		plan predict: images andLearnFrom: labels].
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
-	self assert: (loss first closeTo: 0) ! !
+	self assert: (loss first closeTo: 0).
+	prediction _ plan predict: images.
+	self assert: prediction allInt64s first equals: labels first.
+	self assert: prediction allInt64s second equals: labels second! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
@@ -1071,7 +1074,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 13:29:41'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 14:54:40'!
 initializeInferenceGraph
 	prediction _ graph fromBlock: [:image | | axis |
 		input _ image.
@@ -1097,7 +1100,7 @@ initializeLearningGraph
 	learnBiases _ biases descent: gradient rate: learningRate
 	! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 13:03:35'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 14:45:59'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
