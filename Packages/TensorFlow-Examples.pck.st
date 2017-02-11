@@ -1,7 +1,17 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 1:05:28 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 1:18:41 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 5!
+!provides: 'TensorFlow-Examples' 1 6!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
+TestCase subclass: #TensorFlowExamplesSlowTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesSlowTest class' category: #'TensorFlow-Examples'!
+TensorFlowExamplesSlowTest class
+	instanceVariableNames: ''!
+
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
 	instanceVariableNames: ''
@@ -185,6 +195,23 @@ testMagic
 	
 	self assert: images magic = MNISTImageFile magic.
 	self assert: labels magic = MNISTLabelFile magic.! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/11/2017 13:18:23'!
+testPrediction
+	| imageSet images labelSet labels loss plan result |
+	plan _ MNISTSoftMaxExamplePlan new.
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	images _ {(imageSet bytesAt: 1). (imageSet bytesAt: 2)}.
+	labels _ {(labelSet at: 1). (labelSet at: 2)}.
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self deny: (loss first closeTo: 0).
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self assert: (loss first closeTo: 0) ! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
