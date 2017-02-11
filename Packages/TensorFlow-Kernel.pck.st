@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 7 February 2017 at 12:26:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 12:33:03 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 346!
+!provides: 'TensorFlow-Kernel' 1 348!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -154,7 +154,7 @@ TF_ImportGraphDefOptions class
 
 !classDefinition: #TF_Operation category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Operation
-	instanceVariableNames: 'graph'
+	instanceVariableNames: 'graph output'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
@@ -5257,12 +5257,12 @@ binaryOp: aString with: aTF_Operation named: name
 	^ self binaryOp: aString with: aTF_Operation named: name described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:52:59'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/9/2017 20:24:33'!
 binaryOp: aString with: aTF_Operation named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
 		description
-			addInput: (self output: 0);
-			addInput: (aTF_Operation output: 0).
+			addInput: self output;
+			addInput: aTF_Operation output.
 		oneArgBlock value: description].
 	! !
 
@@ -5281,7 +5281,7 @@ cos
 	^ self unaryOp: 'Cos'
 	! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/29/2017 15:17:26'!
+!TF_Operation methodsFor: 'ops other' stamp: 'JB 2/9/2017 20:24:53'!
 descent: delta rate: learningRate
 	| name operation |
 	operation _ 'ApplyGradientDescent'.
@@ -5289,7 +5289,7 @@ descent: delta rate: learningRate
 	
 	^ graph newOperation: operation named: name described: [:description |
 		description
-			addInput: (self output: 0);
+			addInput: self output;
 			addInput: (learningRate output: 0);
 			addInput: (delta output: 0)].
 ! !
@@ -5365,6 +5365,11 @@ nameFor: namePrefix
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
 negated
 	^ self unaryOp: 'Neg'! !
+
+!TF_Operation methodsFor: 'initialization' stamp: 'JB 2/10/2017 00:36:19'!
+output
+	output ifNil: [output _ 0.].
+	^ self output: output	! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
 output: indexInteger
@@ -5524,11 +5529,15 @@ unaryOp: aString named: name
 	^ self unaryOp: aString named: name described: [:description | ].
 	! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:24'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/9/2017 20:25:08'!
 unaryOp: aString named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
-		description addInput: (self output: 0).
+		description addInput: self output.
 		oneArgBlock value: description]! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'JB 2/9/2017 20:22:33'!
+useOutput: anInteger
+	output _ anInteger! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
