@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 12:33:03 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 12:54:34 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 348!
+!provides: 'TensorFlow-Kernel' 1 349!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3873,6 +3873,37 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	
 	session _ TF_Session onGraph: graph.
 	result _ session runOutputs: {xentropy output: 0. xentropy output: 1}.
+	
+	loss _ result first.
+	self assert: #(3) equals: loss dimensions.
+	self assert: (loss allFloats first between: 1 and: 1.5).
+	self assert: (loss allFloats second between: 1 and: 1.5).
+	self assert: (loss allFloats third between: 1 and: 1.2).
+	
+	gradient _ result second.
+	self assert: #(3 7) equals: gradient dimensions.
+	lastVector _ gradient allFloats last:7.
+	self assert: lastVector last < 0.
+	lastVector allButLastDo:[:x| x > 0] 
+! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/11/2017 12:53:38'!
+testOperationSparseSoftmaxCrossEntropyWithLogitsUseOutput
+	| graph label prediction result session xentropy gradient lastVector loss|
+	" I'm not sure this is a good test. I don't fully understand the operation"
+	
+	graph _ TF_Graph create.
+	prediction _ graph const: #(
+		(0.1 0.2 0.3 0.9 0.0 0.5 0.4)
+		(0.1 0.2 0.1 0.1 0.8 0.1 0.1)
+		(0 0 0 0 0 0 1)
+	) asFloatTensor.
+	label _ graph const: #(3 4 6) asInt32Tensor.
+	
+	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutputs: {xentropy output. (xentropy useOutput:1) output}.
 	
 	loss _ result first.
 	self assert: #(3) equals: loss dimensions.
