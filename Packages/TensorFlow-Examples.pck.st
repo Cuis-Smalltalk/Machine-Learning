@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 12:32:02 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 1:05:28 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 4!
+!provides: 'TensorFlow-Examples' 1 5!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
@@ -114,7 +114,7 @@ MNISTLabelFile class
 
 !classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNISTSoftMaxExamplePlan
-	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel learnWeights learnBiases'
+	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel learnWeights learnBiases expectedForComparison'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -1067,11 +1067,11 @@ initializeLearningGraph
 	learnBiases _ biases descent: gradient rate: learningRate
 	! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/7/2017 11:41:46'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 13:03:35'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
-			expectedLabel _ expected.
+			expectedForComparison _ expected.
 			(netInput sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
 		inputTypes: {TF_Tensor typeInt32}! !
 
@@ -1105,21 +1105,21 @@ predict: inputs
 		outputs: {prediction output: 0}.
 	^ results first! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 19:47:56'!
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 13:00:39'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
-		runInputs: {input input: 0. expectedLabel input: 0}
+		runInputs: {input input: 0. expectedForComparison input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {prediction output: 0. loss output: 0}.
 	^ results! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 12:01:17'!
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 12:57:01'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
-		values: {inputs. label }
+		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {prediction output. learnWeights output. learnBiases output}.
 	^ results! !
 
