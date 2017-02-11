@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 12:54:34 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 1:26:28 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 349!
+!provides: 'TensorFlow-Kernel' 1 350!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3207,6 +3207,38 @@ testOperationAcos
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/11/2017 13:26:07'!
+testOperationArgMax
+	| graph a session const result output0 output1 axis0 axis1 |
+	
+	a _ TF_Tensor fromFloats: #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	).
+	
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'a' value: a.
+	axis0 _ graph const: 'axis0' value: (TF_Tensor fromInt32: 0).
+	axis1 _ graph const: 'axis1' value: (TF_Tensor fromInt32: 1).
+	
+	output0 _ const findMaxOn: axis0.
+	output1 _ const findMaxOn: axis1.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (output0 output: 0).
+	
+	self assert: result dimensions equals: #(2).
+	result allInt64s with: #(2 1) do: [:r :t |
+		self assert: r equals: t].
+	
+	result _ session runOutput: (output1 output: 0).
+	
+	self assert: result dimensions equals: #(3).
+	result allInt64s with: #(1 1 0) do: [:r :t |
+		self assert: r equals: t].! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:45:45'!
 testOperationArgMin
 	| graph a session const result output0 output1 axis0 axis1 |
@@ -5333,6 +5365,10 @@ device
 exp
 	^ self unaryOp: 'Exp'
 	! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/11/2017 13:23:34'!
+findMaxOn: aTF_Operation
+	^ self binaryOp: 'ArgMax' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:37:51'!
 findMinOn: aTF_Operation
