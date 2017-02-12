@@ -4125,7 +4125,8 @@ testSoftmax
 	self assert: result dimensions equals: template dimensions.
 	
 	denominator _ template allFloats exp sum. 
-	result  allFloats with: template  allFloats exp / denominator do: [:res :temp | | delta |
+	result allFloats with: template allFloats exp / denominator do: [:res :temp |
+		| delta |
 		delta _ (res  - temp) abs.
 		self assert: delta < 0.001].
 	
@@ -5488,9 +5489,9 @@ nameFor: namePrefix
 negated
 	^ self unaryOp: 'Neg'! !
 
-!TF_Operation methodsFor: 'initialization' stamp: 'JB 2/10/2017 00:36:19'!
+!TF_Operation methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:10:23'!
 output
-	output ifNil: [output _ 0.].
+	output ifNil: [output _ 0].
 	^ self output: output	! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
