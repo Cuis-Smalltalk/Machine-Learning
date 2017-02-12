@@ -4109,7 +4109,7 @@ testOperationTan
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/7/2017 11:29:24'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 2/12/2017 20:07:24'!
 testSoftmax
 	| graph template session const result output denominator |
 	
@@ -4117,7 +4117,7 @@ testSoftmax
 	graph _ TF_Graph create.
 	
 	const _ graph const: 'const' value: template.
-	output _ const softmax output: 0.
+	output _ const softmax output.
 	
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
@@ -5399,7 +5399,7 @@ cos
 	^ self unaryOp: 'Cos'
 	! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'JB 2/9/2017 20:24:53'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/12/2017 20:13:16'!
 descent: delta rate: learningRate
 	| name operation |
 	operation _ 'ApplyGradientDescent'.
@@ -5408,8 +5408,8 @@ descent: delta rate: learningRate
 	^ graph newOperation: operation named: name described: [:description |
 		description
 			addInput: self output;
-			addInput: (learningRate output: 0);
-			addInput: (delta output: 0)].
+			addInput: learningRate output;
+			addInput: delta output].
 ! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
