@@ -3936,7 +3936,7 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	self assert: #(3 7) equals: gradient dimensions.
 	lastVector _ gradient allFloats last:7.
 	self assert: lastVector last < 0.
-	lastVector allButLastDo:[:x| x > 0] 
+	lastVector allButLastDo: [:x | self assert: x > 0] 
 ! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/12/2017 20:03:43'!
@@ -3966,7 +3966,7 @@ testOperationSparseSoftmaxCrossEntropyWithLogitsUseOutput
 	self assert: #(3 7) equals: gradient dimensions.
 	lastVector _ gradient allFloats last:7.
 	self assert: lastVector last < 0.
-	lastVector allButLastDo:[:x| x > 0] 
+	lastVector allButLastDo: [:x | self assert: x > 0] 
 ! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/25/2017 11:52:06'!
