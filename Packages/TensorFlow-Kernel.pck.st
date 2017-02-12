@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 1:26:28 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:23:38 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Kernel' 1 350!
 !requires: 'FFI' 1 18 nil!
@@ -134,7 +134,7 @@ TF_Buffer class
 
 !classDefinition: #TF_Graph category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Graph
-	instanceVariableNames: ''
+	instanceVariableNames: 'context'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
@@ -2887,6 +2887,27 @@ testVersion
 	version _ library version.
 	self assert: (#('0.11.head' '0.12.0' '0.12.head' '1.0.0-alpha') includes: version)! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/9/2017 10:50:39'!
+testWriteDefTo
+	| graph strm |
+	graph _ self constantInt64GraphFromDef.
+	strm _ WriteStream on: String new.
+	graph writeDefTo: strm.
+	
+	self assert: self constantInt64GraphDef size equals: strm contents size.! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/9/2017 10:50:45'!
+testWriteDefToFileNamed
+	| graph filename filedata |
+	filename _ 'temporaryGraph.pb'.
+	graph _ self constantInt64GraphFromDef.
+	graph writeDefToFileNamed: filename.
+
+     filedata _ filename asFileEntry readStream upToEnd.
+	filename asFileEntry delete.
+
+	self assert: self constantInt64GraphDef size equals: filedata size.! !
+
 !TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:22:17'!
 mulGraphTwoInputsInt64ConstTensorDeleted
 	^ TensorFlowCAPITest new mulGraphTwoInputsInt64ConstTensorDeleted! !
@@ -4319,9 +4340,16 @@ newBufferFromString: aString size: anInteger
 	<cdecl: TF_Buffer* 'TF_NewBufferFromString' (char* ulong)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/21/2016 22:36:38'!
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:59:21'!
 newGraph
-	<cdecl: TF_Graph* 'TF_NewGraph' (void)>
+	| answer |
+	answer _ self newGraphAsVoid.
+	answer _ TF_Graph fromHandle: answer getHandle.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:58:18'!
+newGraphAsVoid
+	<cdecl: void* 'TF_NewGraph' (void)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:17:45'!
@@ -4998,6 +5026,22 @@ fromBlock: aBlockClosure inputTypes: anArray
 	^ aBlockClosure valueWithArguments: inputs.
 ! !
 
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:26:14'!
+fromBlock: aBlockClosure inputTypes: anArray named: nameString
+	| previousContext answer |
+	previousContext _ context.
+	context _ context, nameString, '/'.
+	answer _ self fromBlock: aBlockClosure inputTypes: anArray.
+	context _ previousContext.
+	^ answer! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:32:38'!
+fromBlock: aBlockClosure named: nameString
+	| types |
+	types _ Array new: aBlockClosure argumentCount.
+	types atAllPut: TF_Tensor typeFloat.
+	^ self fromBlock: aBlockClosure inputTypes: types named: nameString! !
+
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
 import: aTF_Buffer
 	| options status |
@@ -5022,6 +5066,10 @@ importString: aString
 	buffer _ TF_Buffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 11:26:27'!
+initialize
+	context _ ''.! !
+
 !TF_Graph methodsFor: 'running' stamp: 'gera 1/29/2017 04:32:04'!
 initializeOn: aTF_Session
 	| initializers |
@@ -5042,9 +5090,9 @@ inputType: typeInteger
 mul: nameString described: aBlock
 	^self newOperation: 'Mul' named: nameString described: aBlock! !
 
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/30/2017 23:39:38'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/10/2017 11:28:09'!
 nameFor: namePrefix
-	^ namePrefix,'_',self operationsCount printString.! !
+	^ context, namePrefix,'_',self operationsCount printString.! !
 
 !TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:35:44'!
 newOperation: typeString named: aString
@@ -5183,6 +5231,15 @@ variable: nameString type: typeInteger shape: anArray
 				at: 'dtype' putType: typeInteger;
 				at: 'shape' putShape: anArray]! !
 
+!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 09:39:58'!
+writeDefTo: strm
+	strm nextPutAll: self definition! !
+
+!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 10:50:05'!
+writeDefToFileNamed: filename
+	filename asFileEntry writeStreamDo: [:strm |
+		self writeDefTo: strm]! !
+
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 02:15:35'!
 zerosShaped: dimensionsArray
 	| shape value |
@@ -5190,9 +5247,9 @@ zerosShaped: dimensionsArray
 	value _ self const: 0.0 asTensor.
 	^ shape binaryOp: 'Fill' with: value! !
 
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 1/20/2017 17:53:59'!
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/10/2017 11:26:01'!
 create
-	^ TensorFlowCAPI current newGraph useFinalization! !
+	^ TensorFlowCAPI current newGraph initialize useFinalization! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/2/2017 01:55:59'!
 fromBlock: aBlockClosure

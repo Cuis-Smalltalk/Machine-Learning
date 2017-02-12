@@ -1,6 +1,7 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 11 February 2017 at 2:56:47 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:35:21 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Examples' 1 10!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
@@ -857,7 +858,8 @@ initializeLossGraph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
 			(netInput sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
-		inputTypes: {TF_Tensor typeInt32}! !
+		inputTypes: {TF_Tensor typeInt32}
+		named: 'loss'.! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
 initializeParameters
