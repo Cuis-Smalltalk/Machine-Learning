@@ -3924,17 +3924,17 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session runOutputs: {xentropy output: 0. xentropy output: 1}.
+	results _ session runOutputs: {xentropy output: 0. xentropy output: 1}.
 	
-	loss _ result first.
+	loss _ results first.
 	self assert: #(3) equals: loss dimensions.
 	self assert: (loss allFloats first between: 1 and: 1.5).
 	self assert: (loss allFloats second between: 1 and: 1.5).
 	self assert: (loss allFloats third between: 1 and: 1.2).
 	
-	gradient _ result second.
+	gradient _ results second.
 	self assert: #(3 7) equals: gradient dimensions.
-	lastVector _ gradient allFloats last:7.
+	lastVector _ gradient allFloats last: 7.
 	self assert: lastVector last < 0.
 	lastVector allButLastDo: [:x | self assert: x > 0] 
 ! !
@@ -3954,17 +3954,17 @@ testOperationSparseSoftmaxCrossEntropyWithLogitsUseOutput
 	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session runOutputs: {xentropy output. (xentropy useOutput:1) output}.
+	results _ session runOutputs: {xentropy output. (xentropy useOutput: 1) output}.
 	
-	loss _ result first.
+	loss _ results first.
 	self assert: #(3) equals: loss dimensions.
 	self assert: (loss allFloats first between: 1 and: 1.5).
 	self assert: (loss allFloats second between: 1 and: 1.5).
 	self assert: (loss allFloats third between: 1 and: 1.2).
 	
-	gradient _ result second.
+	gradient _ results second.
 	self assert: #(3 7) equals: gradient dimensions.
-	lastVector _ gradient allFloats last:7.
+	lastVector _ gradient allFloats last: 7.
 	self assert: lastVector last < 0.
 	lastVector allButLastDo: [:x | self assert: x > 0] 
 ! !
