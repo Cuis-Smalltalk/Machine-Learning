@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:23:38 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 8:15:04 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 350!
+!provides: 'TensorFlow-Kernel' 1 351!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3909,10 +3909,9 @@ testOperationSin
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/7/2017 11:39:43'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/12/2017 19:07:07'!
 testOperationSparseSoftmaxCrossEntropyWithLogits
-	| graph label prediction result session xentropy gradient lastVector loss|
-	" I'm not sure this is a good test. I don't fully understand the operation"
+	| graph label prediction results session xentropy gradient lastVector loss|
 	
 	graph _ TF_Graph create.
 	prediction _ graph const: #(
@@ -3940,10 +3939,9 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	lastVector allButLastDo:[:x| x > 0] 
 ! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/11/2017 12:53:38'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/12/2017 20:03:43'!
 testOperationSparseSoftmaxCrossEntropyWithLogitsUseOutput
-	| graph label prediction result session xentropy gradient lastVector loss|
-	" I'm not sure this is a good test. I don't fully understand the operation"
+	| graph label prediction results session xentropy gradient lastVector loss|
 	
 	graph _ TF_Graph create.
 	prediction _ graph const: #(
