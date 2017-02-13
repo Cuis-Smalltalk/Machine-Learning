@@ -1153,7 +1153,7 @@ predict: inputs andCompareTo: label
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {prediction output: 0. loss output: 0}.
+		outputs: {prediction output. loss output}.
 	^ results! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 12:57:01'!
