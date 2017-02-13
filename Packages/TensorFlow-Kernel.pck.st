@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 11:27:15 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 13 February 2017 at 3:59:45 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 353!
+!provides: 'TensorFlow-Kernel' 1 354!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3017,11 +3017,11 @@ testTensorTypes
 	types pairsDo: [:name :value |
 		self assert: (TF_Tensor perform: (#type, name) asSymbol) equals: value]! !
 
-!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/11/2017 14:12:47'!
+!TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 2/13/2017 15:59:41'!
 testVersion
 	| version |
 	version _ library version.
-	self assert: (#('0.11.head' '0.12.0' '0.12.head' '1.0.0-alpha') includes: version)! !
+	self assert: (#('0.11.head' '0.12.0' '0.12.head' '1.0.0-alpha' '1.0.0') includes: version)! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/9/2017 10:50:39'!
 testWriteDefTo
