@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:35:21 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 10:55:48 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 10!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
+!provides: 'TensorFlow-Examples' 1 11!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: ''
@@ -837,16 +837,21 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 14:21:08'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:44:17'!
 initializeInferenceGraph
 	| hidden1 hidden2 |
-	prediction _ graph fromBlock: [:image | | axis |
-		input _ image.
-		hidden1 _ (image * weights1 + biases1) rectified.
-		hidden2 _ (hidden1 * weights2 + biases2) rectified.
-		netInput _ hidden2 * weights3 + biases3.
-		axis _ graph const: 1 asInt32Tensor.
-		netInput softmax findMaxOn: axis].
+	hidden1 _ graph
+		fromBlock: [:image |
+			input _ image.
+			(image * weights1 + biases1) rectified]
+		named: 'layer1'.
+	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified].
+	prediction _ graph
+		fromBlock: [:image | | axis |
+			netInput _ hidden2 * weights3 + biases3.
+			axis _ graph const: 1 asInt32Tensor.
+			netInput softmax findMaxOn: axis]
+		named: 'layer3'.
 ! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
