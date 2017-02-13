@@ -1081,14 +1081,16 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 14:54:40'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:10:20'!
 initializeInferenceGraph
-	prediction _ graph fromBlock: [:image | | axis |
-		input _ image.
-		netInput _ image * weights + biases.
-		axis _ graph const: 1 asInt32Tensor.
-		netInput softmax findMaxOn: axis]
-! !
+	prediction _ graph
+		fromBlock: [:image |
+			| axis |
+			input _ image.
+			netInput _ image * weights + biases.
+			axis _ graph const: 1 asInt32Tensor.
+			netInput softmax findMaxOn: axis]
+		named: 'inference'! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:11:51'!
 initializeLearningGraph
