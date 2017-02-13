@@ -1147,11 +1147,11 @@ predict: inputs
 		outputs: {prediction output: 0}.
 	^ results first! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 13:00:39'!
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/12/2017 23:07:52'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
-		runInputs: {input input: 0. expectedForComparison input: 0}
+		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {prediction output: 0. loss output: 0}.
 	^ results! !
