@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 10:55:48 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 11:13:33 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 11!
+!provides: 'TensorFlow-Examples' 1 12!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -125,7 +125,7 @@ MNISTLabelFile class
 
 !classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNISTSoftMaxExamplePlan
-	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel learnWeights learnBiases expectedForComparison'
+	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel learnWeights learnBiases activation'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -1090,30 +1090,30 @@ initializeInferenceGraph
 		netInput softmax findMaxOn: axis]
 ! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 12:20:32'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:11:51'!
 initializeLearningGraph
-	| learningRate learningRateValue activation gradient |
-	learningRateValue _ 0.9 asTensor.
-	learningRate _ graph const: 'learningRate' value: learningRateValue.
-	activation _ graph
-		fromBlock: [:expected |
-			expectedLabel _ expected.
-			netInput sparseSoftmaxCrossEntropyWithLogits: expected]
-		inputTypes: {TF_Tensor typeInt32}.	
-	activation useOutput: 1.
-	gradient _ activation meanOn: #(0) asInt32Tensor.
-	"todo: divide by the number of inputs (the batch size)"
-	learnWeights _ weights descent: input \* activation rate: learningRate.
-	learnBiases _ biases descent: gradient rate: learningRate
-	! !
+	| learningRate learningRateValue gradient |
+	graph
+		fromBlock: [
+			learningRateValue _ 0.9 asTensor.
+			learningRate _ graph const: 'learningRate' value: learningRateValue.
+			activation useOutput: 1.
+			gradient _ activation meanOn: #(0) asInt32Tensor.
+			"todo: divide by the number of inputs (the batch size)"
+			learnWeights _ weights descent: input \* activation rate: learningRate.
+			learnBiases _ biases descent: gradient rate: learningRate]
+		named: 'learning'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 14:45:59'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:09:05'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
-			expectedForComparison _ expected.
-			(netInput sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
-		inputTypes: {TF_Tensor typeInt32}! !
+			expectedLabel _ expected.
+			activation _ netInput sparseSoftmaxCrossEntropyWithLogits: expected.
+			activation meanOn: #(0) asInt32Tensor]
+		inputTypes: {TF_Tensor typeInt32}
+		named: 'loss'
+! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:29:23'!
 initializeParameters
