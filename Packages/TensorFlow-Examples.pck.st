@@ -1,8 +1,18 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:35:21 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 11:25:14 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 5!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
+!provides: 'TensorFlow-Examples' 1 13!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
+!classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
+TestCase subclass: #TensorFlowExamplesSlowTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesSlowTest class' category: #'TensorFlow-Examples'!
+TensorFlowExamplesSlowTest class
+	instanceVariableNames: ''!
+
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesTest
 	instanceVariableNames: ''
@@ -75,7 +85,7 @@ ExampleOLSPlan class
 
 !classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNIST3LayersNNExamplePlan
-	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss'
+	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -115,7 +125,7 @@ MNISTLabelFile class
 
 !classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNISTSoftMaxExamplePlan
-	instanceVariableNames: 'session graph weights biases prediction input loss expectedLabel'
+	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel learnWeights learnBiases activation'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -154,7 +164,7 @@ SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
 
-!TensorFlowCAPITestSlowTests methodsFor: '*TensorFlow-Examples' stamp: 'gera 2/7/2017 09:12:18'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:51'!
 testImages
 	| testing training |
 	testing _ MNISTImageFile testSet.
@@ -169,7 +179,7 @@ testImages
 	self assert: testing asTensor dimensions equals: {10000. 28*28}.
 	self assert: training asTensor dimensions equals: {60000. 28*28}.! !
 
-!TensorFlowCAPITestSlowTests methodsFor: '*TensorFlow-Examples' stamp: 'gera 2/7/2017 09:39:11'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:24:00'!
 testLabels
 	| test training |
 	test _ MNISTLabelFile testSet.
@@ -178,7 +188,7 @@ testLabels
 	self assert: test count equals: 10000.
 	self assert: training count equals: 60000.! !
 
-!TensorFlowCAPITestSlowTests methodsFor: '*TensorFlow-Examples' stamp: 'JB 2/5/2017 16:12:18'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:56'!
 testMagic
 	| images labels |
 	images _ MNISTImageFile testSet.
@@ -186,6 +196,26 @@ testMagic
 	
 	self assert: images magic = MNISTImageFile magic.
 	self assert: labels magic = MNISTLabelFile magic.! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/11/2017 14:56:16'!
+testPrediction
+	| imageSet images labelSet labels loss plan result prediction |
+	plan _ MNISTSoftMaxExamplePlan new.
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	images _ {(imageSet bytesAt: 1). (imageSet bytesAt: 2)}.
+	labels _ {(labelSet at: 1). (labelSet at: 2)}.
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self deny: (loss first closeTo: 0).
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self assert: (loss first closeTo: 0).
+	prediction _ plan predict: images.
+	self assert: prediction allInt64s first equals: labels first.
+	self assert: prediction allInt64s second equals: labels second! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
@@ -363,7 +393,7 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:17'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:23:03'!
 testMNIST3LayersNNForwardGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -380,15 +410,15 @@ testMNIST3LayersNNForwardGraph
 			}]
 		raise: Error.
 
-	self assert: {2. mnist outputSize} equals: result dimensions.
-	self assert: 0 equals: (result allFloats first: 10) abs sum.
-	self assert: (result allFloats last: 10) abs sum > 0.! !
+	self assert: {2} equals: result dimensions.
+	self assert: 0 equals: result allInt32s first.
+	self assert: 0 equals: result allInt32s second.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
 testMNIST3LayersNNInitialization
 	MNIST3LayersNNExamplePlan new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/3/2017 12:26:33'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:24:51'!
 testMNIST3LayersNNLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -407,15 +437,37 @@ testMNIST3LayersNNLossGraph
 				]
 		raise: Error.
 
-	self assert: {2. mnist outputSize} equals: results first dimensions.
-	self assert: 0 equals: (results first allFloats first: 10) abs sum.
-	self assert: (results first allFloats last: 10) abs sum > 0.
+	self assert: {2} equals: results first dimensions.
+	self assert: 0 equals: results first allInt32s first.
+	self assert: 0 equals: results first allInt32s second.
 	
 	self assert: #() equals: results second dimensions.
 	self assert: (results second allFloats sum abs > 0).! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/3/2017 12:32:33'!
-testMNIST3SoftMaxLossGraph
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:08:37'!
+testMNISTSoftMaxForwardGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist result |
+	mnist _ MNISTSoftMaxExamplePlan new.
+	
+	self 
+		shouldnt: [
+			result _ mnist predict: {
+				ByteArray new: mnist inputSize.
+				(ByteArray new: mnist inputSize) + 1.
+			}]
+		raise: Error.
+
+	self assert: {2} equals: result dimensions.
+	self assert: (result allInt32s first closeTo: 0).
+	self assert: (result allInt32s second closeTo: 0).
+! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:28:10'!
+testMNISTSoftMaxLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
 	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
@@ -433,33 +485,13 @@ testMNIST3SoftMaxLossGraph
 				]
 		raise: Error.
 
-	self assert: {2. mnist outputSize} equals: results first dimensions.
-	self assert: 0 equals: (results first allFloats first: 10) abs sum.
-	self assert: 0 equals: (results first allFloats last: 10) abs sum.
+	self assert: {2} equals: results first dimensions.
+	self assert: (results first allInt32s first closeTo: 0).
+	self assert: (results first allInt32s second closeTo: 0).
+
 	
 	self assert: #() equals: results second dimensions.
 	self assert: (results second allFloats sum abs > 0).! !
-
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:40:21'!
-testMNISTSoftMaxForwardGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| mnist result |
-	mnist _ MNISTSoftMaxExamplePlan new.
-	
-	self 
-		shouldnt: [
-			result _ mnist predict: {
-				ByteArray new: mnist inputSize.
-				(ByteArray new: mnist inputSize) + 1.
-			}]
-		raise: Error.
-
-	self assert: {2. mnist outputSize} equals: result dimensions.
-	self assert: 0 equals: (result allFloats first: 10) abs sum.
-	self assert: 0 equals: (result allFloats last: 10) abs sum.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:33:39'!
 testMNISTSoftMaxnitialization
@@ -805,7 +837,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/10/2017 17:35:16'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:44:17'!
 initializeInferenceGraph
 	| hidden1 hidden2 |
 	hidden1 _ graph
@@ -813,19 +845,24 @@ initializeInferenceGraph
 			input _ image.
 			(image * weights1 + biases1) rectified]
 		named: 'layer1'.
-	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified] named: 'layer2'.
-	prediction _ graph fromBlock: [hidden2 * weights3 + biases3] named: 'layer3'.
+	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified].
+	prediction _ graph
+		fromBlock: [:image | | axis |
+			netInput _ hidden2 * weights3 + biases3.
+			axis _ graph const: 1 asInt32Tensor.
+			netInput softmax findMaxOn: axis]
+		named: 'layer3'.
 ! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
 initializeLearningGraph! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/10/2017 15:45:26'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 14:21:18'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
-			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
+			(netInput sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
 		inputTypes: {TF_Tensor typeInt32}
 		named: 'loss'.! !
 
@@ -963,13 +1000,18 @@ trainingSet
 asTensor
 	^  TF_Tensor fromFloats:  items dimensions: {count. rows * columns}.! !
 
-!MNISTImageFile methodsFor: 'accessing' stamp: 'gera 2/7/2017 09:36:02'!
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/10/2017 00:50:56'!
 at: imageIndex
-	| size base bytes |
+	| bytes |
+	bytes _ self bytesAt: imageIndex.
+	^ GrayForm extent: rows @ columns bits: bytes! !
+
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/10/2017 00:50:21'!
+bytesAt: imageIndex
+	| size base |
 	size _ columns * rows.
 	base _ imageIndex - 1 * size + 1.
-	bytes _ items copyFrom: base to: base + size - 1.
-	^ GrayForm extent: rows @ columns bits: bytes! !
+	^ items copyFrom: base to: base + size - 1.! !
 
 !MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:35'!
 columns
@@ -998,9 +1040,9 @@ testName
 trainName
 	^ 'train-images-idx3-ubyte'! !
 
-!MNISTLabelFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:05:03'!
+!MNISTLabelFile methodsFor: 'converting' stamp: 'JB 2/10/2017 00:44:04'!
 asTensor
-	^ TF_Tensor fromFloats: items! !
+	^ items asInt32Tensor ! !
 
 !MNISTLabelFile methodsFor: 'initialization' stamp: 'gera 2/7/2017 09:37:58'!
 at: index
@@ -1039,24 +1081,41 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:31:47'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:10:20'!
 initializeInferenceGraph
-	prediction _ graph fromBlock: [:image |
-		input _ image.
-		image * weights + biases]
-! !
+	prediction _ graph
+		fromBlock: [:image |
+			| axis |
+			input _ image.
+			netInput _ image * weights + biases.
+			axis _ graph const: 1 asInt32Tensor.
+			netInput softmax findMaxOn: axis]
+		named: 'inference'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:35:25'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:11:51'!
 initializeLearningGraph
-! !
+	| learningRate learningRateValue gradient |
+	graph
+		fromBlock: [
+			learningRateValue _ 0.9 asTensor.
+			learningRate _ graph const: 'learningRate' value: learningRateValue.
+			activation useOutput: 1.
+			gradient _ activation meanOn: #(0) asInt32Tensor.
+			"todo: divide by the number of inputs (the batch size)"
+			learnWeights _ weights descent: input \* activation rate: learningRate.
+			learnBiases _ biases descent: gradient rate: learningRate]
+		named: 'learning'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/3/2017 12:31:36'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:09:05'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
-			(prediction sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
-		inputTypes: {TF_Tensor typeInt32}! !
+			activation _ netInput sparseSoftmaxCrossEntropyWithLogits: expected.
+			activation meanOn: #(0) asInt32Tensor]
+		inputTypes: {TF_Tensor typeInt32}
+		named: 'loss'
+! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:29:23'!
 initializeParameters
@@ -1070,10 +1129,6 @@ initializeParameters
 initializeSession
 	session _ TF_Session onGraph: graph.
 	graph initializeOn: session.! !
-
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:34:38'!
-initializeTrainingGraph
-! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:30:14'!
 inputSize
@@ -1092,13 +1147,22 @@ predict: inputs
 		outputs: {prediction output: 0}.
 	^ results first! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 19:47:56'!
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/12/2017 23:07:52'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {prediction output: 0. loss output: 0}.
+		outputs: {prediction output. loss output}.
+	^ results! !
+
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 12:57:01'!
+predict: inputs andLearnFrom: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asInt32Tensor}
+		outputs: {prediction output. learnWeights output. learnBiases output}.
 	^ results! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!

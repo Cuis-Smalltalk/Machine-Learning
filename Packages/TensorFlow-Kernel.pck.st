@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 10 February 2017 at 5:23:38 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 11:27:15 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 349!
+!provides: 'TensorFlow-Kernel' 1 353!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -12,6 +12,16 @@ TestCase subclass: #ExternalWordArrayTest
 ExternalWordArrayTest class
 	instanceVariableNames: ''!
 
+!classDefinition: #TensorFlowCAPISlowTests category: #'TensorFlow-Kernel'!
+TestCase subclass: #TensorFlowCAPISlowTests
+	instanceVariableNames: 'library'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TensorFlowCAPISlowTests class' category: #'TensorFlow-Kernel'!
+TensorFlowCAPISlowTests class
+	instanceVariableNames: ''!
+
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
 TestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
@@ -20,16 +30,6 @@ TestCase subclass: #TensorFlowCAPITest
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TensorFlowCAPITest class' category: #'TensorFlow-Kernel'!
 TensorFlowCAPITest class
-	instanceVariableNames: ''!
-
-!classDefinition: #TensorFlowCAPITestSlowTests category: #'TensorFlow-Kernel'!
-TestCase subclass: #TensorFlowCAPITestSlowTests
-	instanceVariableNames: 'library'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TensorFlowCAPITestSlowTests class' category: #'TensorFlow-Kernel'!
-TensorFlowCAPITestSlowTests class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowOperationsTest category: #'TensorFlow-Kernel'!
@@ -154,7 +154,7 @@ TF_ImportGraphDefOptions class
 
 !classDefinition: #TF_Operation category: #'TensorFlow-Kernel'!
 TF_Structure subclass: #TF_Operation
-	instanceVariableNames: 'graph'
+	instanceVariableNames: 'graph output'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
@@ -464,6 +464,142 @@ testUInt64ArrayAtPut
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 18:11:59'!
 testUInt64ArrayElementsOfRightClass
 	^ self testArray: Int64Array sampleElement: 1234.! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:22:17'!
+mulGraphTwoInputsInt64ConstTensorDeleted
+	^ TensorFlowCAPITest new mulGraphTwoInputsInt64ConstTensorDeleted! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing graph' stamp: 'gera 1/29/2017 02:18:22'!
+testGraphFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| tries total handles |
+	total _ 0.
+	tries _ 10.
+	handles _ Set new.
+
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			TF_Graph create useFinalization getHandle]).
+		handles size < total ifTrue: [
+			^ self]
+	].
+	
+	self assert: (handles size) < total.
+! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:20:03'!
+testRunGraphMulTwoInputsConstTensorDeleted
+	| graph inputs inputValues mul output session results |
+	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+		
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 16r23)
+		with: (TF_Tensor fromInt64: 16r24).
+
+	Smalltalk garbageCollect.
+	(TF_Tensor fromInt64: 16r1234123412341234) useFinalization.
+	Smalltalk garbageCollect.
+	
+	mul _ graph operationNamed: 'mul2'.
+	output _ mul output: 0.
+	session _ TF_Session onGraph: graph.
+	results _ session
+		runOperations: (Array with: mul)
+		inputs: inputs
+		values: inputValues
+		outputs: (Array with: output).
+	
+	self deny: results isNull.
+	self deny: results first isNull.
+	self deny: results first data isNull.
+	self
+		assert: (results first data getHandle signedLongLongAt: 1)
+		equals: ((16r2121212121212121 * 16r23 * 16r24) bitAnd: 16rFFFFFFFFFFFFFFFF).
+
+	graph delete.
+	results first delete.
+! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:21:07'!
+testRunGraphMulTwoInputsConstTensorDeletedManyTimes
+	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDeleted]! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing session' stamp: 'gera 1/29/2017 02:17:24'!
+testSessionFinalizationReleasesExternalMemory 
+	" WeakArray restartFinalizationProcess "
+	| tries total handles graph |
+	total _ 0.
+	tries _ 20.
+	graph _ TF_Graph create.
+	handles _ Set new.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_Session onGraph: graph) getHandle]).
+		handles size < total ifTrue: [
+			^ self]].
+	
+	self assert: (handles size) < total.
+! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing options' stamp: 'gera 1/29/2017 02:17:51'!
+testSessionOptionFinalizationReleasesExternalMemory 
+	" WeakArray restartFinalizationProcess "
+	| tries total handles |
+	total _ 0.
+	tries _ 10.
+	handles _ Set new.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_SessionOptions create) getHandle]).
+		handles size < total ifTrue: [
+			^ self]].
+	
+	self assert: (handles size) < total.
+! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing status' stamp: 'gera 1/29/2017 02:23:00'!
+testStatusFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles |
+	handles _ (1 to: 11) collect: [:i |
+		Smalltalk garbageCollect.
+		TF_Status create getHandle].
+
+	self assert: (handles asSet size) < 11.! !
+
+!TensorFlowCAPISlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:16:30'!
+testTensorFinalizationReleasesExternalMemory
+	" WeakArray restartFinalizationProcess "
+	| handles template tries total |
+	total _ 0.
+	tries _ 20.
+	handles _ Set new.
+
+	template _ {String new: 10. String new: 100. String new: 1000}.
+	
+	20 timesRepeat: [
+		total _ total + tries.
+		handles addAll: ((1 to: tries) collect: [:i |
+			Smalltalk garbageCollect.
+			(TF_Tensor fromStringArray: template) getHandle]).
+		handles size < total ifTrue: [
+			^ self]
+	].
+
+	self assert: (handles size) < total.
+! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/5/2017 23:56:12'!
 addGraphTwoInputsInt64
@@ -2908,142 +3044,6 @@ testWriteDefToFileNamed
 
 	self assert: self constantInt64GraphDef size equals: filedata size.! !
 
-!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:22:17'!
-mulGraphTwoInputsInt64ConstTensorDeleted
-	^ TensorFlowCAPITest new mulGraphTwoInputsInt64ConstTensorDeleted! !
-
-!TensorFlowCAPITestSlowTests methodsFor: 'testing graph' stamp: 'gera 1/29/2017 02:18:22'!
-testGraphFinalizationReleasesExternalMemory
-	" WeakArray restartFinalizationProcess "
-	| tries total handles |
-	total _ 0.
-	tries _ 10.
-	handles _ Set new.
-
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			TF_Graph create useFinalization getHandle]).
-		handles size < total ifTrue: [
-			^ self]
-	].
-	
-	self assert: (handles size) < total.
-! !
-
-!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:20:03'!
-testRunGraphMulTwoInputsConstTensorDeleted
-	| graph inputs inputValues mul output session results |
-	graph _ self mulGraphTwoInputsInt64ConstTensorDeleted.
-	
-	inputs _ Array
-		with: ((graph operationNamed: 'in1') input: 0)
-		with: ((graph operationNamed: 'in2') input: 0).
-		
-	inputValues _ Array
-		with: (TF_Tensor fromInt64: 16r23)
-		with: (TF_Tensor fromInt64: 16r24).
-
-	Smalltalk garbageCollect.
-	(TF_Tensor fromInt64: 16r1234123412341234) useFinalization.
-	Smalltalk garbageCollect.
-	
-	mul _ graph operationNamed: 'mul2'.
-	output _ mul output: 0.
-	session _ TF_Session onGraph: graph.
-	results _ session
-		runOperations: (Array with: mul)
-		inputs: inputs
-		values: inputValues
-		outputs: (Array with: output).
-	
-	self deny: results isNull.
-	self deny: results first isNull.
-	self deny: results first data isNull.
-	self
-		assert: (results first data getHandle signedLongLongAt: 1)
-		equals: ((16r2121212121212121 * 16r23 * 16r24) bitAnd: 16rFFFFFFFFFFFFFFFF).
-
-	graph delete.
-	results first delete.
-! !
-
-!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:21:07'!
-testRunGraphMulTwoInputsConstTensorDeletedManyTimes
-	20 timesRepeat: [self testRunGraphMulTwoInputsConstTensorDeleted]! !
-
-!TensorFlowCAPITestSlowTests methodsFor: 'testing session' stamp: 'gera 1/29/2017 02:17:24'!
-testSessionFinalizationReleasesExternalMemory 
-	" WeakArray restartFinalizationProcess "
-	| tries total handles graph |
-	total _ 0.
-	tries _ 20.
-	graph _ TF_Graph create.
-	handles _ Set new.
-	
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			(TF_Session onGraph: graph) getHandle]).
-		handles size < total ifTrue: [
-			^ self]].
-	
-	self assert: (handles size) < total.
-! !
-
-!TensorFlowCAPITestSlowTests methodsFor: 'testing options' stamp: 'gera 1/29/2017 02:17:51'!
-testSessionOptionFinalizationReleasesExternalMemory 
-	" WeakArray restartFinalizationProcess "
-	| tries total handles |
-	total _ 0.
-	tries _ 10.
-	handles _ Set new.
-	
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			(TF_SessionOptions create) getHandle]).
-		handles size < total ifTrue: [
-			^ self]].
-	
-	self assert: (handles size) < total.
-! !
-
-!TensorFlowCAPITestSlowTests methodsFor: 'testing status' stamp: 'gera 1/29/2017 02:23:00'!
-testStatusFinalizationReleasesExternalMemory
-	" WeakArray restartFinalizationProcess "
-	| handles |
-	handles _ (1 to: 11) collect: [:i |
-		Smalltalk garbageCollect.
-		TF_Status create getHandle].
-
-	self assert: (handles asSet size) < 11.! !
-
-!TensorFlowCAPITestSlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:16:30'!
-testTensorFinalizationReleasesExternalMemory
-	" WeakArray restartFinalizationProcess "
-	| handles template tries total |
-	total _ 0.
-	tries _ 20.
-	handles _ Set new.
-
-	template _ {String new: 10. String new: 100. String new: 1000}.
-	
-	20 timesRepeat: [
-		total _ total + tries.
-		handles addAll: ((1 to: tries) collect: [:i |
-			Smalltalk garbageCollect.
-			(TF_Tensor fromStringArray: template) getHandle]).
-		handles size < total ifTrue: [
-			^ self]
-	].
-
-	self assert: (handles size) < total.
-! !
-
 !TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:01:08'!
 assert: aNumber closeTo: anotherNumber
 	^ self
@@ -3227,6 +3227,38 @@ testOperationAcos
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/11/2017 13:26:07'!
+testOperationArgMax
+	| graph a session const result output0 output1 axis0 axis1 |
+	
+	a _ TF_Tensor fromFloats: #(
+		(1.1 1.2)
+		(2.1 2.2)
+		(3.1 0.2)
+	).
+	
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'a' value: a.
+	axis0 _ graph const: 'axis0' value: (TF_Tensor fromInt32: 0).
+	axis1 _ graph const: 'axis1' value: (TF_Tensor fromInt32: 1).
+	
+	output0 _ const findMaxOn: axis0.
+	output1 _ const findMaxOn: axis1.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (output0 output: 0).
+	
+	self assert: result dimensions equals: #(2).
+	result allInt64s with: #(2 1) do: [:r :t |
+		self assert: r equals: t].
+	
+	result _ session runOutput: (output1 output: 0).
+	
+	self assert: result dimensions equals: #(3).
+	result allInt64s with: #(1 1 0) do: [:r :t |
+		self assert: r equals: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:45:45'!
 testOperationArgMin
@@ -3877,10 +3909,9 @@ testOperationSin
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/2/2017 02:48:05'!
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/12/2017 19:07:07'!
 testOperationSparseSoftmaxCrossEntropyWithLogits
-	| graph label prediction result session xentropy |
-	" I'm not sure this is a good test. I don't fully understand the operation"
+	| graph label prediction results session xentropy gradient lastVector loss|
 	
 	graph _ TF_Graph create.
 	prediction _ graph const: #(
@@ -3893,12 +3924,49 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
 	
 	session _ TF_Session onGraph: graph.
-	result _ session runOutput: (xentropy output: 0).
+	results _ session runOutputs: {xentropy output: 0. xentropy output: 1}.
 	
-	self assert: #(3) equals: result dimensions.
-	self assert: (result allFloats first between: 1 and: 1.5).
-	self assert: (result allFloats second between: 1 and: 1.5).
-	self assert: (result allFloats third between: 1 and: 1.2).
+	loss _ results first.
+	self assert: #(3) equals: loss dimensions.
+	self assert: (loss allFloats first between: 1 and: 1.5).
+	self assert: (loss allFloats second between: 1 and: 1.5).
+	self assert: (loss allFloats third between: 1 and: 1.2).
+	
+	gradient _ results second.
+	self assert: #(3 7) equals: gradient dimensions.
+	lastVector _ gradient allFloats last: 7.
+	self assert: lastVector last < 0.
+	lastVector allButLastDo: [:x | self assert: x > 0] 
+! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/12/2017 20:03:43'!
+testOperationSparseSoftmaxCrossEntropyWithLogitsUseOutput
+	| graph label prediction results session xentropy gradient lastVector loss|
+	
+	graph _ TF_Graph create.
+	prediction _ graph const: #(
+		(0.1 0.2 0.3 0.9 0.0 0.5 0.4)
+		(0.1 0.2 0.1 0.1 0.8 0.1 0.1)
+		(0 0 0 0 0 0 1)
+	) asFloatTensor.
+	label _ graph const: #(3 4 6) asInt32Tensor.
+	
+	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
+	
+	session _ TF_Session onGraph: graph.
+	results _ session runOutputs: {xentropy output. (xentropy useOutput: 1) output}.
+	
+	loss _ results first.
+	self assert: #(3) equals: loss dimensions.
+	self assert: (loss allFloats first between: 1 and: 1.5).
+	self assert: (loss allFloats second between: 1 and: 1.5).
+	self assert: (loss allFloats third between: 1 and: 1.2).
+	
+	gradient _ results second.
+	self assert: #(3 7) equals: gradient dimensions.
+	lastVector _ gradient allFloats last: 7.
+	self assert: lastVector last < 0.
+	lastVector allButLastDo: [:x | self assert: x > 0] 
 ! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/25/2017 11:52:06'!
@@ -4040,6 +4108,30 @@ testOperationTan
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 2/12/2017 20:07:24'!
+testSoftmax
+	| graph template session const result output denominator |
+	
+	template _ TF_Tensor fromFloats: {{0. 3  ln}}.
+	graph _ TF_Graph create.
+	
+	const _ graph const: 'const' value: template.
+	output _ const softmax output.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: output.
+
+	self assert: result dimensions equals: template dimensions.
+	
+	denominator _ template allFloats exp sum. 
+	result allFloats with: template allFloats exp / denominator do: [:res :temp |
+		| delta |
+		delta _ (res  - temp) abs.
+		self assert: delta < 0.001].
+	
+	output free.
+! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
 allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
@@ -5284,12 +5376,12 @@ binaryOp: aString with: aTF_Operation named: name
 	^ self binaryOp: aString with: aTF_Operation named: name described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:52:59'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/9/2017 20:24:33'!
 binaryOp: aString with: aTF_Operation named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
 		description
-			addInput: (self output: 0);
-			addInput: (aTF_Operation output: 0).
+			addInput: self output;
+			addInput: aTF_Operation output.
 		oneArgBlock value: description].
 	! !
 
@@ -5308,7 +5400,7 @@ cos
 	^ self unaryOp: 'Cos'
 	! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/29/2017 15:17:26'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/12/2017 20:13:16'!
 descent: delta rate: learningRate
 	| name operation |
 	operation _ 'ApplyGradientDescent'.
@@ -5316,9 +5408,9 @@ descent: delta rate: learningRate
 	
 	^ graph newOperation: operation named: name described: [:description |
 		description
-			addInput: (self output: 0);
-			addInput: (learningRate output: 0);
-			addInput: (delta output: 0)].
+			addInput: self output;
+			addInput: learningRate output;
+			addInput: delta output].
 ! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
@@ -5329,6 +5421,10 @@ device
 exp
 	^ self unaryOp: 'Exp'
 	! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/11/2017 13:23:34'!
+findMaxOn: aTF_Operation
+	^ self binaryOp: 'ArgMax' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:37:51'!
 findMinOn: aTF_Operation
@@ -5393,6 +5489,11 @@ nameFor: namePrefix
 negated
 	^ self unaryOp: 'Neg'! !
 
+!TF_Operation methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:10:23'!
+output
+	output ifNil: [output _ 0].
+	^ self output: output	! !
+
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
 output: indexInteger
 	^ TF_Output onOperation: self index: indexInteger! !
@@ -5441,6 +5542,11 @@ sigmoid
 sin
 	^ self unaryOp: 'Sin'
 	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/7/2017 11:32:45'!
+softmax
+	^ self unaryOp: 'Softmax'
+! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 02:09:13'!
 sparseSoftmaxCrossEntropyWithLogits: aTF_Operation
@@ -5546,11 +5652,15 @@ unaryOp: aString named: name
 	^ self unaryOp: aString named: name described: [:description | ].
 	! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:24'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/9/2017 20:25:08'!
 unaryOp: aString named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
-		description addInput: (self output: 0).
+		description addInput: self output.
 		oneArgBlock value: description]! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'JB 2/9/2017 20:22:33'!
+useOutput: anInteger
+	output _ anInteger! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
