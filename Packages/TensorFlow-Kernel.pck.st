@@ -623,12 +623,12 @@ asStringGraphType: type
 	^ graph! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:53:12'!
-assertDimensionsOf: aMultidimensionalTensor is: anInteger
-	| dimensions |
-	dimensions _ TF_Tensor dimensionsOf: aMultidimensionalTensor.
+assertShapeOf: aMultidimensionalTensor is: anArray
+	| shape |
+	shape _ TF_Tensor shapeOf: aMultidimensionalTensor.
 	self
-		assert: dimensions = anInteger
-		description: 'The dimension is ', dimensions printString, ' and should have been ', anInteger printString! !
+		assert: shape = anArray
+		description: 'The shape is ', shape printString, ' and should have been ', anArray printString! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:48:59'!
 assertRankOf: aMultidimensionalTensor is: anInteger
@@ -1018,41 +1018,41 @@ testAllVariables
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 18:09:11'!
 testAsFloatTensor
-	self testAsFloatTensor: 1 dimensions: #().
-	self testAsFloatTensor: #(1 2 3 4) dimensions: #(4).
-	self testAsFloatTensor: #((1 2 3 4) (3.14 1.71 2.12 -7.8)) dimensions: #(2 4).
+	self testAsFloatTensor: 1 shape: #().
+	self testAsFloatTensor: #(1 2 3 4) shape: #(4).
+	self testAsFloatTensor: #((1 2 3 4) (3.14 1.71 2.12 -7.8)) shape: #(2 4).
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 17:37:38'!
-testAsFloatTensor: anArray dimensions: dims
+testAsFloatTensor: tensorArray shape: shapeArray
 	| tensor index floats |
-	tensor _ anArray asFloatTensor.
+	tensor _ tensorArray asFloatTensor.
 	
 	index _ 1.
 	floats _ tensor allFloats.
-	TF_Tensor elementsOf: anArray do: [:each |
+	TF_Tensor elementsOf: tensorArray do: [:each |
 		self assert: ((floats at: index) closeTo: each).
 		index _ index + 1].
 
-	self assert: tensor dimensions equals: dims! !
+	self assert: tensor shape equals: shapeArray! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:50:15'!
 testAsInt32Tensor
-	self testAsInt32Tensor: 1 dimensions: #().
-	self testAsInt32Tensor: #(1 2 3 4) dimensions: #(4).
-	self testAsInt32Tensor: #((1 2 3 4) (-314 171 -212 -78)) dimensions: #(2 4).
+	self testAsInt32Tensor: 1 shape: #().
+	self testAsInt32Tensor: #(1 2 3 4) shape: #(4).
+	self testAsInt32Tensor: #((1 2 3 4) (-314 171 -212 -78)) shape: #(2 4).
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:48:59'!
-testAsInt32Tensor: anArray dimensions: dims
+testAsInt32Tensor: tensorArray shape: shapeArray
 	| tensor index ints |
-	tensor _ anArray asInt32Tensor.
+	tensor _ tensorArray asInt32Tensor.
 	
-	self assert: tensor dimensions equals: dims.
+	self assert: tensor shape equals: shapeArray.
 	
 	index _ 1.
 	ints _ tensor allInt32s.
-	TF_Tensor elementsOf: anArray do: [:each |
+	TF_Tensor elementsOf: tensorArray do: [:each |
 		self assert: (ints at: index) equals: each.
 		index _ index + 1].
 
@@ -1167,7 +1167,7 @@ testAttrGetTensor
 	tensor _ op tensorAt: 'value'.
 	
 	self assert: tensor type equals: TF_Tensor typeInt64.
-	self assert: tensor dimensions equals: #().
+	self assert: tensor shape equals: #().
 	self assert: tensor allInt64s equals: #(16r4242424242424242).
 	
 	graph delete! !
@@ -1476,8 +1476,8 @@ testDescriptionDevice
 		raiseError: expected.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:52:54'!
-testDimensionOfInput
-	| graph template const dimensions same |
+testShapeOfInput
+	| graph template const shape same |
 	graph _ TF_Graph create.
 	template _ TF_Tensor fromFloats: #(
 		((1) (2) (3)) 
@@ -1485,28 +1485,28 @@ testDimensionOfInput
 	).
 	const _ graph const: 'const' value: template.
 	same _ const identity.
-	dimensions _ graph dimensionsOf: (same input: 0).
+	shape _ graph shapeOf: (same input: 0).
 	
-	self assert: template dimensions equals: dimensions.
+	self assert: template shape equals: shape.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:49:20'!
-testDimensionOfOutput
-	| graph template const dimensions |
+testShapeOfOutput
+	| graph template const shape |
 	graph _ TF_Graph create.
 	template _ TF_Tensor fromFloats: #(
 		((1) (2) (3)) 
 		((4) (5) (6))
 	).
 	const _ graph const: 'const' value: template.
-	dimensions _ graph dimensionsOf: (const output: 0).
+	shape _ graph shapeOf: (const output: 0).
 	
-	self assert: template dimensions equals: dimensions.
+	self assert: template shape equals: shape.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 16:09:52'!
-testDimensionOfOutputSet
-	| graph var dimensions output |
+testShapeOfOutputSet
+	| graph var shape output |
 	graph _ TF_Graph create.
 	
 	var _ graph newOperation: 'Placeholder' named: 'var' described: [:description |
@@ -1516,17 +1516,17 @@ testDimensionOfOutputSet
 	
 	output _ var output: 0.
 	
-	dimensions _ graph dimensionsOf: output.
-	self assert: dimensions equals: #(3 -1 -1).
+	shape _ graph shapeOf: output.
+	self assert: shape equals: #(3 -1 -1).
 
-	graph dimensionsOf: output set: #(-1 3 -1).
+	graph shapeOf: output set: #(-1 3 -1).
 
-	dimensions _ graph dimensionsOf: output.
-	self assert: dimensions equals: #(3 3 -1).
+	shape _ graph shapeOf: output.
+	self assert: shape equals: #(3 3 -1).
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:54:53'!
-testDimensionOfOutputSetInvalid
+testShapeOfOutputSetInvalid
 	| graph template const output |
 	graph _ TF_Graph create.
 	template _ TF_Tensor fromFloats: #(
@@ -1537,12 +1537,12 @@ testDimensionOfOutputSetInvalid
 	output _ const output: 0.
 	
 	self
-		should: [graph dimensionsOf: output set: #(1 2 3)] 
+		should: [graph shapeOf: output set: #(1 2 3)] 
 		raiseError: 'INVALID_ARGUMENT: Dimension 0 in both shapes must be equal, but are 2 and 1'.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:55:22'!
-testDimensionOfOutputSetInvalidRank
+testShapeOfOutputSetInvalidRank
 	| graph template const output |
 	graph _ TF_Graph create.
 	template _ TF_Tensor fromFloats: #(
@@ -1553,15 +1553,15 @@ testDimensionOfOutputSetInvalidRank
 	output _ const output: 0.
 	
 	self
-		should: [graph dimensionsOf: output set: #(1 2 3 -1)]
+		should: [graph shapeOf: output set: #(1 2 3 -1)]
 		raiseError: 'INVALID_ARGUMENT: Shapes must be equal rank, but are 3 and 4'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
-testDimensions
-	self assertDimensionsOf: -13123213 is: #().
-	self assertDimensionsOf: #(123 123 123 123) is: #(4).
-	self assertDimensionsOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: #(4 3).
-	self assertDimensionsOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: #(3 3 1).! !
+testShape
+	self assertShapeOf: -13123213 is: #().
+	self assertShapeOf: #(123 123 123 123) is: #(4).
+	self assertShapeOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: #(4 3).
+	self assertShapeOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: #(3 3 1).! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/17/2017 18:58:04'!
 testElementsOf: aTensor sum: aNumber
@@ -2355,7 +2355,7 @@ testOutputDims
 testPlaceholderType: type
 	| graph var session result tensor abs |
 	graph _ TF_Graph create.
-	tensor _ TF_Tensor type: type dimensions: #().
+	tensor _ TF_Tensor type: type shape: #().
 	var _ graph placeholder: 'var' type: type.
 	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description |
 		description addInput: (var output: 0)].
@@ -2408,7 +2408,7 @@ testRankOfOutput
 	const _ graph const: 'const' value: template.
 	rank _ graph rankOf: (const output: 0).
 	
-	self assert: template dimensions size equals: rank.
+	self assert: template shape size equals: rank.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:50:59'!
@@ -2789,12 +2789,12 @@ testTensorAllStrings
 	result delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:17:42'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/13/2017 23:34:36'!
 testTensorByteSize
 	| tensor |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
-		dimensions: #(2 3).
+		shape: #(2 3).
 
 	self assert: tensor byteSize equals: (8*2*3)! !
 
@@ -2803,42 +2803,42 @@ testTensorData
 	| tensor |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
-		dimensions: #(2 3).
-	self assert: tensor numberOfDimensions equals: 2.
+		shape: #(2 3).
+	self assert: tensor rank equals: 2.
 	self deny: tensor data getHandle asInteger = 0.
 	self deny: tensor data getHandle isNil.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:54'!
-testTensorDimensions0D
-	^ self testTensorDimensions: #()! !
+testTensorShape0D
+	^ self testTensorShape: #()! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:45:28'!
-testTensorDimensions10D
-	^ self testTensorDimensions: #(1 2 3 4 5 6 7 8 9 10)! !
+testTensorShape10D
+	^ self testTensorShape: #(1 2 3 4 5 6 7 8 9 10)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:50'!
-testTensorDimensions1D
-	^ self testTensorDimensions: #(7)! !
+testTensorShape1D
+	^ self testTensorShape: #(7)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:40'!
-testTensorDimensions2D
-	^ self testTensorDimensions: #(1 4)! !
+testTensorShape2D
+	^ self testTensorShape: #(1 4)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:24:56'!
-testTensorDimensions: anArray
-	| tensor dimensions size |
+testTensorShape: anArray
+	| tensor shape size |
 	tensor _ TF_Tensor
 		type: TF_Tensor typeInt64
-		dimensions: anArray.
-	self assert: tensor numberOfDimensions equals: anArray size.
+		shape: anArray.
+	self assert: tensor rank equals: anArray size.
 	anArray withIndexDo: [:each :index |
 		self assert: (tensor sizeOn: index - 1) equals: (anArray at: index)].
-	dimensions _ tensor dimensions.
+	shape _ tensor shape.
 	size _ anArray isEmpty
 		ifTrue: [1]
 		ifFalse: [anArray product].
-	self assert: dimensions equals: anArray.
+	self assert: shape equals: anArray.
 	self assert: tensor size equals: size.
 ! !
 
@@ -2849,7 +2849,7 @@ testTensorFromFloats
 	tensor _ TF_Tensor fromFloats: template.
 	values _ tensor allFloats.
 		
-	self assert: tensor dimensions equals: #(3).
+	self assert: tensor shape equals: #(3).
 	self assert: tensor size equals: 3.
 	self assert: tensor byteSize equals: (3*4).
 	template @ values do: [:point |
@@ -2866,7 +2866,7 @@ testTensorFromFloats2x2
 	tensor _ TF_Tensor fromFloats: template.
 	values _ tensor allFloats.
 		
-	self assert: tensor dimensions equals: #(2 2).
+	self assert: tensor shape equals: #(2 2).
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (4*4).
 		
@@ -2891,13 +2891,13 @@ testTensorFromFloats2x2SameElementsOrder
 		self assert: (const closeTo: value)].! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 15:29:55'!
-testTensorFromFloatsDimensions
+testTensorFromFloatsShape
 	| tensor template values |
 	template _ #(1.23456 0.0 -1.234567 1.1).
-	tensor _ TF_Tensor fromFloats: template dimensions: #(2 2).
+	tensor _ TF_Tensor fromFloats: template shape: #(2 2).
 	values _ tensor allFloats.
 		
-	self assert: tensor dimensions equals: #(2 2).
+	self assert: tensor shape equals: #(2 2).
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (tensor size*4).
 	template with: values do: [:templ :actual |
@@ -2905,12 +2905,12 @@ testTensorFromFloatsDimensions
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 03:00:29'!
-testTensorFromFloatsDimensionsUndefinedSize
+testTensorFromFloatsShapeUndefinedSize
 	| template |
 	template _ #(1.23456 0.0 -1.234567 1.1).
 	
 	self
-		should: [TF_Tensor fromFloats: template dimensions: #(2 2 -1)]
+		should: [TF_Tensor fromFloats: template shape: #(2 2 -1)]
 		raiseError: 'Inferred size and real size don''t match.'.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
@@ -2920,7 +2920,7 @@ testTensorFromFloatsScalar
 	tensor _ TF_Tensor fromFloats: template.
 	values _ tensor allFloats.
 		
-	self assert: tensor dimensions equals: #().
+	self assert: tensor shape equals: #().
 	self assert: tensor size equals: 1.
 	self assert: tensor byteSize equals: (1*4).
 	
@@ -2933,7 +2933,7 @@ testTensorFromInt32
 	tensor _ TF_Tensor fromInt32s: template.
 	values _ tensor allInt32s.
 		
-	self assert: tensor dimensions equals: {template size}.
+	self assert: tensor shape equals: {template size}.
 	self assert: tensor size equals: template size.
 	self assert: tensor byteSize equals: (template size*4).
 	self assert: values equals: template.! !
@@ -2945,7 +2945,7 @@ testTensorFromInt64Array
 	tensor _ TF_Tensor fromInt64Array: template.
 	values _ tensor allInt64s.
 	
-	self assert: tensor dimensions equals: #(3).
+	self assert: tensor shape equals: #(3).
 	self assert: tensor size equals: 3.
 	self assert: tensor byteSize equals: (3*8).
 	self assert: template equals: values.
@@ -2973,7 +2973,7 @@ testTensorFromStringArray
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:32'!
 testTensorNewScalar
 	| tensor |
-	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 shape: #().
 	tensor ignoreFinalization.
 	
 	self deny: tensor isNull.
@@ -2983,10 +2983,10 @@ testTensorNewScalar
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:40'!
 testTensorType
 	| tensor |
-	tensor _ TF_Tensor type: TF_Tensor typeInt64 dimensions: #().
+	tensor _ TF_Tensor type: TF_Tensor typeInt64 shape: #().
 	self assert: tensor type equals: tensor class typeInt64.
 
-	tensor _ TF_Tensor type: TF_Tensor typeFloat dimensions: #().
+	tensor _ TF_Tensor type: TF_Tensor typeFloat shape: #().
 	self assert: tensor type equals: tensor class typeFloat.
 ! !
 
@@ -3088,7 +3088,7 @@ testGraphTruncatedNormal
 	values _ result allFloats.
 	theoreticalDecile _ -1.1840324666939051.
 	std _ values standardDeviation.
-	self assert: result dimensions equals: #(100 100 10).
+	self assert: result shape equals: #(100 100 10).
 	self assert: values size equals: 100*100*10.
 	self assert: values min + 2 < 0.01.
 	self assert: 2 - values max < 0.01.
@@ -3117,7 +3117,7 @@ testGraphTruncatedNormalStddev
 	std _ values standardDeviation.
 	theoreticalDecile _ -1.1840324666939051.
 		
-	self assert: result dimensions equals: #(100 100 10).
+	self assert: result shape equals: #(100 100 10).
 	self assert: values size equals: 100*100*10.
 	self assert: twoSigma - (values min abs)  < 0.1.
 	self assert: twoSigma - values max < 0.1.
@@ -3142,7 +3142,7 @@ testGraphUnnamedConst
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (const output: 0).
 	
-	self assert: result dimensions equals: #(4).
+	self assert: result shape equals: #(4).
 	self assert: result allFloats equals: #(1 2 3 4).! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/7/2017 12:19:13'!
@@ -3160,7 +3160,7 @@ testGraphVariableFromTruncatedNormalStddev
 	result1 _ session runOutput: (init output: 0).
 	result2 _ session runOutput: (var output: 0).
 
-	self assert: result1 dimensions equals: #(100 100 10).
+	self assert: result1 shape equals: #(100 100 10).
 	
 	values1 _ result1 allFloats.
 	std _ values1 standardDeviation.
@@ -3169,7 +3169,7 @@ testGraphVariableFromTruncatedNormalStddev
 	self assert: twoSigma - values1 max < 0.1.
 	self assert: values1 mean abs < (0.01 * std).	
 	
-	self assert: result1 dimensions equals: result2 dimensions.
+	self assert: result1 shape equals: result2 shape.
 	values2 _ result2 allFloats.
 	self assert: values1 equals: values2! !
 
@@ -3184,7 +3184,7 @@ testGraphZeros
 	result _ session runOutput: (zeros output: 0).
 	
 	values _ result allFloats.
-	self assert: #(100 100 10) equals: result dimensions.
+	self assert: #(100 100 10) equals: result shape.
 	self assert: 100*100*10 equals: values size.
 	self assert: 0 equals: values min.
 	self assert: 0 equals: values max.
@@ -3203,7 +3203,7 @@ testOperationAbs
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: template dimensions.
+	self assert: result shape equals: template shape.
 	self assert: result allFloats equals: template allFloats abs.
 	
 	output free.! !
@@ -3222,7 +3222,7 @@ testOperationAcos
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: intput dimensions.
+	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -3250,13 +3250,13 @@ testOperationArgMax
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (output0 output: 0).
 	
-	self assert: result dimensions equals: #(2).
+	self assert: result shape equals: #(2).
 	result allInt64s with: #(2 1) do: [:r :t |
 		self assert: r equals: t].
 	
 	result _ session runOutput: (output1 output: 0).
 	
-	self assert: result dimensions equals: #(3).
+	self assert: result shape equals: #(3).
 	result allInt64s with: #(1 1 0) do: [:r :t |
 		self assert: r equals: t].! !
 
@@ -3282,13 +3282,13 @@ testOperationArgMin
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (output0 output: 0).
 	
-	self assert: result dimensions equals: #(2).
+	self assert: result shape equals: #(2).
 	result allInt64s with: #(0 2) do: [:r :t |
 		self assert: r equals: t].
 	
 	result _ session runOutput: (output1 output: 0).
 	
-	self assert: result dimensions equals: #(3).
+	self assert: result shape equals: #(3).
 	result allInt64s with: #(0 0 1) do: [:r :t |
 		self assert: r equals: t].! !
 
@@ -3318,11 +3318,11 @@ testOperationArgMinTwoOutputs
 	first _ results at: 1.
 	second _ results at: 2.
 	
-	self assert: first dimensions equals: #(2).
+	self assert: first shape equals: #(2).
 	first allInt64s with: #(0 2) do: [:r :t |
 		self assert: r equals: t].
 	
-	self assert: second dimensions equals: #(3).
+	self assert: second shape equals: #(3).
 	second allInt64s with: #(0 0 1) do: [:r :t |
 		self assert: r equals: t].! !
 
@@ -3340,7 +3340,7 @@ testOperationAsin
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: intput dimensions.
+	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -3374,7 +3374,7 @@ testOperationAtan
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: intput dimensions.
+	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -3394,7 +3394,7 @@ testOperationCos
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: intput dimensions.
+	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -3430,7 +3430,7 @@ testOperationExp
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: inputs dimensions.
+	self assert: result shape equals: inputs shape.
 	result allFloats with: template exp do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -3450,12 +3450,12 @@ testOperationIAlias
 	
 	result _ (TF_Session onGraph: graph) runOutput: (same1 output: 0).
 	
-	self assert: template dimensions equals: result dimensions.
+	self assert: template shape equals: result shape.
 	self assert: #(1 2 3 4 5 6) equals: result allFloats.
 	
 	result _ (TF_Session onGraph: graph) runOutput: (same2 output: 0).
 	
-	self assert: template dimensions equals: result dimensions.
+	self assert: template shape equals: result shape.
 	self assert: #(1 2 3 4 5 6) equals: result allFloats.
 	
 ! !
@@ -3473,7 +3473,7 @@ testOperationIdentity
 	
 	result _ (TF_Session onGraph: graph) runOutput: same.
 	
-	self assert: template dimensions equals: result dimensions.
+	self assert: template shape equals: result shape.
 	self assert: #(1 2 3 4 5 6) equals: result allFloats.! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:45:23'!
@@ -3497,7 +3497,7 @@ testOperationMatMul
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (output output: 0).
 
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3562,7 +3562,7 @@ testOperationMatMulATransposed
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (output output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3587,7 +3587,7 @@ testOperationMatMulBTransposed
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (output output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3605,7 +3605,7 @@ testOperationMatrixInverse
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: identity.
 	
-	self assert: result dimensions equals: template dimensions.
+	self assert: result shape equals: template shape.
 	result allFloats with: #(1.0 0.0 0.0 1.0) do: [:real :expected |
 		self assert: (real closeTo: expected)].
 	
@@ -3630,10 +3630,10 @@ testOperationMeanOn
 	session _ TF_Session onGraph: graph.
 	results _ session runOutputs: {mean0 output: 0. mean1 output: 0. mean01 output: 0. meanNone output: 0}." mean01bis output: 0}."
 	
-	self assert: #(2) equals: results first dimensions.
-	self assert: #(3) equals: results second dimensions.
-	self assert: #() equals: results third dimensions.
-	self assert: #(3 2) equals: results fourth dimensions.
+	self assert: #(2) equals: results first shape.
+	self assert: #(3) equals: results second shape.
+	self assert: #() equals: results third shape.
+	self assert: #(3 2) equals: results fourth shape.
 
 	self assertAll: #(2.1 1.2) closeTo: results first allFloats.
 	self assertAll: #(1.15 2.15 1.65) closeTo: results second allFloats.
@@ -3665,7 +3665,7 @@ testOperationMinus
 	
 	template _ a allFloats - b allFloats.
 
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3687,7 +3687,7 @@ testOperationMod
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (output output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3709,7 +3709,7 @@ testOperationMul
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (output output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3731,7 +3731,7 @@ testOperationMulScalar
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (sum output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3748,7 +3748,7 @@ testOperationNegated
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: negated.
 	
-	self assert: result dimensions equals: template dimensions.
+	self assert: result shape equals: template shape.
 	self assert: result allFloats equals: template allFloats negated.
 	
 	negated free.! !
@@ -3771,7 +3771,7 @@ testOperationPlus
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (sum output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3794,7 +3794,7 @@ testOperationPlusNegated
 	
 	template _ a allFloats - b allFloats.
 
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3816,7 +3816,7 @@ testOperationPlusNegatedNegated
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (sum output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -3838,7 +3838,7 @@ testOperationPlusNegatedNegatedPlus
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: (sum output: 0).
 	
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	
 	result allFloats with: a allFloats negated do: [:r :t |
 		self assert: (r closeTo: t)].
@@ -3863,7 +3863,7 @@ testOperationRelu
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: template dimensions.
+	self assert: result shape equals: template shape.
 	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
 ! !
 
@@ -3883,7 +3883,7 @@ testOperationSigmoid
 	result _ session runOutput: output.
 	
 	transformed _ template collect:[:x| (x negated exp + 1) reciprocal].
-	self assert: result dimensions equals: inputs dimensions.
+	self assert: result shape equals: inputs shape.
 	result allFloats with: transformed do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -3903,7 +3903,7 @@ testOperationSin
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: intput dimensions.
+	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -3927,13 +3927,13 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	results _ session runOutputs: {xentropy output: 0. xentropy output: 1}.
 	
 	loss _ results first.
-	self assert: #(3) equals: loss dimensions.
+	self assert: #(3) equals: loss shape.
 	self assert: (loss allFloats first between: 1 and: 1.5).
 	self assert: (loss allFloats second between: 1 and: 1.5).
 	self assert: (loss allFloats third between: 1 and: 1.2).
 	
 	gradient _ results second.
-	self assert: #(3 7) equals: gradient dimensions.
+	self assert: #(3 7) equals: gradient shape.
 	lastVector _ gradient allFloats last: 7.
 	self assert: lastVector last < 0.
 	lastVector allButLastDo: [:x | self assert: x > 0] 
@@ -3957,13 +3957,13 @@ testOperationSparseSoftmaxCrossEntropyWithLogitsUseOutput
 	results _ session runOutputs: {xentropy output. (xentropy useOutput: 1) output}.
 	
 	loss _ results first.
-	self assert: #(3) equals: loss dimensions.
+	self assert: #(3) equals: loss shape.
 	self assert: (loss allFloats first between: 1 and: 1.5).
 	self assert: (loss allFloats second between: 1 and: 1.5).
 	self assert: (loss allFloats third between: 1 and: 1.2).
 	
 	gradient _ results second.
-	self assert: #(3 7) equals: gradient dimensions.
+	self assert: #(3 7) equals: gradient shape.
 	lastVector _ gradient allFloats last: 7.
 	self assert: lastVector last < 0.
 	lastVector allButLastDo: [:x | self assert: x > 0] 
@@ -3982,7 +3982,7 @@ testOperationSquared
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: template dimensions.
+	self assert: result shape equals: template shape.
 	result allFloats with: template allFloats squared do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -4007,7 +4007,7 @@ testOperationSub
 	
 	template _ a allFloats - b allFloats.
 
-	self assert: result dimensions equals: a dimensions.
+	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -4040,7 +4040,7 @@ testOperationSum
 		runOperation: output0
 		output: (output0 output: 0).
 	
-	self assert: result dimensions equals: #(2).
+	self assert: result shape equals: #(2).
 	result allFloats with: sumOn0 do: [:r :t |
 		self assert: (r closeTo: t)].
 	
@@ -4048,7 +4048,7 @@ testOperationSum
 		runOperation: output1
 		output: (output1 output: 0).
 	
-	self assert: result dimensions equals: #(3).
+	self assert: result shape equals: #(3).
 	result allFloats with: sumOn1 do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -4081,11 +4081,11 @@ testOperationSumOnOutputs
 	first _ results at: 1.
 	second _ results at: 2.
 	
-	self assert: first dimensions equals: #(2).
+	self assert: first shape equals: #(2).
 	first allFloats with: sumOn0 do: [:r :t |
 		self assert: (r closeTo: t)].
 	
-	self assert: second dimensions equals: #(3).
+	self assert: second shape equals: #(3).
 	second allFloats with: sumOn1 do: [:r :t |
 		self assert: (r closeTo: t)].! !
 
@@ -4103,7 +4103,7 @@ testOperationTan
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 	
-	self assert: result dimensions equals: intput dimensions.
+	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
 		self assert: (res closeTo: temp)].
 	
@@ -4122,7 +4122,7 @@ testSoftmax
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: output.
 
-	self assert: result dimensions equals: template dimensions.
+	self assert: result shape equals: template shape.
 	
 	denominator _ template allFloats exp sum. 
 	result allFloats with: template allFloats exp / denominator do: [:res :temp |
@@ -4134,7 +4134,7 @@ testSoftmax
 ! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
-allocateTensorType: anInteger dimensions: aLonnLongArray dimensionsCount: dimCount length: len
+allocateTensorType: anInteger shape: aLonnLongArray rank: dimCount length: len
 	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
 	^ self externalCallFailed! !
 
@@ -4274,7 +4274,7 @@ getCode: aTF_Status
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:23:19'!
-graph: aTF_Graph getDimensionsOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
+graph: aTF_Graph getShapeOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
 	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
 	^ self externalCallFailed
 ! !
@@ -4313,7 +4313,7 @@ graph: aTF_Graph operationAtAsVoid: contextULongLongPtr
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 15:12:33'!
-graph: aTF_Graph setDimensionsOf:  aTF_OutputOrInput to: anInt64Array size: anInteger status: status
+graph: aTF_Graph setShapeOf:  aTF_OutputOrInput to: anInt64Array size: anInteger status: status
 	<cdecl: void 'TF_GraphSetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
 	^ self externalCallFailed
 ! !
@@ -4576,7 +4576,7 @@ tensorData: aTF_Tensor
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:04:40'!
-tensorNumDimensions: aTF_Tensor
+tensorRank: aTF_Tensor
 	<cdecl: longlong 'TF_NumDims' (TF_Tensor*)>
 	^ self externalCallFailed! !
 
@@ -4973,7 +4973,7 @@ delete
 	handle _ nil! !
 
 !TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
-dimensionsOf: aTF_OutputOrInput
+shapeOf: aTF_OutputOrInput
 	| status value size answer |
 	size _ self rankOf: aTF_OutputOrInput.
 	value _ Int64Array externalNew: size.
@@ -4981,7 +4981,7 @@ dimensionsOf: aTF_OutputOrInput
 	
 	self library
 		graph: self
-		getDimensionsOf: aTF_OutputOrInput
+		getShapeOf: aTF_OutputOrInput
 		into: value
 		size: size
 		status: status.
@@ -4991,16 +4991,16 @@ dimensionsOf: aTF_OutputOrInput
 	^ answer! !
 
 !TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 15:08:37'!
-dimensionsOf: aTF_OutputOrInput set: dimensions
+shapeOf: aTF_OutputOrInput set: shape
 	| status value |
-	value _ Int64Array externalFromArray: dimensions.
+	value _ Int64Array externalFromArray: shape.
 	status _ TF_Status create.
 	
 	self library
 		graph: self
-		setDimensionsOf: aTF_OutputOrInput
+		setShapeOf: aTF_OutputOrInput
 		to: value
-		size: dimensions size
+		size: shape size
 		status: status.
 	status check.! !
 
@@ -5187,21 +5187,21 @@ rankOf: aTF_OutputOrInput
 	^ answer! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:43:13'!
-truncatedNormalRandomShaped: dimensionsArray
+truncatedNormalRandomShaped: shapeArray
 	| shape |
-	shape _ self const: dimensionsArray asInt32Tensor.
+	shape _ self const: shapeArray asInt32Tensor.
 	^ shape unaryOp: 'TruncatedNormal' described: [:description |
 		description at: 'dtype' putType: TF_Tensor typeFloat]! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:44:21'!
-truncatedNormalRandomShaped: dimensionsArray stddev: aNumber
+truncatedNormalRandomShaped: shapeArray stddev: aNumber
 	| random |
-	random _ self truncatedNormalRandomShaped: dimensionsArray.
+	random _ self truncatedNormalRandomShaped: shapeArray.
 	^ random @* (self const: aNumber asTensor)! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
 variable: nameString forTensor: aTF_Tensor
-	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor dimensions! !
+	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor shape! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:02:23'!
 variable: nameString initialValue: aTF_Tensor
@@ -5215,7 +5215,7 @@ variable: nameString initialValue: aTF_Tensor
 variable: nameString initialValueFrom: aTF_Operation
 	| output var shape |
 	output _ aTF_Operation output: 0.
-	shape _ self dimensionsOf: output.
+	shape _ self shapeOf: output.
 	var _ self variable: nameString type: output type shape: shape..
 	var assign: aTF_Operation.
 	^ var! !
@@ -5240,9 +5240,9 @@ writeDefToFileNamed: filename
 		self writeDefTo: strm]! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 02:15:35'!
-zerosShaped: dimensionsArray
+zerosShaped: shapeArray
 	| shape value |
-	shape _ self const: dimensionsArray asInt32Tensor.
+	shape _ self const: shapeArray asInt32Tensor.
 	value _ self const: 0.0 asTensor.
 	^ shape binaryOp: 'Fill' with: value! !
 
@@ -5472,9 +5472,9 @@ inverse
 	^ self unaryOp: 'MatrixInverse'! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 23:50:53'!
-meanOn: dimensionsTensor
+meanOn: shapeTensor
 	| const |
-	const _ graph const: dimensionsTensor.
+	const _ graph const: shapeTensor.
 	^ self binaryOp: 'Mean' with: const! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
@@ -6183,7 +6183,7 @@ allStrings
 	
 	^ answer contents! !
 
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/5/2017 23:35:00'!
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:13'!
 byteSize
 	^ self library tensorByteSize: self! !
 
@@ -6214,9 +6214,9 @@ delete
 	handle _ nil! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 12:41:46'!
-dimensions
+shape
 	| answer count |
-	count _ self numberOfDimensions.
+	count _ self rank.
 	answer _ WriteStream on: (Array new: count).
 	1 to: count do: [:i |
 		answer nextPut: (self sizeOn: i-1)].
@@ -6259,12 +6259,12 @@ int64sDo: oneArgBlock
 ! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
-numberOfDimensions
-	^self library tensorNumDimensions: self.! !
+rank
+	^self library tensorRank: self.! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 14:37:36'!
 size
-	^ self dimensions inject: 1 into: [:prev :next | prev * next].! !
+	^ self shape inject: 1 into: [:prev :next | prev * next].! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:10:24'!
 sizeOn: dimension
@@ -6288,11 +6288,11 @@ accessorBlockFor: anInteger
 ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
-dimensionsOf: aMultidimensionalTensor
+shapeOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
 		ifTrue: [aMultidimensionalTensor isEmpty
 			ifTrue: [#(0)]
-			ifFalse: [{aMultidimensionalTensor size}, (self dimensionsOf: aMultidimensionalTensor first)]]
+			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
@@ -6315,60 +6315,60 @@ floatArray: values into: anExternalAddressOrByteArray
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 15:22:48'!
 fromFloats: values
-	| dimensions |
-	dimensions _ self dimensionsOf: values.
-	^ self fromFloats: values dimensions: dimensions.
+	| shape |
+	shape _ self shapeOf: values.
+	^ self fromFloats: values shape: shape.
 ! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:09'!
-fromFloats: values dimensions: dimensions
+fromFloats: values shape: shape
 	| answer size count |
 	size _ self sizeOf: values.
-	count _ dimensions inject: 1 into: [:a :b | a * b].
+	count _ shape inject: 1 into: [:a :b | a * b].
 	count = size ifFalse: [
 		self error: 'Inferred size and real size don''t match.'].
 		
-	answer _ self type: self typeFloat dimensions: dimensions.
+	answer _ self type: self typeFloat shape: shape.
 	self floatArray: values into: answer data getHandle.
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
 fromInt32: value
 	| answer |
-	answer _ self type: self typeInt32 dimensions: #().
+	answer _ self type: self typeInt32 shape: #().
 	answer data getHandle signedLongAt: 1 put: value.
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/31/2017 16:42:18'!
 fromInt32s: values
-	| dimensions |
-	dimensions _ self dimensionsOf: values.
-	^ self fromInt32s: values dimensions: dimensions.
+	| shape |
+	shape _ self shapeOf: values.
+	^ self fromInt32s: values shape: shape.
 ! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/3/2017 12:10:05'!
-fromInt32s: values dimensions: dimensions
+fromInt32s: values shape: shape
 	| answer size count |
 	size _ self sizeOf: values.
-	count _ dimensions inject: 1 into: [:a :b | a * b].
+	count _ shape inject: 1 into: [:a :b | a * b].
 	count = size ifFalse: [
 		self error: 'Inferred size and real size don''t match.'].
 		
-	answer _ self type: self typeInt32 dimensions: dimensions.
+	answer _ self type: self typeInt32 shape: shape.
 	self int32Array: values into: answer data getHandle.
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
 fromInt64: value
 	| answer |
-	answer _ self type: self typeInt64 dimensions: #().
+	answer _ self type: self typeInt64 shape: #().
 	answer data getHandle signedLongLongAt: 1 put: value.
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:21:48'!
 fromInt64Array: values
 	| answer |
-	answer _ self type: self typeInt64 dimensions: {values size}.
+	answer _ self type: self typeInt64 shape: {values size}.
 	self int64Array: values into: answer data getHandle.
 	^ answer! !
 
@@ -6377,7 +6377,7 @@ fromString: aString
 	| answer bytesize |
 	bytesize _ TensorFlowCAPI current stringEncodedSize: aString.
 	bytesize _ bytesize.
-	answer _ self type: self typeString dimensions: #() bytesize: bytesize.
+	answer _ self type: self typeString shape: #() bytesize: bytesize.
 	
 	TensorFlowCAPI current
 		stringEncode: aString
@@ -6399,7 +6399,7 @@ fromStringArray: aStringArray
 	
 	answer _ self
 		type: self typeString
-		dimensions: {aStringArray size}
+		shape: {aStringArray size}
 		bytesize: bytesize.
 		
 	self int64Array: offsets into: answer data getHandle.	
@@ -6505,7 +6505,7 @@ sizeOfString: aString.
 	^ TensorFlowCAPI current stringEncodedSize: aString.! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:51'!
-type: anInteger dimensions: anIntegerArray
+type: anInteger shape: anIntegerArray
 	" I understand dimenssions are:
 		#()		-> Scalar
 		#(7)		-> Unidimensional array of 7 elements
@@ -6517,11 +6517,11 @@ type: anInteger dimensions: anIntegerArray
 	| bytesize elementSize |
 	elementSize _ self sizeForType: anInteger.
 	bytesize _ anIntegerArray inject: elementSize into: [:prev :each | prev * each].
-	^self type: anInteger dimensions: anIntegerArray bytesize: bytesize
+	^self type: anInteger shape: anIntegerArray bytesize: bytesize
 ! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 13:10:55'!
-type: anInteger dimensions: anIntegerArray bytesize: bytesizeInteger
+type: anInteger shape: anIntegerArray bytesize: bytesizeInteger
 	" I understand dimenssions are:
 		#()		-> Scalar
 		#(7)		-> Unidimensional array of 7 elements
@@ -6535,8 +6535,8 @@ type: anInteger dimensions: anIntegerArray bytesize: bytesizeInteger
 		
 	answer _ TensorFlowCAPI current
 		allocateTensorType: anInteger
-		dimensions: externalized
-		dimensionsCount: anIntegerArray size
+		shape: externalized
+		rank: anIntegerArray size
 		length: bytesizeInteger.
 	
 	answer useFinalization.

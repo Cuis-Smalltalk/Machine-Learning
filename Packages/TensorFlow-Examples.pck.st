@@ -176,8 +176,8 @@ testImages
 	self assert: testing columns equals: 28.
 	self assert: training rows equals: 28.
 	self assert: training columns equals: 28.
-	self assert: testing asTensor dimensions equals: {10000. 28*28}.
-	self assert: training asTensor dimensions equals: {60000. 28*28}.! !
+	self assert: testing asTensor shape equals: {10000. 28*28}.
+	self assert: training asTensor shape equals: {60000. 28*28}.! !
 
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:24:00'!
 testLabels
@@ -219,10 +219,10 @@ testPrediction
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
-	| dimensions transposed |
-	dimensions _ points first size.
+	| shape transposed |
+	rank _ points first size.
 	transposed _ OrderedCollection new.
-	(1 to: dimensions) do: [ :i |
+	(1 to: rank) do: [ :i |
 		transposed add: OrderedCollection new ].
 	points do: [ :point |
 		point withIndexDo: [ :value :coordinate |
@@ -268,14 +268,14 @@ testBackpropagationPlanBackguardChangesWeights
 	w0 _ const tensorAt: 'value'.
 	weights _ plan weights.
 	
-	self assert: w0 dimensions equals: #(2 2).
-	self assert: weights dimensions equals: #(2 2).
+	self assert: w0 shape equals: #(2 2).
+	self assert: weights shape equals: #(2 2).
 	self assert: w0 allFloats equals: weights allFloats.
 
 	result _ plan learn: inputs with: target.
 
 	self assert: weights allFloats equals: result allFloats.
-	self assert: weights dimensions equals: result dimensions.
+	self assert: weights shape equals: result shape.
 	self deny: weights allFloats = w0 allFloats
 ! !
 
@@ -292,8 +292,8 @@ testBackpropagationPlanBackguardConverges
 	w0 _ const tensorAt: 'value'.
 	weights _ plan weights.
 	
-	self assert: w0 dimensions equals: #(2 2).
-	self assert: weights dimensions equals: #(2 2).
+	self assert: w0 shape equals: #(2 2).
+	self assert: weights shape equals: #(2 2).
 	self assert: w0 allFloats equals: weights allFloats.
 
 	200 timesRepeat: [plan learn: inputs with: target].
@@ -371,7 +371,7 @@ testBackpropagationPlantInitializeVariables
 	const _ graph operationNamed: 'weights_initialValue'.
 	weights _ const tensorAt: 'value'.
 	
-	self assert: weights dimensions equals: #(2 2).
+	self assert: weights shape equals: #(2 2).
 	weights allFloats do: [:each |
 		self assert: (each between: 0 and: 1)].! !
 
@@ -410,7 +410,7 @@ testMNIST3LayersNNForwardGraph
 			}]
 		raise: Error.
 
-	self assert: {2} equals: result dimensions.
+	self assert: {2} equals: result shape.
 	self assert: 0 equals: result allInt32s first.
 	self assert: 0 equals: result allInt32s second.! !
 
@@ -437,11 +437,11 @@ testMNIST3LayersNNLossGraph
 				]
 		raise: Error.
 
-	self assert: {2} equals: results first dimensions.
+	self assert: {2} equals: results first shape.
 	self assert: 0 equals: results first allInt32s first.
 	self assert: 0 equals: results first allInt32s second.
 	
-	self assert: #() equals: results second dimensions.
+	self assert: #() equals: results second shape.
 	self assert: (results second allFloats sum abs > 0).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:08:37'!
@@ -461,7 +461,7 @@ testMNISTSoftMaxForwardGraph
 			}]
 		raise: Error.
 
-	self assert: {2} equals: result dimensions.
+	self assert: {2} equals: result shape.
 	self assert: (result allInt32s first closeTo: 0).
 	self assert: (result allInt32s second closeTo: 0).
 ! !
@@ -485,12 +485,12 @@ testMNISTSoftMaxLossGraph
 				]
 		raise: Error.
 
-	self assert: {2} equals: results first dimensions.
+	self assert: {2} equals: results first shape.
 	self assert: (results first allInt32s first closeTo: 0).
 	self assert: (results first allInt32s second closeTo: 0).
 
 	
-	self assert: #() equals: results second dimensions.
+	self assert: #() equals: results second shape.
 	self assert: (results second allFloats sum abs > 0).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:33:39'!
@@ -695,7 +695,7 @@ initializeVariables
 	| initialWeights |
 	Random withDefaultDo: [:random |
 		initialWeights _ (1 to: 4) collect: [:unused | random next]].
-	initialWeights _ TF_Tensor fromFloats: initialWeights dimensions: #(2 2).
+	initialWeights _ TF_Tensor fromFloats: initialWeights shape: #(2 2).
 	
 	weights _ graph variable: 'weights' initialValue: initialWeights.! !
 
@@ -998,7 +998,7 @@ trainingSet
 
 !MNISTImageFile methodsFor: 'converting' stamp: 'gera 2/6/2017 20:17:27'!
 asTensor
-	^  TF_Tensor fromFloats:  items dimensions: {count. rows * columns}.! !
+	^  TF_Tensor fromFloats:  items shape: {count. rows * columns}.! !
 
 !MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/10/2017 00:50:56'!
 at: imageIndex
