@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 13 February 2017 at 3:59:45 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 13 February 2017 at 11:37:15 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 354!
+!provides: 'TensorFlow-Kernel' 1 356!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -6145,46 +6145,25 @@ create
 persistent
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'jb 1/15/2017 18:07:40'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:36:57'!
 allFloats
-	| total answer data byteSize |
-	total _ self size.
-	answer _ WriteStream on: (Array new: total).
-	data _ self data getHandle.
-	byteSize _ self class sizeForType: self class typeFloat.
-	1 to: total do: [:i |
-		| value |
-		value _ data floatAt: i-1*byteSize+1.
-		answer nextPut: value].
-	
+	| answer |
+	answer _ WriteStream on: (Array new: self size).
+	self floatsDo: [:each | answer nextPut: each].
 	^ answer contents! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/31/2017 16:45:03'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:36:52'!
 allInt32s
-	| total answer data byteSize |
-	total _ self size.
-	answer _ WriteStream on: (Array new: total).
-	data _ self data getHandle.
-	byteSize _ self class sizeForType: self class typeInt32.
-	1 to: total do: [:i |
-		| value |
-		value _ data signedLongAt: i-1*byteSize+1..
-		answer nextPut: value].
-	
+	| answer |
+	answer _ WriteStream on: (Array new: self size).
+	self int32sDo: [:each | answer nextPut: each].
 	^ answer contents! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'jb 1/15/2017 18:02:38'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:36:48'!
 allInt64s
-	| total answer data byteSize |
-	total _ self size.
-	answer _ WriteStream on: (Array new: total).
-	data _ self data getHandle.
-	byteSize _ self class sizeForType: self class typeInt64.
-	1 to: total do: [:i |
-		| value |
-		value _ data signedLongLongAt: i-1*byteSize+1..
-		answer nextPut: value].
-	
+	| answer |
+	answer _ WriteStream on: (Array new: self size).
+	self int64sDo: [:each | answer nextPut: each].
 	^ answer contents! !
 
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 14:56:06'!
@@ -6210,7 +6189,18 @@ byteSize
 data
 	^self library tensorData: self.! !
 
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 11:10:43'!
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:35:27'!
+dataAndOffsetsCollect: twoArgsBlock thenDo: oneArgBlock
+	| data elementSize |
+	elementSize _ self elementSize.
+	data _ self data getHandle.
+	1 to: self size do: [:i |
+		| value |
+		value _ twoArgsBlock value: data value: i-1*elementSize+1.
+		oneArgBlock value: value].
+! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:30'!
 dataBytes
 	^self data getHandle structAt: 1 length: self byteSize! !
 
@@ -6230,9 +6220,34 @@ dimensions
 		answer nextPut: (self sizeOn: i-1)].
 	^ answer contents! !
 
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:32:07'!
+elementSize
+	^ self class sizeForType: self type! !
+
 !TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 11:15:56'!
 finalize
 	self delete! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 18:53:45'!
+floatsDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: [:data :offset | data floatAt: offset]
+		thenDo: oneArgBlock.
+! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 18:54:54'!
+int32sDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: [:data :offset | data signedLongAt: offset]
+		thenDo: oneArgBlock.
+! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:36:22'!
+int64sDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: [:data :offset | data signedLongLongAt: offset]
+		thenDo: oneArgBlock.
+! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
 numberOfDimensions
