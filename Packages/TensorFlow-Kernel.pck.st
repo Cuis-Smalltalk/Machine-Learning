@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 13 February 2017 at 11:37:15 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 14 February 2017 at 12:04:10 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 356!
+!provides: 'TensorFlow-Kernel' 1 358!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -6145,26 +6145,28 @@ create
 persistent
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:36:57'!
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:45:44'!
+accessorBlock
+	^ self class accessorBlockFor: self type! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:50:43'!
+allElements
+	| answer |
+	answer _ WriteStream on: (Array new: self size).
+	self elementsDo: [:each | answer nextPut: each].
+	^ answer contents! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:20'!
 allFloats
-	| answer |
-	answer _ WriteStream on: (Array new: self size).
-	self floatsDo: [:each | answer nextPut: each].
-	^ answer contents! !
+	^ self allElements! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:36:52'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:27'!
 allInt32s
-	| answer |
-	answer _ WriteStream on: (Array new: self size).
-	self int32sDo: [:each | answer nextPut: each].
-	^ answer contents! !
+	^ self allElements! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:36:48'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:32'!
 allInt64s
-	| answer |
-	answer _ WriteStream on: (Array new: self size).
-	self int64sDo: [:each | answer nextPut: each].
-	^ answer contents! !
+	^ self allElements! !
 
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 14:56:06'!
 allStrings
@@ -6224,6 +6226,13 @@ dimensions
 elementSize
 	^ self class sizeForType: self type! !
 
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:50:11'!
+elementsDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: self accessorBlock
+		thenDo: oneArgBlock.
+! !
+
 !TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 11:15:56'!
 finalize
 	self delete! !
@@ -6264,6 +6273,19 @@ sizeOn: dimension
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/26/2016 10:50:33'!
 type
 	^self library tensorType: self.! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/14/2017 00:04:04'!
+accessorBlockFor: anInteger
+	| accessors |
+	accessors _ {
+			TF_Tensor typeInt32 -> [:data :offset | data signedLongAt: offset].
+			TF_Tensor typeInt64 -> [:data :offset | data signedLongLongAt: offset].
+			TF_Tensor typeFloat -> [:data :offset | data floatAt: offset].
+			TF_Tensor typeDouble -> [:data :offset | data doubleAt: offset]
+		} as: Dictionary.
+
+	^ accessors at: anInteger
+! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
 dimensionsOf: aMultidimensionalTensor
