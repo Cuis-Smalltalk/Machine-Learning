@@ -646,6 +646,10 @@ assertSizeOf: aMultidimensionalTensor is: anInteger
 		assert: size = anInteger
 		description: 'The size is ', size printString, ' and should have been ', anInteger printString! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:00:06'!
+assertTensor: aTF_Tensor elementsEquals: tensorArray
+	self assert: aTF_Tensor allElements equals: tensorArray! !
+
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:57'!
 concatGraphInputList
 	| graph in1 in2 concat dimension dimensionValue inputs |
@@ -2775,6 +2779,15 @@ testStringSize
 	self assert: (library stringEncodedSize: (String new: 127)) equals: (127+1).
 	self assert: (library stringEncodedSize: (String new: 128)) equals: (128+2).
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:11:29'!
+testTensorAllElements
+	self assertTensor: -13123213 asInt32Tensor elementsEquals: #(-13123213).
+	self assertTensor: #(123 123 123 123) asInt32Tensor elementsEquals: #(123 123 123 123).
+	self assertTensor: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) asFloatTensor elementsEquals: #(1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0).
+	self
+		assertTensor: #(((1 100) (2 100) (3 100)) ((4 100) (5 100) (6 100)) ((7 100) (8 100) (9 100))) asFloatTensor
+		elementsEquals: #(1.0 100.0 2.0 100.0 3.0 100.0 4.0 100.0 5.0 100.0 6.0 100.0 7.0 100.0 8.0 100.0 9.0 100.0).! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:17:38'!
 testTensorAllStrings
@@ -6149,12 +6162,9 @@ persistent
 accessorBlock
 	^ self class accessorBlockFor: self type! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:50:43'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/14/2017 16:12:18'!
 allElements
-	| answer |
-	answer _ WriteStream on: (Array new: self size).
-	self elementsDo: [:each | answer nextPut: each].
-	^ answer contents! !
+	^ self asStream contents! !
 
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:20'!
 allFloats
@@ -6182,6 +6192,13 @@ allStrings
 		answer nextPut: str].
 	
 	^ answer contents! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/14/2017 16:12:12'!
+asStream
+	| answer |
+	answer _ WriteStream on: (Array new: self size).
+	self elementsDo: [:each | answer nextPut: each].
+	^ answer! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:13'!
 byteSize
