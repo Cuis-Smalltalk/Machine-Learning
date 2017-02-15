@@ -1487,11 +1487,11 @@ testDescriptionDevice
 		should: [(TF_Session onGraph: graph) runOutput: (op output: 0)]
 		raiseError: expected.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/17/2017 18:58:04'!
-testElementsOf: aTensor sum: aNumber
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 00:57:35'!
+testElementsOf: tensorArray sum: aNumber
 	| sum |
 	sum _ 0.
-	TF_Tensor elementsOf: aTensor do: [:each |
+	TF_Tensor elementsOf: tensorArray do: [:each |
 		sum _ sum + each].
 	
 	self assert: sum equals: aNumber! !
