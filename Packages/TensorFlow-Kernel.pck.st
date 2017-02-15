@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:19:50 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:29:44 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 359!
+!provides: 'TensorFlow-Kernel' 1 360!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -649,6 +649,14 @@ assertSizeOf: aMultidimensionalTensor is: anInteger
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:00:06'!
 assertTensor: aTF_Tensor elementsEquals: tensorArray
 	self assert: aTF_Tensor allElements equals: tensorArray! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:27:15'!
+assertTensor: aTF_Tensor streamEquals: tensorArray
+	| strm |
+	strm _ aTF_Tensor asStream.
+	tensorArray do: [:each |
+		self assert: each equals: strm next].
+! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:57'!
 concatGraphInputList
@@ -2801,6 +2809,15 @@ testTensorAllStrings
 	
 	result delete.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:28:38'!
+testTensorAsStream
+	self assertTensor: -13123213 asInt32Tensor streamEquals: #(-13123213).
+	self assertTensor: #(123 123 123 123) asInt32Tensor streamEquals: #(123 123 123 123).
+	self assertTensor: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) asFloatTensor streamEquals: #(1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0).
+	self
+		assertTensor: #(((1 100) (2 100) (3 100)) ((4 100) (5 100) (6 100)) ((7 100) (8 100) (9 100))) asFloatTensor
+		streamEquals: #(1.0 100.0 2.0 100.0 3.0 100.0 4.0 100.0 5.0 100.0 6.0 100.0 7.0 100.0 8.0 100.0 9.0 100.0).! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/13/2017 23:34:36'!
 testTensorByteSize
@@ -6193,12 +6210,12 @@ allStrings
 	
 	^ answer contents! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/14/2017 16:12:12'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:29:29'!
 asStream
 	| answer |
-	answer _ WriteStream on: (Array new: self size).
+	answer _ ReadWriteStream on: (Array new: self size).
 	self elementsDo: [:each | answer nextPut: each].
-	^ answer! !
+	^ answer reset! !
 
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:13'!
 byteSize
