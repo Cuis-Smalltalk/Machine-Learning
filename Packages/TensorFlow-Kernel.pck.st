@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 8:06:29 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 5:01:26 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 366!
+!provides: 'TensorFlow-Kernel' 1 367!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -6251,10 +6251,6 @@ create
 persistent
 	^ TensorFlowCAPI current newStatus! !
 
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:45:44'!
-accessorBlock
-	^ self class accessorBlockFor: self type! !
-
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 2/14/2017 16:12:18'!
 allElements
 	^ self asStream contents! !
@@ -6349,10 +6345,10 @@ delete
 elementSize
 	^ self class sizeForType: self type! !
 
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:50:11'!
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/15/2017 17:01:13'!
 elementsDo: oneArgBlock
 	self
-		dataAndOffsetsCollect: self accessorBlock
+		dataAndOffsetsCollect: self getterBlock
 		thenDo: oneArgBlock.
 ! !
 
@@ -6366,6 +6362,10 @@ floatsDo: oneArgBlock
 		dataAndOffsetsCollect: [:data :offset | data floatAt: offset]
 		thenDo: oneArgBlock.
 ! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/15/2017 17:01:04'!
+getterBlock
+	^ self class getterBlockFor: self type! !
 
 !TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 18:54:54'!
 int32sDo: oneArgBlock
@@ -6405,19 +6405,6 @@ sizeOn: dimension
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/26/2016 10:50:33'!
 type
 	^self library tensorType: self.! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/14/2017 00:04:04'!
-accessorBlockFor: anInteger
-	| accessors |
-	accessors _ {
-			TF_Tensor typeInt32 -> [:data :offset | data signedLongAt: offset].
-			TF_Tensor typeInt64 -> [:data :offset | data signedLongLongAt: offset].
-			TF_Tensor typeFloat -> [:data :offset | data floatAt: offset].
-			TF_Tensor typeDouble -> [:data :offset | data doubleAt: offset]
-		} as: Dictionary.
-
-	^ accessors at: anInteger
-! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
 elementsOf: aMultidimensionalTensor do: oneArgBlock
@@ -6536,6 +6523,19 @@ fromStringArray: aStringArray
 			to: answer data getHandle + offset
 			size: bytesize - offset].
 	^ answer
+! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/15/2017 17:00:46'!
+getterBlockFor: anInteger
+	| accessors |
+	accessors _ {
+			TF_Tensor typeInt32 -> [:data :offset | data signedLongAt: offset].
+			TF_Tensor typeInt64 -> [:data :offset | data signedLongLongAt: offset].
+			TF_Tensor typeFloat -> [:data :offset | data floatAt: offset].
+			TF_Tensor typeDouble -> [:data :offset | data doubleAt: offset]
+		} as: Dictionary.
+
+	^ accessors at: anInteger
 ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/31/2017 16:43:18'!
