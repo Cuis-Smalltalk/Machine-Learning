@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 7:59:14 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 8:03:41 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 364!
+!provides: 'TensorFlow-Kernel' 1 365!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2879,6 +2879,12 @@ testTensorAsArrayInt32
 	array _ tensor asArray.
 	self assert: #(((1 2) (3 4) (5 6) (7 8)) ((9 10) (11 12) (13 14) (15 16))) equals: array.
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 08:00:28'!
+testTensorAsArrayRank0
+	self assert: 1 equals: 1 asInt32Tensor asArray.
+	self assert: 1.0 equals: 1.0 asTensor asArray.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:28:38'!
 testTensorAsStream
@@ -6280,21 +6286,23 @@ allStrings
 	
 	^ answer contents! !
 
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:42:11'!
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 08:03:16'!
 arrayFromStream: strm shape: shape
-	| first tail |
-	first _ shape first.
-	tail _ shape allButFirst.
-	^ tail isEmpty
-		ifTrue: [strm next: first]
+	^ shape isEmpty
+		ifTrue: [strm next]
 		ifFalse: [
-			| answer |
-			answer _ WriteStream on: (Array new: first).
-			first timesRepeat: [
-				| next |
-				next _ self arrayFromStream: strm shape: tail.
-				answer nextPut: next].
-			answer contents]! !
+			| first tail |
+			first _ shape first.
+			tail _ shape allButFirst.
+			Array
+				streamContents: [:answer |
+					first timesRepeat: [
+						| next |
+						next _ self arrayFromStream: strm shape: tail.
+						answer nextPut: next]]
+				estimatedSize: first]
+				
+! !
 
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:45:14'!
 asArray
