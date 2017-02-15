@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 14 February 2017 at 12:04:10 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:19:50 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 358!
+!provides: 'TensorFlow-Kernel' 1 359!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -622,14 +622,6 @@ asStringGraphType: type
 		description addInput: (in output: 0)].
 	^ graph! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:53:12'!
-assertShapeOf: aMultidimensionalTensor is: anArray
-	| shape |
-	shape _ TF_Tensor shapeOf: aMultidimensionalTensor.
-	self
-		assert: shape = anArray
-		description: 'The shape is ', shape printString, ' and should have been ', anArray printString! !
-
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:48:59'!
 assertRankOf: aMultidimensionalTensor is: anInteger
 	| rank |
@@ -637,6 +629,14 @@ assertRankOf: aMultidimensionalTensor is: anInteger
 	self
 		assert: rank = anInteger
 		description: 'The rank is ', rank printString, ' and should have been ', anInteger printString! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:53:12'!
+assertShapeOf: aMultidimensionalTensor is: anArray
+	| shape |
+	shape _ TF_Tensor shapeOf: aMultidimensionalTensor.
+	self
+		assert: shape = anArray
+		description: 'The shape is ', shape printString, ' and should have been ', anArray printString! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:03:38'!
 assertSizeOf: aMultidimensionalTensor is: anInteger
@@ -1474,94 +1474,6 @@ testDescriptionDevice
 	self
 		should: [(TF_Session onGraph: graph) runOutput: (op output: 0)]
 		raiseError: expected.! !
-
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:52:54'!
-testShapeOfInput
-	| graph template const shape same |
-	graph _ TF_Graph create.
-	template _ TF_Tensor fromFloats: #(
-		((1) (2) (3)) 
-		((4) (5) (6))
-	).
-	const _ graph const: 'const' value: template.
-	same _ const identity.
-	shape _ graph shapeOf: (same input: 0).
-	
-	self assert: template shape equals: shape.
-! !
-
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:49:20'!
-testShapeOfOutput
-	| graph template const shape |
-	graph _ TF_Graph create.
-	template _ TF_Tensor fromFloats: #(
-		((1) (2) (3)) 
-		((4) (5) (6))
-	).
-	const _ graph const: 'const' value: template.
-	shape _ graph shapeOf: (const output: 0).
-	
-	self assert: template shape equals: shape.
-! !
-
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 16:09:52'!
-testShapeOfOutputSet
-	| graph var shape output |
-	graph _ TF_Graph create.
-	
-	var _ graph newOperation: 'Placeholder' named: 'var' described: [:description |
-		description
-			at: 'dtype' putType: TF_Tensor typeInt64;
-			at: 'shape' putShape: #(3 -1 -1)].
-	
-	output _ var output: 0.
-	
-	shape _ graph shapeOf: output.
-	self assert: shape equals: #(3 -1 -1).
-
-	graph shapeOf: output set: #(-1 3 -1).
-
-	shape _ graph shapeOf: output.
-	self assert: shape equals: #(3 3 -1).
-! !
-
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:54:53'!
-testShapeOfOutputSetInvalid
-	| graph template const output |
-	graph _ TF_Graph create.
-	template _ TF_Tensor fromFloats: #(
-		((1) (2) (3)) 
-		((4) (5) (6))
-	).
-	const _ graph const: 'const' value: template.
-	output _ const output: 0.
-	
-	self
-		should: [graph shapeOf: output set: #(1 2 3)] 
-		raiseError: 'INVALID_ARGUMENT: Dimension 0 in both shapes must be equal, but are 2 and 1'.
-! !
-
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:55:22'!
-testShapeOfOutputSetInvalidRank
-	| graph template const output |
-	graph _ TF_Graph create.
-	template _ TF_Tensor fromFloats: #(
-		((1) (2) (3)) 
-		((4) (5) (6))
-	).
-	const _ graph const: 'const' value: template.
-	output _ const output: 0.
-	
-	self
-		should: [graph shapeOf: output set: #(1 2 3 -1)]
-		raiseError: 'INVALID_ARGUMENT: Shapes must be equal rank, but are 3 and 4'.! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
-testShape
-	self assertShapeOf: -13123213 is: #().
-	self assertShapeOf: #(123 123 123 123) is: #(4).
-	self assertShapeOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: #(4 3).
-	self assertShapeOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: #(3 3 1).! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/17/2017 18:58:04'!
 testElementsOf: aTensor sum: aNumber
@@ -2648,6 +2560,94 @@ testSessionRunTargetOutputOnGraph: graph
 	output free.
 	graph delete.! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:56:50'!
+testShape
+	self assertShapeOf: -13123213 is: #().
+	self assertShapeOf: #(123 123 123 123) is: #(4).
+	self assertShapeOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12)) is: #(4 3).
+	self assertShapeOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9))) is: #(3 3 1).! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:52:54'!
+testShapeOfInput
+	| graph template const shape same |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	same _ const identity.
+	shape _ graph shapeOf: (same input: 0).
+	
+	self assert: template shape equals: shape.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 09:49:20'!
+testShapeOfOutput
+	| graph template const shape |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	shape _ graph shapeOf: (const output: 0).
+	
+	self assert: template shape equals: shape.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/23/2017 16:09:52'!
+testShapeOfOutputSet
+	| graph var shape output |
+	graph _ TF_Graph create.
+	
+	var _ graph newOperation: 'Placeholder' named: 'var' described: [:description |
+		description
+			at: 'dtype' putType: TF_Tensor typeInt64;
+			at: 'shape' putShape: #(3 -1 -1)].
+	
+	output _ var output: 0.
+	
+	shape _ graph shapeOf: output.
+	self assert: shape equals: #(3 -1 -1).
+
+	graph shapeOf: output set: #(-1 3 -1).
+
+	shape _ graph shapeOf: output.
+	self assert: shape equals: #(3 3 -1).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:54:53'!
+testShapeOfOutputSetInvalid
+	| graph template const output |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	output _ const output: 0.
+	
+	self
+		should: [graph shapeOf: output set: #(1 2 3)] 
+		raiseError: 'INVALID_ARGUMENT: Dimension 0 in both shapes must be equal, but are 2 and 1'.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:55:22'!
+testShapeOfOutputSetInvalidRank
+	| graph template const output |
+	graph _ TF_Graph create.
+	template _ TF_Tensor fromFloats: #(
+		((1) (2) (3)) 
+		((4) (5) (6))
+	).
+	const _ graph const: 'const' value: template.
+	output _ const output: 0.
+	
+	self
+		should: [graph shapeOf: output set: #(1 2 3 -1)]
+		raiseError: 'INVALID_ARGUMENT: Shapes must be equal rank, but are 3 and 4'.! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:05:31'!
 testSizes
 	self assertSizeOf: -13123213 is: 1.
@@ -2809,39 +2809,6 @@ testTensorData
 	self deny: tensor data getHandle isNil.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:54'!
-testTensorShape0D
-	^ self testTensorShape: #()! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:45:28'!
-testTensorShape10D
-	^ self testTensorShape: #(1 2 3 4 5 6 7 8 9 10)! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:50'!
-testTensorShape1D
-	^ self testTensorShape: #(7)! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:40'!
-testTensorShape2D
-	^ self testTensorShape: #(1 4)! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:24:56'!
-testTensorShape: anArray
-	| tensor shape size |
-	tensor _ TF_Tensor
-		type: TF_Tensor typeInt64
-		shape: anArray.
-	self assert: tensor rank equals: anArray size.
-	anArray withIndexDo: [:each :index |
-		self assert: (tensor sizeOn: index - 1) equals: (anArray at: index)].
-	shape _ tensor shape.
-	size _ anArray isEmpty
-		ifTrue: [1]
-		ifFalse: [anArray product].
-	self assert: shape equals: anArray.
-	self assert: tensor size equals: size.
-! !
-
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
 testTensorFromFloats
 	| tensor template values |
@@ -2890,6 +2857,19 @@ testTensorFromFloats2x2SameElementsOrder
 	consts with: values do: [:const :value |
 		self assert: (const closeTo: value)].! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
+testTensorFromFloatsScalar
+	| tensor template values |
+	template _ 3.141516.
+	tensor _ TF_Tensor fromFloats: template.
+	values _ tensor allFloats.
+		
+	self assert: tensor shape equals: #().
+	self assert: tensor size equals: 1.
+	self assert: tensor byteSize equals: (1*4).
+	
+	self assert: (template closeTo: values first).! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 15:29:55'!
 testTensorFromFloatsShape
 	| tensor template values |
@@ -2912,19 +2892,6 @@ testTensorFromFloatsShapeUndefinedSize
 	self
 		should: [TF_Tensor fromFloats: template shape: #(2 2 -1)]
 		raiseError: 'Inferred size and real size don''t match.'.! !
-
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
-testTensorFromFloatsScalar
-	| tensor template values |
-	template _ 3.141516.
-	tensor _ TF_Tensor fromFloats: template.
-	values _ tensor allFloats.
-		
-	self assert: tensor shape equals: #().
-	self assert: tensor size equals: 1.
-	self assert: tensor byteSize equals: (1*4).
-	
-	self assert: (template closeTo: values first).! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:46:04'!
 testTensorFromInt32
@@ -2979,6 +2946,39 @@ testTensorNewScalar
 	self deny: tensor isNull.
 	tensor delete.
 	self assert: tensor isNull.! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:54'!
+testTensorShape0D
+	^ self testTensorShape: #()! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:45:28'!
+testTensorShape10D
+	^ self testTensorShape: #(1 2 3 4 5 6 7 8 9 10)! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:50'!
+testTensorShape1D
+	^ self testTensorShape: #(7)! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 12/26/2016 14:44:40'!
+testTensorShape2D
+	^ self testTensorShape: #(1 4)! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:24:56'!
+testTensorShape: anArray
+	| tensor shape size |
+	tensor _ TF_Tensor
+		type: TF_Tensor typeInt64
+		shape: anArray.
+	self assert: tensor rank equals: anArray size.
+	anArray withIndexDo: [:each :index |
+		self assert: (tensor sizeOn: index - 1) equals: (anArray at: index)].
+	shape _ tensor shape.
+	size _ anArray isEmpty
+		ifTrue: [1]
+		ifFalse: [anArray product].
+	self assert: shape equals: anArray.
+	self assert: tensor size equals: size.
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:40'!
 testTensorType
@@ -4273,12 +4273,6 @@ getCode: aTF_Status
 	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:23:19'!
-graph: aTF_Graph getShapeOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
-	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
-	^ self externalCallFailed
-! !
-
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:27:15'!
 graph: aTF_Graph getOperationNamed: aString
 	| answer |
@@ -4295,6 +4289,12 @@ graph: aTF_Graph getOperationNamedAsVoid: aString
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:31:00'!
 graph: aTF_Graph getRankOf:  aTF_OutputOrInput status: status
 	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:23:19'!
+graph: aTF_Graph getShapeOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
+	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
 	^ self externalCallFailed
 ! !
 
@@ -4972,38 +4972,6 @@ delete
 		self library deleteGraph: self].
 	handle _ nil! !
 
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
-shapeOf: aTF_OutputOrInput
-	| status value size answer |
-	size _ self rankOf: aTF_OutputOrInput.
-	value _ Int64Array externalNew: size.
-	status _ TF_Status create.
-	
-	self library
-		graph: self
-		getShapeOf: aTF_OutputOrInput
-		into: value
-		size: size
-		status: status.
-	status check.
-	
-	answer _ (1 to: size) collect: [:i | value at: i].
-	^ answer! !
-
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 15:08:37'!
-shapeOf: aTF_OutputOrInput set: shape
-	| status value |
-	value _ Int64Array externalFromArray: shape.
-	status _ TF_Status create.
-	
-	self library
-		graph: self
-		setShapeOf: aTF_OutputOrInput
-		to: value
-		size: shape size
-		status: status.
-	status check.! !
-
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
 finalize
 	self delete! !
@@ -5185,6 +5153,38 @@ rankOf: aTF_OutputOrInput
 	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
 	status check.
 	^ answer! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
+shapeOf: aTF_OutputOrInput
+	| status value size answer |
+	size _ self rankOf: aTF_OutputOrInput.
+	value _ Int64Array externalNew: size.
+	status _ TF_Status create.
+	
+	self library
+		graph: self
+		getShapeOf: aTF_OutputOrInput
+		into: value
+		size: size
+		status: status.
+	status check.
+	
+	answer _ (1 to: size) collect: [:i | value at: i].
+	^ answer! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 15:08:37'!
+shapeOf: aTF_OutputOrInput set: shape
+	| status value |
+	value _ Int64Array externalFromArray: shape.
+	status _ TF_Status create.
+	
+	self library
+		graph: self
+		setShapeOf: aTF_OutputOrInput
+		to: value
+		size: shape size
+		status: status.
+	status check.! !
 
 !TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:43:13'!
 truncatedNormalRandomShaped: shapeArray
@@ -6213,15 +6213,6 @@ delete
 		self library deleteTensor: self].
 	handle _ nil! !
 
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 12:41:46'!
-shape
-	| answer count |
-	count _ self rank.
-	answer _ WriteStream on: (Array new: count).
-	1 to: count do: [:i |
-		answer nextPut: (self sizeOn: i-1)].
-	^ answer contents! !
-
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:32:07'!
 elementSize
 	^ self class sizeForType: self type! !
@@ -6262,6 +6253,15 @@ int64sDo: oneArgBlock
 rank
 	^self library tensorRank: self.! !
 
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 12:41:46'!
+shape
+	| answer count |
+	count _ self rank.
+	answer _ WriteStream on: (Array new: count).
+	1 to: count do: [:i |
+		answer nextPut: (self sizeOn: i-1)].
+	^ answer contents! !
+
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 14:37:36'!
 size
 	^ self shape inject: 1 into: [:prev :next | prev * next].! !
@@ -6286,14 +6286,6 @@ accessorBlockFor: anInteger
 
 	^ accessors at: anInteger
 ! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
-shapeOf: aMultidimensionalTensor
-	^ aMultidimensionalTensor isCollection
-		ifTrue: [aMultidimensionalTensor isEmpty
-			ifTrue: [#(0)]
-			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
-		ifFalse: [#()].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
 elementsOf: aMultidimensionalTensor do: oneArgBlock
@@ -6447,6 +6439,14 @@ rankOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
+shapeOf: aMultidimensionalTensor
+	^ aMultidimensionalTensor isCollection
+		ifTrue: [aMultidimensionalTensor isEmpty
+			ifTrue: [#(0)]
+			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
+		ifFalse: [#()].! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 17:55:27'!
 sizeForType: anInteger
