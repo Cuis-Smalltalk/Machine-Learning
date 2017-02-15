@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:40:07 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:50:15 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 361!
+!provides: 'TensorFlow-Kernel' 1 363!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1026,6 +1026,22 @@ testAllVariables
 	self assert: vars first = var1.
 	self assert: vars second = var2.
 	self assert: vars third = var3.
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:44:48'!
+testArrayFromStream
+	| t template array |
+	t _ 1.0 asTensor.
+	template _ #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17) readStream.
+	
+	array _ t arrayFromStream: template reset shape: #(10).
+	self assert: #(1 2 3 4 5 6 7 8 9 10) equals: array.
+	
+	array _ t arrayFromStream: template reset shape: #(2 8).
+	self assert: #((1 2 3 4 5 6 7 8) (9 10 11 12 13 14 15 16)) equals: array.
+	
+	array _ t arrayFromStream: template reset shape: #(2 4 2).
+	self assert: #(((1 2) (3 4) (5 6) (7 8)) ((9 10) (11 12) (13 14) (15 16))) equals: array.
 	! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 18:09:11'!
@@ -2809,6 +2825,42 @@ testTensorAllStrings
 	
 	result delete.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:48:48'!
+testTensorAsArrayFloats
+	| tensor template array |
+	template _ #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16).
+	
+	tensor _ TF_Tensor fromFloats: template shape: #(16).
+	array _ tensor asArray.
+	self assert: #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16) equals: array.
+	
+	tensor _ TF_Tensor fromFloats: template shape: #(2 8).
+	array _ tensor asArray.
+	self assert: #((1 2 3 4 5 6 7 8) (9 10 11 12 13 14 15 16)) equals: array.
+	
+	tensor _ TF_Tensor fromFloats: template shape: #(2 4 2).
+	array _ tensor asArray.
+	self assert: #(((1 2) (3 4) (5 6) (7 8)) ((9 10) (11 12) (13 14) (15 16))) equals: array.
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:48:18'!
+testTensorAsArrayInt32
+	| tensor template array |
+	template _ #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16).
+	
+	tensor _ TF_Tensor fromInt32s: template shape: #(16).
+	array _ tensor asArray.
+	self assert: #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16) equals: array.
+	
+	tensor _ TF_Tensor fromInt32s: template shape: #(2 8).
+	array _ tensor asArray.
+	self assert: #((1 2 3 4 5 6 7 8) (9 10 11 12 13 14 15 16)) equals: array.
+	
+	tensor _ TF_Tensor fromInt32s: template shape: #(2 4 2).
+	array _ tensor asArray.
+	self assert: #(((1 2) (3 4) (5 6) (7 8)) ((9 10) (11 12) (13 14) (15 16))) equals: array.
+	! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:28:38'!
 testTensorAsStream
@@ -6209,6 +6261,26 @@ allStrings
 		answer nextPut: str].
 	
 	^ answer contents! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:42:11'!
+arrayFromStream: strm shape: shape
+	| first tail |
+	first _ shape first.
+	tail _ shape allButFirst.
+	^ tail isEmpty
+		ifTrue: [strm next: first]
+		ifFalse: [
+			| answer |
+			answer _ WriteStream on: (Array new: first).
+			first timesRepeat: [
+				| next |
+				next _ self arrayFromStream: strm shape: tail.
+				answer nextPut: next].
+			answer contents]! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:45:14'!
+asArray
+	^ self arrayFromStream: self asStream shape: self shape! !
 
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:29:29'!
 asStream
