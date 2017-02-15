@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:50:15 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 7:59:14 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 363!
+!provides: 'TensorFlow-Kernel' 1 364!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2824,6 +2824,24 @@ testTensorAllStrings
 	self assert: strings equals: expected.
 	
 	result delete.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 07:59:07'!
+testTensorAsArray
+	| tensor template array |
+	template _ #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16).
+	
+	tensor _ TF_Tensor fromFloats: template shape: #(16).
+	array _ tensor asArray.
+	self assert: template equals: array.
+	
+	tensor _ TF_Tensor fromFloats: template shape: #(2 8).
+	array _ tensor asArray.
+	self assert: #((1 2 3 4 5 6 7 8) (9 10 11 12 13 14 15 16)) equals: array.
+	
+	tensor _ TF_Tensor fromFloats: template shape: #(2 4 2).
+	array _ tensor asArray.
+	self assert: #(((1 2) (3 4) (5 6) (7 8)) ((9 10) (11 12) (13 14) (15 16))) equals: array.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:48:48'!
