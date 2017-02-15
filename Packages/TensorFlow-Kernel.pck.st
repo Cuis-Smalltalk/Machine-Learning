@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:29:44 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 1:40:07 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 360!
+!provides: 'TensorFlow-Kernel' 1 361!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1716,9 +1716,11 @@ testGraphDefinition
 	self assert: operations second name equals: 'in1'.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/13/2017 10:12:48'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/15/2017 01:40:03'!
 testGraphDeletionDoesntBreakOperations
 	| graph in1 in2 add |
+	self assert: false description: 'This test actually fails, and by failing it corrupts external memory and leads to a crash. This means when a TF_Graph is deleted, all the TF_Operations composing it are also deleted, hence pointers held to them (from Smalltalk or otherwise) become invalid'.
+	
 	graph _ self addGraphTwoInputsInt64.
 	graph ignoreFinalization.
 	
@@ -1731,8 +1733,6 @@ testGraphDeletionDoesntBreakOperations
 	self assert: add name equals: 'add'.
 	
 	graph delete.
-	
-	self assert: false description: 'This test actually fails, and by failing it corrupts external memory and leads to a crash. This means when a TF_Graph is deleted, all the TF_Operations composing it are also deleted, hence pointers held to them (from Smalltalk or otherwise) become invalid'.
 	
 	self assert: in1 name equals: 'in1'.
 	self assert: in2 name equals: 'in2'.
