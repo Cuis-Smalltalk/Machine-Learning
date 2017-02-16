@@ -6514,11 +6514,31 @@ fromInt64: value
 	answer data getHandle signedLongLongAt: 1 put: value.
 	^ answer! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:21:48'!
-fromInt64Array: values
-	| answer |
-	answer _ self type: self typeInt64 shape: {values size}.
-	self int64Array: values into: answer data getHandle.
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:41:15'!
+fromInt64s: values
+	^ self fromNumbers: values type: self typeInt64! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:44:54'!
+fromInt64s: values shape: shape
+	^ self fromNumbers: values type: self typeInt64 shape: shape
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:36:51'!
+fromNumbers: values type: type
+	| shape |
+	shape _ self shapeOf: values.
+	^ self fromNumbers: values type: type shape: shape! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:36:20'!
+fromNumbers: values type: type shape: shape
+	| answer size count |
+	size _ self sizeOf: values.
+	count _ shape inject: 1 into: [:a :b | a * b].
+	count = size ifFalse: [
+		self error: 'Inferred size and real size don''t match.'].
+		
+	answer _ self type: type shape: shape.
+	self array: values type: type into: answer data getHandle.
 	^ answer! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:57:18'!
