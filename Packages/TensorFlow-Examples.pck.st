@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 10:46:54 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 16 February 2017 at 9:41:27 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 14!
+!provides: 'TensorFlow-Examples' 1 15!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -837,7 +837,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:44:17'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 09:41:10'!
 initializeInferenceGraph
 	| hidden1 hidden2 |
 	hidden1 _ graph
@@ -845,7 +845,7 @@ initializeInferenceGraph
 			input _ image.
 			(image * weights1 + biases1) rectified]
 		named: 'layer1'.
-	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified].
+	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified] named: 'layer2'.
 	prediction _ graph
 		fromBlock: [:image | | axis |
 			netInput _ hidden2 * weights3 + biases3.
@@ -866,23 +866,26 @@ initializeLossGraph
 		inputTypes: {TF_Tensor typeInt32}
 		named: 'loss'.! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 09:35:09'!
 initializeParameters
 	| aux |
-	aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
-	weights1 _ graph variable: 'weights1' initialValueFrom: aux.
-	aux _ graph zerosShaped: {self hidden1Size}.
-	biases1 _ graph variable: 'biases1' initialValueFrom: aux.
+		graph
+			fromBlock: [
+				aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
+				weights1 _ graph variable: 'weights1' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self hidden1Size}.
+				biases1 _ graph variable: 'biases1' initialValueFrom: aux.
 
-	aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
-	weights2 _ graph variable: 'weights2' initialValueFrom: aux.
-	aux _ graph zerosShaped: {self hidden2Size}.
-	biases2 _ graph variable: 'biases2' initialValueFrom: aux.
+				aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
+				weights2 _ graph variable: 'weights2' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self hidden2Size}.
+				biases2 _ graph variable: 'biases2' initialValueFrom: aux.
 
-	aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
-	weights3 _ graph variable: 'weights3' initialValueFrom: aux.
-	aux _ graph zerosShaped: {self outputSize}.
-	biases3 _ graph variable: 'biases3' initialValueFrom: aux.
+				aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
+				weights3 _ graph variable: 'weights3' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self outputSize}.
+				biases3 _ graph variable: 'biases3' initialValueFrom: aux]
+			named: 'parameters'
 ! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
