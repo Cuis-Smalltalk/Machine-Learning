@@ -6433,6 +6433,17 @@ sizeOn: dimension
 type
 	^self library tensorType: self.! !
 
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 21:15:40'!
+array: values type: type into: anExternalAddressOrByteArray
+	| size index setter |
+	size _ self sizeForType: type.
+	setter _ self setterBlockFor: type.
+	index _ 0.
+	self elementsOf: values do: [:value |
+		setter value: anExternalAddressOrByteArray value: index*size + 1 value: value.
+		index _ index + 1].
+! !
+
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
 elementsOf: aMultidimensionalTensor do: oneArgBlock
 	^ aMultidimensionalTensor isCollection
@@ -6598,6 +6609,19 @@ rankOf: aMultidimensionalTensor
 	^ aMultidimensionalTensor isCollection
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/15/2017 17:02:33'!
+setterBlockFor: anInteger
+	| accessors |
+	accessors _ {
+			TF_Tensor typeInt32 -> [:data :offset :value | data signedLongAt: offset put: value].
+			TF_Tensor typeInt64 -> [:data :offset :value | data signedLongLongAt: offset put: value].
+			TF_Tensor typeFloat -> [:data :offset :value | data floatAt: offset put: value].
+			TF_Tensor typeDouble -> [:data :offset :value | data doubleAt: offset put: value]
+		} as: Dictionary.
+
+	^ accessors at: anInteger
+! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
 shapeOf: aMultidimensionalTensor
