@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 12 February 2017 at 11:25:14 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 10:46:54 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 13!
-!requires: 'Protocols-HTTP' 1 25 nil!
+!provides: 'TensorFlow-Examples' 1 14!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
+!requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: ''
@@ -1214,13 +1214,13 @@ decodeCSVGraphDefaults: anArrayOfTF_Tensors
 initialize
 	plan _ ExampleNearestNeighborPlan new.! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/18/2017 01:00:47'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 2/15/2017 22:40:27'!
 irisDescription
 	^{TF_Tensor fromFloats: #(-1.0).
 		TF_Tensor fromFloats: #(-1.0).
 		TF_Tensor fromFloats: #(-1.0).
 		TF_Tensor fromFloats: #(-1.0).
-		TF_Tensor fromInt64Array: #(-1)}! !
+		TF_Tensor fromInt64s: #(-1)}! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/16/2017 23:00:14'!
 irisFile

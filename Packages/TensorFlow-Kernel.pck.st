@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 5:01:26 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 10:46:56 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 367!
+!provides: 'TensorFlow-Kernel' 1 368!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -1416,25 +1416,25 @@ testCreateGraphMulOneInput
 	graph delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 01:29:13'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 2/15/2017 22:40:49'!
 testDecodeCSVGraphCreate
 	| defaults |
 	defaults _ {
-		TF_Tensor fromInt64Array: #(-1).
-		TF_Tensor fromInt64Array: #(-1).
-		TF_Tensor fromInt64Array: #(-1).
-		TF_Tensor fromInt64Array: #(-1)}.
+		TF_Tensor fromInt64s: #(-1).
+		TF_Tensor fromInt64s: #(-1).
+		TF_Tensor fromInt64s: #(-1).
+		TF_Tensor fromInt64s: #(-1)}.
 		
 	self decodeCSVGraphDefaults: defaults.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 04:12:40'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 2/15/2017 22:40:55'!
 testDecodeCSVGraphRunCSV: csvLines
 	| defaults graph output records session results values |
 	defaults _ {
-		TF_Tensor fromInt64Array: #(-1).
-		TF_Tensor fromInt64Array: #(-1).
-		TF_Tensor fromInt64Array: #(-1).
-		TF_Tensor fromInt64Array: #(-1)}.
+		TF_Tensor fromInt64s: #(-1).
+		TF_Tensor fromInt64s: #(-1).
+		TF_Tensor fromInt64s: #(-1).
+		TF_Tensor fromInt64s: #(-1)}.
 		
 	graph _ self decodeCSVGraphDefaults: defaults.
 	records _ (graph operationNamed: 'records') input: 0.
@@ -1653,12 +1653,12 @@ testGetAttrMetadataString
 	self assert: metadata totalSize equals: template size.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/20/2017 18:10:33'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 2/15/2017 22:40:58'!
 testGetAttrMetadataTensor
 	| graph op template metadata |
 	template _ #(1 2 3 4 5).
 	graph _ TF_Graph create.
-	op _ graph const: 'const' value: (TF_Tensor fromInt64Array: template).
+	op _ graph const: 'const' value: (TF_Tensor fromInt64s: template).
 		
 	metadata _ op attrMetadata: 'value'.
 	self assert: metadata isTensor.
@@ -2000,12 +2000,12 @@ testInt64AsStringGraph
 
 	result delete.! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:33'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 2/15/2017 22:41:01'!
 testInt64rrayAsStringGraph
 	| result tensor strings template |
 	
 	template _ #(101010101 -123321 1 2 3 4).
-	tensor _ TF_Tensor fromInt64Array: template.
+	tensor _ TF_Tensor fromInt64s: template.
 	result _ self testAsStringGraphRunOn: tensor.
 	strings _ result allStrings.
 	
@@ -3015,7 +3015,7 @@ testTensorFromInt32
 testTensorFromInt64Array
 	| tensor template values |
 	template _ #(16r1234567812345678 0 -12345678910111213).
-	tensor _ TF_Tensor fromInt64Array: template.
+	tensor _ TF_Tensor fromInt64s: template.
 	values _ tensor allInt64s.
 	
 	self assert: tensor shape equals: #(3).
