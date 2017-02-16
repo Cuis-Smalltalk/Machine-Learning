@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 16 February 2017 at 9:41:27 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 16 February 2017 at 5:31:41 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 15!
+!provides: 'TensorFlow-Examples' 1 16!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -393,7 +393,7 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:23:03'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/16/2017 17:30:09'!
 testMNIST3LayersNNForwardGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -411,14 +411,14 @@ testMNIST3LayersNNForwardGraph
 		raise: Error.
 
 	self assert: {2} equals: result shape.
-	self assert: 0 equals: result allInt32s first.
-	self assert: 0 equals: result allInt32s second.! !
+	self assert: 0 equals: result asNumbers first.
+	self assert: 0 equals: result asNumbers second.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
 testMNIST3LayersNNInitialization
 	MNIST3LayersNNExamplePlan new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:24:51'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/16/2017 17:31:37'!
 testMNIST3LayersNNLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -438,11 +438,11 @@ testMNIST3LayersNNLossGraph
 		raise: Error.
 
 	self assert: {2} equals: results first shape.
-	self assert: 0 equals: results first allInt32s first.
-	self assert: 0 equals: results first allInt32s second.
+	self assert: 0 equals: results first asNumbers first.
+	self assert: 0 equals: results first asNumbers second.
 	
 	self assert: #() equals: results second shape.
-	self assert: (results second allFloats sum abs > 0).! !
+	self assert: (results second asNumbers > 0).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:08:37'!
 testMNISTSoftMaxForwardGraph
