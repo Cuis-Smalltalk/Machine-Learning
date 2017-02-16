@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 11:12:27 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 16 February 2017 at 12:18:29 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 370!
+!provides: 'TensorFlow-Kernel' 1 368!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -242,6 +242,10 @@ ignoreFinalization
 useFinalization
 	self finalizationRegistry add: self! !
 
+!Boolean methodsFor: '*TensorFlow-Kernel' stamp: 'JB 2/15/2017 23:51:26'!
+asBooleanTensor
+	^ TF_Tensor fromBools: self! !
+
 !Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:18:09'!
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
@@ -261,6 +265,10 @@ asTensor
 !Fraction methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:19:41'!
 asTensor
 	^ TF_Tensor fromFloats: self! !
+
+!SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'JB 2/15/2017 23:50:46'!
+asBooleanTensor
+	^ TF_Tensor fromBools: self! !
 
 !SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/30/2017 16:19:25'!
 asFloatTensor
@@ -1051,6 +1059,28 @@ testArrayFromStream
 	array _ t arrayFromStream: template reset shape: #(2 4 2).
 	self assert: #(((1 2) (3 4) (5 6) (7 8)) ((9 10) (11 12) (13 14) (15 16))) equals: array.
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'JB 2/15/2017 23:54:30'!
+testAsBooleanTensor
+	self testAsBooleanTensor: true shape: #().
+	self testAsBooleanTensor: #(true false true false) shape: #(4).
+	self testAsBooleanTensor: #((true false true false) (false true false true)) shape: #(2 4).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'JB 2/15/2017 23:43:58'!
+testAsBooleanTensor: tensorArray shape: shapeArray
+	| tensor index bools |
+	tensor _ tensorArray asBooleanTensor.
+	
+	self assert: tensor shape equals: shapeArray.
+	
+	index _ 1.
+	bools _ tensor allElements.
+	TF_Tensor elementsOf: tensorArray do: [:each |
+		self assert: (bools at: index) equals: each.
+		index _ index + 1].
+
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 18:09:11'!
 testAsFloatTensor
@@ -3614,6 +3644,28 @@ testOperationExp
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/15/2017 23:43:39'!
+testOperationGreater
+	| graph a b session constA constB result  template comparisons |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (3.14 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (2.1 3.14)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	comparisons _ constA > constB.
+	template _ a allFloats with: b allFloats collect:[:x :y| x > y].
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (comparisons output: 0).
+	
+	self assert: result shape equals: a shape.
+	result allElements with: template do: [:r :t |
+		self assert: r equals: t].! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/29/2017 12:03:01'!
 testOperationIAlias
 	| graph template const result same1 same2 |
@@ -5479,6 +5531,10 @@ create
 -= aTF_Operation
 	^ self binaryOp: 'AssignSub' with: aTF_Operation! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/15/2017 23:27:00'!
+> aTF_Operation
+	^ self binaryOp: 'Greater' with: aTF_Operation! !
+
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
 @* aTF_Operation
 	^ self binaryOp: 'Mul' with: aTF_Operation! !
@@ -6496,6 +6552,16 @@ elementsOf: aMultidimensionalTensor do: oneArgBlock
 				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'JB 2/16/2017 00:16:01'!
+fromBools: values
+	^ self fromNumbers: values type: self typeBool
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'JB 2/16/2017 00:15:33'!
+fromBools: values shape: shape
+	^ self fromNumbers: values type: self typeBool shape: shape
+! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:35:31'!
 fromFloats: values
 	^ self fromNumbers: values type: self typeFloat
@@ -6599,14 +6665,15 @@ fromStringArray: aStringArray
 	^ answer
 ! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/15/2017 17:00:46'!
+!TF_Tensor class methodsFor: 'types' stamp: 'JB 2/16/2017 00:17:48'!
 getterBlockFor: anInteger
 	| accessors |
 	accessors _ {
 			TF_Tensor typeInt32 -> [:data :offset | data signedLongAt: offset].
 			TF_Tensor typeInt64 -> [:data :offset | data signedLongLongAt: offset].
 			TF_Tensor typeFloat -> [:data :offset | data floatAt: offset].
-			TF_Tensor typeDouble -> [:data :offset | data doubleAt: offset]
+			TF_Tensor typeDouble -> [:data :offset | data doubleAt: offset].
+			TF_Tensor typeBool -> [:data :offset | data booleanAt: offset]
 		} as: Dictionary.
 
 	^ accessors at: anInteger
@@ -6627,14 +6694,15 @@ rankOf: aMultidimensionalTensor
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/15/2017 17:02:33'!
+!TF_Tensor class methodsFor: 'types' stamp: 'JB 2/16/2017 00:17:18'!
 setterBlockFor: anInteger
 	| accessors |
 	accessors _ {
 			TF_Tensor typeInt32 -> [:data :offset :value | data signedLongAt: offset put: value].
 			TF_Tensor typeInt64 -> [:data :offset :value | data signedLongLongAt: offset put: value].
 			TF_Tensor typeFloat -> [:data :offset :value | data floatAt: offset put: value].
-			TF_Tensor typeDouble -> [:data :offset :value | data doubleAt: offset put: value]
+			TF_Tensor typeDouble -> [:data :offset :value | data doubleAt: offset put: value].
+			TF_Tensor typeBool  -> [:data :offset :value| data booleanAt: offset put: value ].
 		} as: Dictionary.
 
 	^ accessors at: anInteger
@@ -6648,8 +6716,9 @@ shapeOf: aMultidimensionalTensor
 			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 17:55:27'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'JB 2/15/2017 23:39:14'!
 sizeForType: anInteger
+	anInteger = self typeBool ifTrue:[^1].
 	anInteger = self typeFloat ifTrue: [^4].
 	anInteger = self typeInt64 ifTrue: [^8].
 	anInteger = self typeInt32 ifTrue: [^4].
