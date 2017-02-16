@@ -2999,8 +2999,35 @@ testTensorFromFloatsShapeUndefinedSize
 		should: [TF_Tensor fromFloats: template shape: #(2 2 -1)]
 		raiseError: 'Inferred size and real size don''t match.'.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/31/2017 16:46:04'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 22:46:45'!
 testTensorFromInt32
+	| tensor template values |
+	template _ -1123123123.
+	tensor _ TF_Tensor fromInt32: template.
+	values _ tensor allInt32s.
+		
+	self assert: tensor shape equals: #().
+	self assert: tensor size equals: 1.
+	self assert: tensor byteSize equals: 4.
+	self assert: values equals: {template}.! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 22:43:50'!
+testTensorFromInt32Shape
+	| tensor template values |
+	template _ #(123456 0 -1234567 11).
+	tensor _ TF_Tensor fromInt32s: template shape: #(2 2).
+	values _ tensor allFloats.
+		
+	self assert: tensor type equals: TF_Tensor typeInt32.
+	self assert: tensor shape equals: #(2 2).
+	self assert: tensor size equals: 4.
+	self assert: tensor byteSize equals: (tensor size*4).
+	template with: values do: [:templ :actual |
+		self assert: (templ closeTo: actual)]
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 22:45:47'!
+testTensorFromInt32s
 	| tensor template values |
 	template _ #(0 -1 1 -2 2 32768 65536 -1123123123).
 	tensor _ TF_Tensor fromInt32s: template.
