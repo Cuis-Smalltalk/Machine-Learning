@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 11:06:41 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 11:12:27 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 369!
+!provides: 'TensorFlow-Kernel' 1 370!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -246,9 +246,13 @@ useFinalization
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
 
-!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/31/2017 16:41:27'!
+!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/15/2017 23:12:01'!
 asInt32Tensor
-	^ TF_Tensor fromInt32: self! !
+	^ TF_Tensor fromInt32s: self! !
+
+!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/15/2017 23:12:08'!
+asInt64Tensor
+	^ TF_Tensor fromInt64s: self! !
 
 !Float methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:19:32'!
 asTensor
@@ -265,6 +269,10 @@ asFloatTensor
 !SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/31/2017 16:41:49'!
 asInt32Tensor
 	^ TF_Tensor fromInt32s: self! !
+
+!SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/15/2017 23:12:22'!
+asInt64Tensor
+	^ TF_Tensor fromInt64s: self! !
 
 !String methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/7/2017 04:33:10'!
 asAsciiZ
@@ -1080,6 +1088,28 @@ testAsInt32Tensor: tensorArray shape: shapeArray
 	
 	index _ 1.
 	ints _ tensor allInt32s.
+	TF_Tensor elementsOf: tensorArray do: [:each |
+		self assert: (ints at: index) equals: each.
+		index _ index + 1].
+
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 23:11:03'!
+testAsInt64Tensor
+	self testAsInt64Tensor: 1 shape: #().
+	self testAsInt64Tensor: #(1 2 3 4) shape: #(4).
+	self testAsInt64Tensor: #((1 2 3 4) (-314 171 -212 -78)) shape: #(2 4).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 23:11:28'!
+testAsInt64Tensor: tensorArray shape: shapeArray
+	| tensor index ints |
+	tensor _ tensorArray asInt64Tensor.
+	
+	self assert: tensor shape equals: shapeArray.
+	
+	index _ 1.
+	ints _ tensor allInt64s.
 	TF_Tensor elementsOf: tensorArray do: [:each |
 		self assert: (ints at: index) equals: each.
 		index _ index + 1].
