@@ -3038,8 +3038,23 @@ testTensorFromInt32s
 	self assert: tensor byteSize equals: (template size*4).
 	self assert: values equals: template.! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:10'!
-testTensorFromInt64Array
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 22:45:22'!
+testTensorFromInt64Shape
+	| tensor template values |
+	template _ #(123456 0 -1234567 11).
+	tensor _ TF_Tensor fromInt64s: template shape: #(2 2).
+	values _ tensor allFloats.
+		
+	self assert: tensor type equals: TF_Tensor typeInt64.
+	self assert: tensor shape equals: #(2 2).
+	self assert: tensor size equals: 4.
+	self assert: tensor byteSize equals: (tensor size*8).
+	template with: values do: [:templ :actual |
+		self assert: (templ closeTo: actual)]
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 22:45:36'!
+testTensorFromInt64s
 	| tensor template values |
 	template _ #(16r1234567812345678 0 -12345678910111213).
 	tensor _ TF_Tensor fromInt64s: template.
