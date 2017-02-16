@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 10:46:56 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 11:06:41 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 368!
+!provides: 'TensorFlow-Kernel' 1 369!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -6466,35 +6466,15 @@ elementsOf: aMultidimensionalTensor do: oneArgBlock
 				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:21:04'!
-floatArray: values into: anExternalAddressOrByteArray
-	| size index |
-	size _ self sizeForType: self typeFloat.
-	
-	index _ 0.
-	self elementsOf: values do: [:value |
-		anExternalAddressOrByteArray floatAt: index*size + 1 put: value.
-		index _ index + 1].
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 15:22:48'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:35:31'!
 fromFloats: values
-	| shape |
-	shape _ self shapeOf: values.
-	^ self fromFloats: values shape: shape.
+	^ self fromNumbers: values type: self typeFloat
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:09'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:38:57'!
 fromFloats: values shape: shape
-	| answer size count |
-	size _ self sizeOf: values.
-	count _ shape inject: 1 into: [:a :b | a * b].
-	count = size ifFalse: [
-		self error: 'Inferred size and real size don''t match.'].
-		
-	answer _ self type: self typeFloat shape: shape.
-	self floatArray: values into: answer data getHandle.
-	^ answer! !
+	^ self fromNumbers: values type: self typeFloat shape: shape
+! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
 fromInt32: value
