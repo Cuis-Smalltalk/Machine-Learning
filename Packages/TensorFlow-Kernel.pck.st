@@ -6483,24 +6483,15 @@ fromInt32: value
 	answer data getHandle signedLongAt: 1 put: value.
 	^ answer! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/31/2017 16:42:18'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:37:53'!
 fromInt32s: values
-	| shape |
-	shape _ self shapeOf: values.
-	^ self fromInt32s: values shape: shape.
+	^ self fromNumbers: values type: self typeInt32.
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/3/2017 12:10:05'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:39:40'!
 fromInt32s: values shape: shape
-	| answer size count |
-	size _ self sizeOf: values.
-	count _ shape inject: 1 into: [:a :b | a * b].
-	count = size ifFalse: [
-		self error: 'Inferred size and real size don''t match.'].
-		
-	answer _ self type: self typeInt32 shape: shape.
-	self int32Array: values into: answer data getHandle.
-	^ answer! !
+	^ self fromNumbers: values type: self typeInt32 shape: shape
+! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
 fromInt64: value
