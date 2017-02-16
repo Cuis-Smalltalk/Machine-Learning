@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 16 February 2017 at 5:31:41 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 16 February 2017 at 7:01:08 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 16!
+!provides: 'TensorFlow-Examples' 1 17!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1095,18 +1095,17 @@ initializeInferenceGraph
 			netInput softmax findMaxOn: axis]
 		named: 'inference'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:11:51'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 17:59:30'!
 initializeLearningGraph
-	| learningRate learningRateValue gradient |
+	| learningRate activationGradient biasGradient |
 	graph
 		fromBlock: [
-			learningRateValue _ 0.9 asTensor.
-			learningRate _ graph const: 'learningRate' value: learningRateValue.
-			activation useOutput: 1.
-			gradient _ activation meanOn: #(0) asInt32Tensor.
+			learningRate _ graph const: 'learningRate' value: 0.9 asTensor.
+			activationGradient _ activation useOutput: 1.
+			biasGradient _ activationGradient meanOn: #(0) asInt32Tensor.
 			"todo: divide by the number of inputs (the batch size)"
-			learnWeights _ weights descent: input \* activation rate: learningRate.
-			learnBiases _ biases descent: gradient rate: learningRate]
+			learnWeights _ weights descent: input \* activationGradient rate: learningRate.
+			learnBiases _ biases descent: biasGradient rate: learningRate]
 		named: 'learning'! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:09:05'!
