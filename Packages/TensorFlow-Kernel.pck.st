@@ -6582,28 +6582,9 @@ getterBlockFor: anInteger
 	^ accessors at: anInteger
 ! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/31/2017 16:43:18'!
-int32Array: values into: anExternalAddressOrByteArray
-	| size index |
-
-	size _ self sizeForType: self typeInt32.
-	
-	index _ 0.
-	self elementsOf: values do: [:value |
-		anExternalAddressOrByteArray signedLongAt: index*size + 1 put: value.
-		index _ index + 1].
-! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/18/2017 00:32:18'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 22:29:58'!
 int64Array: values into: anExternalAddressOrByteArray
-	| size index |
-
-	size _ self sizeForType: self typeInt64.
-	
-	index _ 0.
-	self elementsOf: values do: [:value |
-		anExternalAddressOrByteArray signedLongLongAt: index*size + 1 put: value.
-		index _ index + 1].
+	self array: values type: self typeInt64 into: anExternalAddressOrByteArray.
 ! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 23:22:39'!
