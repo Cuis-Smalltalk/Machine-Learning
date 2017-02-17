@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:28:42 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:50:25 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 18!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
+!provides: 'TensorFlow-Examples' 1 19!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: ''
@@ -743,15 +743,14 @@ initializeGraph
 	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'JB 1/23/2017 10:49:44'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:48:53'!
 initializeGraphWithOperations
-	| axis axisValue distance testing training prediction |
+	| axis distance testing training prediction |
 	graph _ TF_Graph create.
 	
 	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
 	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
-	axisValue _ TF_Tensor fromInt32: 0.
-	axis _ graph const: 'axis' value: axisValue.
+	axis _ 0 asInt32Tensor.
 	
 	distance _ (testing - training) abs sumOn: axis.
 	prediction _ distance findMinOn: axis.
@@ -1084,23 +1083,21 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:10:20'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:44:23'!
 initializeInferenceGraph
 	prediction _ graph
 		fromBlock: [:image |
-			| axis |
 			input _ image.
 			netInput _ image * weights + biases.
-			axis _ graph const: 1 asInt32Tensor.
-			netInput softmax findMaxOn: axis]
+			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'inference'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 17:59:30'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:49:58'!
 initializeLearningGraph
 	| learningRate activationGradient biasGradient |
 	graph
 		fromBlock: [
-			learningRate _ graph const: 'learningRate' value: 0.9 asTensor.
+			learningRate _ 0.9 asTensor.
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: #(0) asInt32Tensor.
 			"todo: divide by the number of inputs (the batch size)"

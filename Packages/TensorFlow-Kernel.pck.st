@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:42:06 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:50:28 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 374!
+!provides: 'TensorFlow-Kernel' 1 375!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5466,12 +5466,11 @@ writeDefToFileNamed: filename
 	filename asFileEntry writeStreamDo: [:strm |
 		self writeDefTo: strm]! !
 
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 02:15:35'!
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/17/2017 00:47:45'!
 zerosShaped: shapeArray
-	| shape value |
+	| shape |
 	shape _ self const: shapeArray asInt32Tensor.
-	value _ self const: 0.0 asTensor.
-	^ shape binaryOp: 'Fill' with: value! !
+	^ shape binaryOp: 'Fill' with: 0.0 asTensor! !
 
 !TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/10/2017 11:26:01'!
 create
@@ -5704,11 +5703,9 @@ intAt: nameString
 inverse
 	^ self unaryOp: 'MatrixInverse'! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 23:50:53'!
-meanOn: shapeTensor
-	| const |
-	const _ graph const: shapeTensor.
-	^ self binaryOp: 'Mean' with: const! !
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/17/2017 00:45:25'!
+meanOn:  shapeTensorOrOperation
+	^ self binaryOp: 'Mean' with: shapeTensorOrOperation! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
 name
