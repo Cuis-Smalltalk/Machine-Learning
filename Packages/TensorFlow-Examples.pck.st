@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 11:09:25 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 11:40:09 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 16!
+!provides: 'TensorFlow-Examples' 1 17!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -853,9 +853,9 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 11:07:41'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 11:39:06'!
 initializeLearningGraph
-	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient zero |
+	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient |
 	
 	learningRateValue _ 0.9 asTensor.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
@@ -869,16 +869,14 @@ initializeLearningGraph
 			learnBiases3 _ biases3 descent: meanGradient rate: learningRate]
 		named: 'learning3'.
 		
-	zero _ 0 asFloatTensor asOperationOn: graph.
-		
 	graph fromBlock: [
-		gradient2 _ weights3 \* gradient @* (hidden2 > zero).
+		gradient2 _ (weights3 \* gradient) timesRectifiedGradOf: hidden2.
 		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
 		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
 			named: 'learning2'.
 			
 	graph fromBlock: [
-		gradient1 _ weights2 \* gradient2 @* (hidden1 > zero).
+		gradient1 _ (weights2 \* gradient2) timesRectifiedGradOf: hidden1.
 		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
 		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
 			named: 'learning1'.	! !
