@@ -393,7 +393,7 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:23:03'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/16/2017 17:30:09'!
 testMNIST3LayersNNForwardGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -411,14 +411,14 @@ testMNIST3LayersNNForwardGraph
 		raise: Error.
 
 	self assert: {2} equals: result shape.
-	self assert: 0 equals: result allInt32s first.
-	self assert: 0 equals: result allInt32s second.! !
+	self assert: 0 equals: result asNumbers first.
+	self assert: 0 equals: result asNumbers second.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
 testMNIST3LayersNNInitialization
 	MNIST3LayersNNExamplePlan new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:24:51'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/16/2017 17:31:37'!
 testMNIST3LayersNNLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -438,11 +438,11 @@ testMNIST3LayersNNLossGraph
 		raise: Error.
 
 	self assert: {2} equals: results first shape.
-	self assert: 0 equals: results first allInt32s first.
-	self assert: 0 equals: results first allInt32s second.
+	self assert: 0 equals: results first asNumbers first.
+	self assert: 0 equals: results first asNumbers second.
 	
 	self assert: #() equals: results second shape.
-	self assert: (results second allFloats sum abs > 0).! !
+	self assert: (results second asNumbers > 0).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:08:37'!
 testMNISTSoftMaxForwardGraph
@@ -653,7 +653,7 @@ delta
 graph
 	^ graph! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/30/2017 17:38:24'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:27:26'!
 initializeBackwardGraph
 	| actual learningRate learningRateValue one input |
 	actual _ activation.
@@ -662,7 +662,7 @@ initializeBackwardGraph
 	learningRateValue _ 0.9 asTensor.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
 
-	input _ inputs first operation.
+	input _ inputs first operationOn: graph.
 	
 	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
 	
@@ -844,7 +844,7 @@ initializeInferenceGraph
 			input _ image.
 			(image * weights1 + biases1) rectified]
 		named: 'layer1'.
-	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified].
+	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified] named: 'layer2'.
 	prediction _ graph
 		fromBlock: [:image | | axis |
 			netInput _ hidden2 * weights3 + biases3.
@@ -891,23 +891,26 @@ initializeLossGraph
 		inputTypes: {TF_Tensor typeInt32}
 		named: 'loss'.! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/1/2017 02:19:34'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 09:35:09'!
 initializeParameters
 	| aux |
-	aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
-	weights1 _ graph variable: 'weights1' initialValueFrom: aux.
-	aux _ graph zerosShaped: {self hidden1Size}.
-	biases1 _ graph variable: 'biases1' initialValueFrom: aux.
+		graph
+			fromBlock: [
+				aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
+				weights1 _ graph variable: 'weights1' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self hidden1Size}.
+				biases1 _ graph variable: 'biases1' initialValueFrom: aux.
 
-	aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
-	weights2 _ graph variable: 'weights2' initialValueFrom: aux.
-	aux _ graph zerosShaped: {self hidden2Size}.
-	biases2 _ graph variable: 'biases2' initialValueFrom: aux.
+				aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
+				weights2 _ graph variable: 'weights2' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self hidden2Size}.
+				biases2 _ graph variable: 'biases2' initialValueFrom: aux.
 
-	aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
-	weights3 _ graph variable: 'weights3' initialValueFrom: aux.
-	aux _ graph zerosShaped: {self outputSize}.
-	biases3 _ graph variable: 'biases3' initialValueFrom: aux.
+				aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
+				weights3 _ graph variable: 'weights3' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self outputSize}.
+				biases3 _ graph variable: 'biases3' initialValueFrom: aux]
+			named: 'parameters'
 ! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
@@ -1117,18 +1120,17 @@ initializeInferenceGraph
 			netInput softmax findMaxOn: axis]
 		named: 'inference'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:11:51'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 17:59:30'!
 initializeLearningGraph
-	| learningRate learningRateValue gradient |
+	| learningRate activationGradient biasGradient |
 	graph
 		fromBlock: [
-			learningRateValue _ 0.9 asTensor.
-			learningRate _ graph const: 'learningRate' value: learningRateValue.
-			activation useOutput: 1.
-			gradient _ activation meanOn: #(0) asInt32Tensor.
+			learningRate _ graph const: 'learningRate' value: 0.9 asTensor.
+			activationGradient _ activation useOutput: 1.
+			biasGradient _ activationGradient meanOn: #(0) asInt32Tensor.
 			"todo: divide by the number of inputs (the batch size)"
-			learnWeights _ weights descent: input \* activation rate: learningRate.
-			learnBiases _ biases descent: gradient rate: learningRate]
+			learnWeights _ weights descent: input \* activationGradient rate: learningRate.
+			learnBiases _ biases descent: biasGradient rate: learningRate]
 		named: 'learning'! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:09:05'!
