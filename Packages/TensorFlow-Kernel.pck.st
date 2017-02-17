@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 11:12:27 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:28:39 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 370!
+!provides: 'TensorFlow-Kernel' 1 372!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2290,6 +2290,25 @@ testNewVariableNoInitialization
 	self
 		assert: expectedError equals: lastError lines first
 		! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 2/17/2017 00:19:49'!
+testOperationAsOperationDifferentGraph
+	| const graph1 graph2 |
+	graph1 _ TF_Graph create.
+	graph2 _ TF_Graph create.
+	const _ graph1 const: 1.0 asTensor.
+	self should: [const asOperationOn: graph2] raiseError: 'Can''t move an operation to another Graph'.
+	
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 2/16/2017 22:56:42'!
+testOperationAsOperationOk
+	| const1 const2 graph |
+	graph _ TF_Graph create.
+	const1 _ graph const: 1.0 asTensor.
+	const2 _ const1 asOperationOn: graph.
+	
+	self assert: const1 == const2! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:37:37'!
 testOperationEquals
@@ -5523,6 +5542,12 @@ arcTan
 	^ self unaryOp: 'Atan'
 	! !
 
+!TF_Operation methodsFor: 'converting' stamp: 'gera 2/16/2017 22:57:20'!
+asOperationOn: aTF_Graph
+	graph == aTF_Graph
+		ifTrue: [^ self]
+		ifFalse: [^ self error: 'Can''t move an operation to another Graph']! !
+
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/1/2017 01:02:16'!
 assign: aTF_Operation
 	^ self
@@ -5554,12 +5579,12 @@ binaryOp: aString with: aTF_Operation named: name
 	^ self binaryOp: aString with: aTF_Operation named: name described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/9/2017 20:24:33'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/17/2017 00:20:56'!
 binaryOp: aString with: aTF_Operation named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
 		description
 			addInput: self output;
-			addInput: aTF_Operation output.
+			addInput: (aTF_Operation asOperationOn: graph) output.
 		oneArgBlock value: description].
 	! !
 
@@ -5995,6 +6020,13 @@ operation
 operation: anObject
 	"This method was automatically generated. See TF_Output class>>fields."
 	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 2/17/2017 00:27:15'!
+operationOn: aTF_Graph
+	| answer |
+	answer _ TF_Operation fromHandle: (handle longPointerAt: 1).
+	answer graph: aTF_Graph.
+	^ answer! !
 
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:26:22'!
 type

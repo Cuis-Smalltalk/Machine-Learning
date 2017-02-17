@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 16 February 2017 at 7:01:08 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:28:42 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 17!
+!provides: 'TensorFlow-Examples' 1 18!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -653,7 +653,7 @@ delta
 graph
 	^ graph! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/30/2017 17:38:24'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:27:26'!
 initializeBackwardGraph
 	| actual learningRate learningRateValue one input |
 	actual _ activation.
@@ -662,7 +662,7 @@ initializeBackwardGraph
 	learningRateValue _ 0.9 asTensor.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
 
-	input _ inputs first operation.
+	input _ inputs first operationOn: graph.
 	
 	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
 	
