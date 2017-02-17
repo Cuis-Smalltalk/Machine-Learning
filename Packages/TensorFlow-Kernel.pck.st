@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:37:05 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:42:06 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 373!
+!provides: 'TensorFlow-Kernel' 1 374!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3627,6 +3627,21 @@ testOperationDescentRate
 	
 	self assert: (1-(Float pi * 0.7) closeTo: result allFloats first)! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/17/2017 00:41:44'!
+testOperationDescentRateConstants
+	| graph var output pi result session rate |
+	graph _ TF_Graph create.
+	var _ graph variable: 'var' initialValue: 1.0 asTensor.
+	pi _ Float pi asTensor.
+	rate _ 0.7 asTensor.
+	output _ var descent: pi rate: rate.
+	
+	session _ TF_Session onGraph: graph.
+	graph initializeOn: session.
+	result _ session runOutput: (output output: 0).
+	
+	self assert: (1-(Float pi * 0.7) closeTo: result allFloats first)! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/23/2017 10:44:28'!
 testOperationExp
 	| graph inputs template session const result output |
@@ -5618,7 +5633,7 @@ cos
 	^ self unaryOp: 'Cos'
 	! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/12/2017 20:13:16'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/17/2017 00:39:03'!
 descent: delta rate: learningRate
 	| name operation |
 	operation _ 'ApplyGradientDescent'.
@@ -5627,8 +5642,8 @@ descent: delta rate: learningRate
 	^ graph newOperation: operation named: name described: [:description |
 		description
 			addInput: self output;
-			addInput: learningRate output;
-			addInput: delta output].
+			addInput: (learningRate asOperationOn: graph) output;
+			addInput: (delta asOperationOn: graph)  output].
 ! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
