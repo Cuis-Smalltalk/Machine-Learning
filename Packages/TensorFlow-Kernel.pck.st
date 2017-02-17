@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:28:39 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:37:05 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 372!
+!provides: 'TensorFlow-Kernel' 1 373!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -629,6 +629,10 @@ asStringGraphType: type
 	graph asString: 'out' described: [:description |
 		description addInput: (in output: 0)].
 	^ graph! !
+
+!TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:36:43'!
+assert: expected closeTo: actual
+	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:48:59'!
 assertRankOf: aMultidimensionalTensor is: anInteger
