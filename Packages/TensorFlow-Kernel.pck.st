@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 16 February 2017 at 12:18:29 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 11:33:59 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 368!
+!provides: 'TensorFlow-Kernel' 1 369!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4131,6 +4131,36 @@ testOperationRelu
 	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
 ! !
 
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/17/2017 11:33:40'!
+testOperationReluGrad
+	| graph template session const result previousGradient rectifiedGrad expected previousGradientTemplate |
+	
+	template _ #(
+		(-1.1	1.2)
+		(-2.1	2.2)
+		(0		-0)) asFloatTensor.
+		
+
+	graph _ TF_Graph create.
+	
+	previousGradientTemplate _ #(
+		(0	1)
+		(1	0)
+		(1		1)) asFloatTensor.
+		
+	previousGradient _ previousGradientTemplate asOperationOn: graph.
+	
+	const _ graph const: 'const' value: template.
+	rectifiedGrad _ previousGradient rectifiedGradOf: const.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: rectifiedGrad output.
+	
+	self assert: result shape equals: template shape.
+	expected _ template allFloats with: previousGradientTemplate allFloats collect:[:x :y| (x sign max: 0) * y].
+	self assert: result allFloats equals: expected.
+! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'Javier Burroni 1/24/2017 21:35:47'!
 testOperationSigmoid
 	| graph inputs template session const result output transformed |
@@ -5789,6 +5819,10 @@ printOn: strm
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 01:33:48'!
 rectified
 	^ self unaryOp: 'Relu'! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 11:13:33'!
+rectifiedGradOf: aTF_Operation
+	^ self binaryOp: 'ReluGrad' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/23/2017 09:47:55'!
 shapeAt: nameString
