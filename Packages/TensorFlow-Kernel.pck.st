@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 11:40:04 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 12:49:05 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 370!
+!provides: 'TensorFlow-Kernel' 1 371!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4131,9 +4131,9 @@ testOperationRelu
 	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
 ! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/17/2017 11:38:48'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/17/2017 12:48:03'!
 testOperationReluGrad
-	| graph template session const result previousGradient rectifiedGrad expected previousGradientTemplate |
+	| graph template session result previousGradient rectifiedGrad expected previousGradientTemplate |
 	
 	template _ #(
 		(-1.1	1.2)
@@ -4149,9 +4149,7 @@ testOperationReluGrad
 		(1		1)) asFloatTensor.
 		
 	previousGradient _ previousGradientTemplate asOperationOn: graph.
-	
-	const _ graph const: 'const' value: template.
-	rectifiedGrad _ previousGradient timesRectifiedGradOf: const.
+	rectifiedGrad _ previousGradient timesRectifiedGradOf: template.
 	
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: rectifiedGrad output.
