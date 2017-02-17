@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 February 2017 at 10:46:54 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 10:50:45 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 14!
+!provides: 'TensorFlow-Examples' 1 15!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -85,7 +85,7 @@ ExampleOLSPlan class
 
 !classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNIST3LayersNNExamplePlan
-	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput'
+	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput activation learnWeights3 hidden2 learnBiases3 learnWeights2 hidden1 learnBiases2 learnWeights1 learnBiases1'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -837,9 +837,8 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:44:17'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/15/2017 23:24:45'!
 initializeInferenceGraph
-	| hidden1 hidden2 |
 	hidden1 _ graph
 		fromBlock: [:image |
 			input _ image.
@@ -854,15 +853,41 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:07:57'!
-initializeLearningGraph! !
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/15/2017 23:26:13'!
+initializeLearningGraph
+	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient |
+	
+	learningRateValue _ 0.9 asTensor.
+	learningRate _ graph const: 'learningRate' value: learningRateValue.
+	axis0 _ #(0) asInt32Tensor. 
+	graph
+		fromBlock: [
+			gradient _ activation useOutput: 1.
+			meanGradient _ gradient meanOn: axis0.
+			"todo: divide by the number of inputs (the batch size)"
+			learnWeights3 _ weights3 descent: hidden2 \* gradient rate: learningRate.
+			learnBiases3 _ biases3 descent: meanGradient rate: learningRate]
+		named: 'learning3'.
+		
+	graph fromBlock: [
+		gradient2 _ weights3 \* gradient @* (hidden2 > 0).
+		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
+		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
+			named: 'learning2'.
+			
+	graph fromBlock: [
+		gradient1 _ weights2 \* gradient2 @* (hidden1 > 0).
+		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
+		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
+			named: 'learning1'.	! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/11/2017 14:21:18'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/15/2017 21:25:29'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
-			(netInput sparseSoftmaxCrossEntropyWithLogits: expected) meanOn: #(0) asInt32Tensor]
+			activation _ netInput sparseSoftmaxCrossEntropyWithLogits: expected.
+			activation meanOn: #(0) asInt32Tensor]
 		inputTypes: {TF_Tensor typeInt32}
 		named: 'loss'.! !
 
