@@ -2939,6 +2939,17 @@ testTensorAsNumbersRank0
 	self assert: 1.0 equals: 1.0 asTensor asNumbers.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 00:35:44'!
+testTensorAsOperation
+	| graph a b result |
+	graph _ TF_Graph create.
+	a _ graph const: 3.14 asTensor.
+	b _ a + 1.234 asTensor.
+	
+	result _ (TF_Session onGraph: graph) runOutput: b output.
+	
+	self assert: 3.14+1.234 closeTo: result asNumbers.! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:28:38'!
 testTensorAsStream
 	self assertTensor: -13123213 asInt32Tensor streamEquals: #(-13123213).
@@ -6411,6 +6422,10 @@ arrayFromStream: strm shape: shape
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 08:04:19'!
 asNumbers
 	^ self arrayFromStream: self asStream shape: self shape! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/17/2017 00:29:42'!
+asOperationOn: aTF_Graph
+	^ aTF_Graph const: self! !
 
 !TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:29:29'!
 asStream
