@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 11:33:59 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 11:40:04 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 369!
+!provides: 'TensorFlow-Kernel' 1 370!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4131,7 +4131,7 @@ testOperationRelu
 	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
 ! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/17/2017 11:33:40'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/17/2017 11:38:48'!
 testOperationReluGrad
 	| graph template session const result previousGradient rectifiedGrad expected previousGradientTemplate |
 	
@@ -4151,7 +4151,7 @@ testOperationReluGrad
 	previousGradient _ previousGradientTemplate asOperationOn: graph.
 	
 	const _ graph const: 'const' value: template.
-	rectifiedGrad _ previousGradient rectifiedGradOf: const.
+	rectifiedGrad _ previousGradient timesRectifiedGradOf: const.
 	
 	session _ TF_Session onGraph: graph.
 	result _ session runOutput: rectifiedGrad output.
@@ -5820,10 +5820,6 @@ printOn: strm
 rectified
 	^ self unaryOp: 'Relu'! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 11:13:33'!
-rectifiedGradOf: aTF_Operation
-	^ self binaryOp: 'ReluGrad' with: aTF_Operation! !
-
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/23/2017 09:47:55'!
 shapeAt: nameString
 	| value status size answer |
@@ -5928,6 +5924,10 @@ tensorAt: nameString
 	status check.
 	^ TF_Tensor fromHandle: (value pointerAt: 1)
 ! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 11:38:27'!
+timesRectifiedGradOf: aTF_Operation
+	^ self binaryOp: 'ReluGrad' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
