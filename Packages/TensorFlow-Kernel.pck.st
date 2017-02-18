@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:50:28 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:10:59 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 375!
+!provides: 'TensorFlow-Kernel' 1 377!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -633,6 +633,10 @@ asStringGraphType: type
 !TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:36:43'!
 assert: expected closeTo: actual
 	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/18/2017 16:59:33'!
+assertElementsOf: tensorArray are: allElementsArray
+	self assert: allElementsArray equals: (TF_Tensor elementsOf: tensorArray)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:48:59'!
 assertRankOf: aMultidimensionalTensor is: anInteger
@@ -2979,7 +2983,27 @@ testTensorData
 	self deny: tensor data getHandle isNil.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/18/2017 00:36:16'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/18/2017 17:04:47'!
+testTensorElementsOf
+	self
+		assertElementsOf: -13123213
+		are: #(-13123213).
+	self
+		assertElementsOf: #(123 123 123 123)
+		are: #(123 123 123 123).
+	self
+		assertElementsOf: #((1 2 3) (4 5 6) (7 8 9) (10 11 12))
+		are: (1 to: 12) asArray.
+	self
+		assertElementsOf: #(((1) (2) (3)) ((4) (5) (6)) ((7) (8) (9)))
+		are: (1 to: 9) asArray.
+	self
+		assertElementsOf: #(((1 100) (2 100) (3 100)) ((4 100) (5 100) (6 100)) ((7 100) (8 100) (9 100)))
+		are: #(1 100 2 100 3 100 4 100 5 100 6 100 7 100 8 100 9 100)
+		
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:31:50'!
 testTensorFromFloats
 	| tensor template values |
 	template _ #(1.23456 0.0 -1.234567).
@@ -6552,7 +6576,14 @@ array: values type: type into: anExternalAddressOrByteArray
 		index _ index + 1].
 ! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/17/2017 18:57:49'!
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/18/2017 17:01:13'!
+elementsOf: aMultidimensionalTensor
+	| answer |
+	answer _ (Array new: (self sizeOf: aMultidimensionalTensor)) writeStream.
+	self elementsOf: aMultidimensionalTensor do: [:each | answer nextPut: each].
+	^ answer contents! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/18/2017 16:55:42'!
 elementsOf: aMultidimensionalTensor do: oneArgBlock
 	^ aMultidimensionalTensor isCollection
 		ifTrue: [aMultidimensionalTensor do: [:each |
