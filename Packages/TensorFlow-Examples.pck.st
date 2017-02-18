@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 17 February 2017 at 12:50:25 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 6:21:58 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 19!
-!requires: 'Protocols-HTTP' 1 25 nil!
+!provides: 'TensorFlow-Examples' 1 21!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
+!requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: ''
@@ -1155,13 +1155,13 @@ predict: inputs andCompareTo: label
 		outputs: {prediction output. loss output}.
 	^ results! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/11/2017 12:57:01'!
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/18/2017 18:21:06'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {prediction output. learnWeights output. learnBiases output}.
+		outputs: {learnWeights output. learnBiases output}.
 	^ results! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
