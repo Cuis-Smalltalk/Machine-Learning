@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 10:03:06 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 February 2017 at 6:24:00 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 21!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
+!provides: 'TensorFlow-Examples' 1 22!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -1081,6 +1081,10 @@ bytesAt: imageIndex
 	base _ imageIndex - 1 * size + 1.
 	^ items copyFrom: base to: base + size - 1.! !
 
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/18/2017 18:23:25'!
+bytesAt: base take: batchSize
+	^ (base to: base + batchSize -1) collect:[:index| self bytesAt: index]! !
+
 !MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:35'!
 columns
 	^ columns! !
@@ -1112,9 +1116,13 @@ trainName
 asTensor
 	^ items asInt32Tensor ! !
 
-!MNISTLabelFile methodsFor: 'initialization' stamp: 'gera 2/7/2017 09:37:58'!
+!MNISTLabelFile methodsFor: 'accessing' stamp: 'gera 2/7/2017 09:37:58'!
 at: index
 	^ items at: index! !
+
+!MNISTLabelFile methodsFor: 'accessing' stamp: 'JB 2/18/2017 18:23:10'!
+at: base take: batchSize
+	^ (base to: base + batchSize - 1) collect:[:index| self at: index]! !
 
 !MNISTLabelFile methodsFor: 'initialization' stamp: 'JB 2/5/2017 15:01:28'!
 parse: aStream
