@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:19:09 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:23:53 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 377!
+!provides: 'TensorFlow-Kernel' 1 378!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -6741,8 +6741,12 @@ fromString: aString
 		size: bytesize.
 	^ answer! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 04:04:42'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 17:23:33'!
 fromStringArray: aStringArray
+	^ self fromStrings: aStringArray shape: {aStringArray size}! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 16:51:06'!
+fromStringArray: aStringArray shape: shape
 	| answer sizes offsets offsetSize bytesize |
 	sizes _ aStringArray collect: [:each | self sizeOfString: each].
 	offsetSize _ self sizeForType: self typeInt64.
@@ -6755,7 +6759,7 @@ fromStringArray: aStringArray
 	
 	answer _ self
 		type: self typeString
-		shape: {aStringArray size}
+		shape: shape
 		bytesize: bytesize.
 		
 	self int64Array: offsets into: answer data getHandle.	
