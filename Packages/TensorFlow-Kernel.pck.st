@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 12:49:05 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 7:42:23 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 371!
+!provides: 'TensorFlow-Kernel' 1 372!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -289,6 +289,10 @@ asAsciiZ
 !String methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/31/2017 00:46:29'!
 asTensor
 	^ TF_Tensor fromString: self! !
+
+!TestCase methodsFor: '*TensorFlow-Kernel' stamp: 'JB 2/17/2017 19:41:08'!
+assert: expected closeTo: actual
+	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -637,10 +641,6 @@ asStringGraphType: type
 	graph asString: 'out' described: [:description |
 		description addInput: (in output: 0)].
 	^ graph! !
-
-!TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:36:43'!
-assert: expected closeTo: actual
-	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 19:48:59'!
 assertRankOf: aMultidimensionalTensor is: anInteger
