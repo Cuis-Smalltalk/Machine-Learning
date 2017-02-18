@@ -6770,18 +6770,13 @@ fromStringArray: aStringArray
 	^ answer
 ! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/15/2017 17:00:46'!
-getterBlockFor: anInteger
-	| accessors |
-	accessors _ {
-			TF_Tensor typeInt32 -> [:data :offset | data signedLongAt: offset].
-			TF_Tensor typeInt64 -> [:data :offset | data signedLongLongAt: offset].
-			TF_Tensor typeFloat -> [:data :offset | data floatAt: offset].
-			TF_Tensor typeDouble -> [:data :offset | data doubleAt: offset]
-		} as: Dictionary.
-
-	^ accessors at: anInteger
-! !
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:23:13'!
+getterBlockFor: type
+	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset | data signedLongAt: offset]].
+	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset | data signedLongLongAt: offset]].
+	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset | data floatAt: offset]].
+	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset | data doubleAt: offset]].
+	^ self shouldBeImplemented ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 22:29:58'!
 int64Array: values into: anExternalAddressOrByteArray
@@ -6798,18 +6793,13 @@ rankOf: aMultidimensionalTensor
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/15/2017 17:02:33'!
-setterBlockFor: anInteger
-	| accessors |
-	accessors _ {
-			TF_Tensor typeInt32 -> [:data :offset :value | data signedLongAt: offset put: value].
-			TF_Tensor typeInt64 -> [:data :offset :value | data signedLongLongAt: offset put: value].
-			TF_Tensor typeFloat -> [:data :offset :value | data floatAt: offset put: value].
-			TF_Tensor typeDouble -> [:data :offset :value | data doubleAt: offset put: value]
-		} as: Dictionary.
-
-	^ accessors at: anInteger
-! !
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:24:25'!
+setterBlockFor: type
+	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset :value | data signedLongAt: offset put: value]].
+	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset :value | data signedLongLongAt: offset put: value]].
+	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset :value | data floatAt: offset put: value]].
+	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset :value | data doubleAt: offset put: value]].
+	^ self shouldBeImplemented ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
 shapeOf: aMultidimensionalTensor
