@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 11:40:09 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 7:33:08 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 17!
+!provides: 'TensorFlow-Examples' 1 18!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -393,38 +393,40 @@ testForward
 	self assert: (result first closeTo: (1 + 0.5) reciprocal);
 		 assert: (result second closeTo: 0.5)! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/16/2017 17:30:09'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:26:22'!
 testMNIST3LayersNNForwardGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
 	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
 	
-	| mnist result |
+	| mnist result first second |
 	mnist _ MNIST3LayersNNExamplePlan new.
 	
 	self 
 		shouldnt: [
 			result _ mnist predict: {
-				ByteArray new: mnist inputSize.
+				(ByteArray new: mnist inputSize) + 2.
 				(ByteArray new: mnist inputSize) + 1.
 			}]
 		raise: Error.
 
 	self assert: {2} equals: result shape.
-	self assert: 0 equals: result asNumbers first.
-	self assert: 0 equals: result asNumbers second.! !
+	first _ result asNumbers first.
+	second _ result asNumbers second.
+	self assert: (0 <= first and: [ first < 10 ]).
+	self assert: (0 <= second and: [ second < 10 ]).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
 testMNIST3LayersNNInitialization
 	MNIST3LayersNNExamplePlan new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/16/2017 17:31:37'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:32:50'!
 testMNIST3LayersNNLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
 	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
 	
-	| mnist results |
+	| mnist results first second |
 	mnist _ MNIST3LayersNNExamplePlan new.
 	
 	self 
@@ -436,10 +438,12 @@ testMNIST3LayersNNLossGraph
 				andCompareTo: #(1 2).
 				]
 		raise: Error.
-
+		
 	self assert: {2} equals: results first shape.
-	self assert: 0 equals: results first asNumbers first.
-	self assert: 0 equals: results first asNumbers second.
+	first _ results first asNumbers first.
+	second _ results first asNumbers second.
+	self assert: (0 <= first and: [ first < 10 ]).
+	self assert: (0 <= second and: [ second < 10 ]).
 	
 	self assert: #() equals: results second shape.
 	self assert: (results second asNumbers > 0).! !
@@ -466,7 +470,7 @@ testMNISTSoftMaxForwardGraph
 	self assert: (result allInt32s second closeTo: 0).
 ! !
 
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:28:10'!
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:29:28'!
 testMNISTSoftMaxLossGraph
 	" Not sure how to test this better. weights are random, so output is random.
 	I believe that choosing the right input value the output should comply with some statistics,
@@ -486,8 +490,8 @@ testMNISTSoftMaxLossGraph
 		raise: Error.
 
 	self assert: {2} equals: results first shape.
-	self assert: (results first allInt32s first closeTo: 0).
-	self assert: (results first allInt32s second closeTo: 0).
+	self assert: results first asNumbers first equals: 0.
+	self assert: results first asNumbers second equals: 0.
 
 	
 	self assert: #() equals: results second shape.
