@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 7:46:27 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 9:01:12 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 19!
+!provides: 'TensorFlow-Examples' 1 20!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -164,15 +164,14 @@ SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
 
-!TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 19:38:42'!
+!TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:01:05'!
 setUp
-	| imageSet labelSet |
+	| imageSet labelSet N|
 	imageSet _ MNISTImageFile testSet.
 	labelSet _ MNISTLabelFile testSet.
-	images _ {	imageSet bytesAt: 1. 
-					imageSet bytesAt: 2}.
-	labels _  {	labelSet at: 1. 
-					labelSet at: 2}.! !
+	N _ 2.
+	images _ (1 to: N) collect:[:i| imageSet bytesAt: i].
+	labels _ (1 to: N) collect:[:i| labelSet at: i].! !
 
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:51'!
 testImages
@@ -879,11 +878,11 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 11:39:06'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 20:59:09'!
 initializeLearningGraph
 	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient |
 	
-	learningRateValue _ 0.9 asTensor.
+	learningRateValue _ 0.0001 asTensor.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
 	axis0 _ #(0) asInt32Tensor. 
 	graph
@@ -896,13 +895,13 @@ initializeLearningGraph
 		named: 'learning3'.
 		
 	graph fromBlock: [
-		gradient2 _ (weights3 \* gradient) timesRectifiedGradOf: hidden2.
+		gradient2 _ (gradient *\ weights3) timesRectifiedGradOf: hidden2.
 		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
 		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
 			named: 'learning2'.
 			
 	graph fromBlock: [
-		gradient1 _ (weights2 \* gradient2) timesRectifiedGradOf: hidden1.
+		gradient1 _ (gradient2 *\ weights2) timesRectifiedGradOf: hidden1.
 		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
 		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
 			named: 'learning1'.	! !
@@ -976,6 +975,17 @@ predict: inputs andCompareTo: label
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {prediction output: 0. loss output: 0}.
+	^ results! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'JB 2/17/2017 19:49:29'!
+predict: inputs andLearnFrom: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asInt32Tensor}
+		outputs: {prediction output. learnWeights1 output. learnBiases1 output.
+					 learnWeights2 output. learnBiases2 output.
+					 learnWeights3 output. learnBiases3 output.}.
 	^ results! !
 
 !MNISTFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:04:26'!
