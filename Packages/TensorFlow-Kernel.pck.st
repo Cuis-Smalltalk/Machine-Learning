@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 7:42:23 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 8:23:02 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 372!
+!provides: 'TensorFlow-Kernel' 1 373!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3805,6 +3805,31 @@ testOperationMatMul1x1Wrong
 	 [[Node: MatMul_2 = MatMul[T=DT_FLOAT, _class=[], transpose_a=false, transpose_b=false, _device="/job:localhost/replica:0/task:0/cpu:0"](a, b)]]'
 ! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/17/2017 20:09:02'!
+testOperationMatMulABTransposed
+	| graph a b session constA constB result output template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((2.0 4.0) (8.0 16.0)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	output _ constA \*\ constB.
+	template _ {
+		1.1*2.0+(2.1*4.0).		1.1*8.0+(2.1*16.0).
+		1.2*2.0+(2.2*4.0).		1.2*8.0+(2.2*16.0).
+	}.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (output output: 0).
+	
+	self assert: result shape equals: a shape.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:09'!
 testOperationMatMulATransposed
 	| graph a b session constA constB result output template |
@@ -5608,6 +5633,16 @@ create
 		with: aTF_Operation
 		described: [:description |
 			description at: 'transpose_a' putBoolean: true]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 20:01:18'!
+\*\ aTF_Operation
+	^ self
+		binaryOp: 'MatMul'
+		with: aTF_Operation
+		described: [:description |
+			description at: 'transpose_a' putBoolean: true.
+			description at: 'transpose_b' putBoolean: true]
 ! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 12:52:43'!
