@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 9:01:12 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 10:03:06 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 20!
+!provides: 'TensorFlow-Examples' 1 21!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -222,15 +222,19 @@ testPrediction
 	self assert: prediction asNumbers first equals: labels first.
 	self assert: prediction asNumbers second equals: labels second! !
 
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/17/2017 19:37:41'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/17/2017 22:00:17'!
 testPrediction3Layers
 	|   loss plan result prediction |
 	plan _ MNIST3LayersNNExamplePlan new.
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
 	self deny: (loss first closeTo: 0).
-	100 timesRepeat: [
-		plan predict: images andLearnFrom: labels].
+	100 timesRepeat: [ |interval index im lb|
+		interval _ 1 to: images size.
+		index _ interval collect:[:i| interval atRandom].
+		im _ index collect:[:i| images at: i].
+		lb _ index collect:[:i| labels at: i].
+		plan predict: im andLearnFrom: lb].
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
 	self assert: (loss first closeTo: 0).
@@ -840,13 +844,13 @@ initializeGraphWithOperations
 graph
 	^ graph! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:15'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'JB 2/17/2017 21:47:43'!
 hidden1Size
-	^ 128! !
+	^ 30 "128"! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:18'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'JB 2/17/2017 21:47:51'!
 hidden2Size
-	^ 32! !
+	^ 15 "32"! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:56:01'!
 initialize
@@ -878,11 +882,11 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 20:59:09'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:54:16'!
 initializeLearningGraph
 	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient |
 	
-	learningRateValue _ 0.0001 asTensor.
+	learningRateValue _ 0.9 asTensor.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
 	axis0 _ #(0) asInt32Tensor. 
 	graph
@@ -968,7 +972,7 @@ predict: inputs
 		outputs: {prediction output: 0}.
 	^ results first! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'JB 2/17/2017 21:20:04'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
@@ -1169,7 +1173,7 @@ initializeLearningGraph
 			learnBiases _ biases descent: biasGradient rate: learningRate]
 		named: 'learning'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:09:05'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:12:29'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
