@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:12:50 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:19:09 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Kernel' 1 377!
 !requires: 'FFI' 1 18 nil!
@@ -6651,11 +6651,11 @@ elementsOf: aMultidimensionalTensor
 	^ answer contents! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/18/2017 16:55:42'!
-elementsOf: aMultidimensionalTensor do: oneArgBlock
-	^ aMultidimensionalTensor isCollection
-		ifTrue: [aMultidimensionalTensor do: [:each |
+elementsOf: tensorArray do: oneArgBlock
+	^ (tensorArray isCollection and: [tensorArray isString not])
+		ifTrue: [tensorArray do: [:each |
 				self elementsOf: each do: oneArgBlock]]
-		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
+		ifFalse: [oneArgBlock value: tensorArray]! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:45:34'!
 fromDoubles: values
