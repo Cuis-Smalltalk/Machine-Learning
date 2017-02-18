@@ -3003,6 +3003,54 @@ testTensorElementsOf
 		
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 10:01:08'!
+testTensorFromDoublesOutOfRange
+	| tensor template values |
+	template _ #(1.23456 0.0 -1.234567 1.0e39 1.0e-50 1.0e309 1.0e-324) copy.
+	tensor _ TF_Tensor fromDoubles: template.
+	
+	template at: 6 put: Float infinity.
+	
+	values _ tensor allElements.
+		
+	self assert: tensor shape equals: #(7).
+	self assert: tensor size equals: 7.
+	self assert: tensor byteSize equals: (7*8).
+	template with: values do: [:expected :actual |
+		self assert: expected closeTo: actual].
+	self assert: 0.0 equals: values last.
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:57:40'!
+testTensorFromDoublesOutOfRangeForFloats
+	| tensor template values |
+	template _ #(1.23456 0.0 -1.234567 3.402824e38 1.175494351e-46 1.0e39 1.0e-50) copy.
+	tensor _ TF_Tensor fromDoubles: template.
+	
+	values _ tensor allElements.
+		
+	self assert: tensor shape equals: #(7).
+	self assert: tensor size equals: 7.
+	self assert: tensor byteSize equals: (7*8).
+	template with: values do: [:expected :actual |
+		self assert: expected closeTo: actual].
+	self assert: 0.0 ~= values last.
+	self assert: 0.0 ~= (values at: 5).! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:29:43'!
+testTensorFromDoublesShape
+	| tensor template values |
+	template _ #(1.23456 0.0 -1.234567 1.1).
+	tensor _ TF_Tensor fromDoubles: template shape: #(2 2).
+	values _ tensor allElements.
+		
+	self assert: tensor shape equals: #(2 2).
+	self assert: tensor size equals: 4.
+	self assert: tensor byteSize equals: (tensor size*8).
+	template with: values do: [:templ :actual |
+		self assert: (templ closeTo: actual)]
+! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:31:50'!
 testTensorFromFloats
 	| tensor template values |
@@ -6609,6 +6657,16 @@ elementsOf: aMultidimensionalTensor do: oneArgBlock
 				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: aMultidimensionalTensor]! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:45:34'!
+fromDoubles: values
+	^ self fromNumbers: values type: self typeDouble
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:27:42'!
+fromDoubles: values shape: shape
+	^ self fromNumbers: values type: self typeDouble shape: shape
+! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:35:31'!
 fromFloats: values
 	^ self fromNumbers: values type: self typeFloat
@@ -6761,11 +6819,12 @@ shapeOf: aMultidimensionalTensor
 			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
-!TF_Tensor class methodsFor: 'utils' stamp: 'jb 1/15/2017 17:55:27'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:27:10'!
 sizeForType: anInteger
-	anInteger = self typeFloat ifTrue: [^4].
-	anInteger = self typeInt64 ifTrue: [^8].
-	anInteger = self typeInt32 ifTrue: [^4].
+	self typeFloat = anInteger ifTrue: [^4].
+	self typeInt64 = anInteger ifTrue: [^8].
+	self typeInt32 = anInteger ifTrue: [^4].
+	self typeDouble = anInteger ifTrue: [^8].
 
 "
 8
