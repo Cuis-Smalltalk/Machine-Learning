@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:23:53 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:29:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 378!
+!provides: 'TensorFlow-Kernel' 1 380!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -673,6 +673,16 @@ assertTensor: aTF_Tensor streamEquals: tensorArray
 	tensorArray do: [:each |
 		self assert: each equals: strm next].
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 2/18/2017 17:27:01'!
+assertTensorFromStrings: strings shape: shape
+	| tensor |
+	tensor _ TF_Tensor fromStrings: strings shape: shape.
+
+	self assert: shape equals: tensor shape.	
+	self assert: strings equals: tensor allStrings.
+
+	! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 1/2/2017 15:40:57'!
 concatGraphInputList
@@ -3239,6 +3249,29 @@ testTensorFromStringArray
 	tensor _ TF_Tensor fromStringArray: template.
 	
 	self assert: tensor allStrings equals: template.! !
+
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 2/18/2017 17:25:30'!
+testTensorFromStrings
+	| tensor template flatten |
+	template _ #(('hola manola' 'te traje una lola') ('pamela' 'que pandulce!!') ('habia una vez' 'truz')).
+	flatten _ TF_Tensor elementsOf: template.
+	tensor _ TF_Tensor fromStrings: template.
+
+	self assert: #(3 2) equals: tensor shape.	
+	self assert: flatten equals: tensor allStrings.
+
+	! !
+
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 2/18/2017 17:28:29'!
+testTensorFromStringsShape
+	| template |
+	template _ #('hola manola' 'te traje una lola' 'pamela' 'que pandulce!!' 'habia una vez' 'truz').
+	
+	self assertTensorFromStrings: template shape: #(6).
+	self assertTensorFromStrings: template shape: #(3 2).
+	self assertTensorFromStrings: template shape: #(1 1 6 1 1).
+	self assertTensorFromStrings: #('hola como estas?') shape: #().
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 12:25:32'!
 testTensorNewScalar
@@ -6772,6 +6805,18 @@ fromStringArray: aStringArray shape: shape
 			to: answer data getHandle + offset
 			size: bytesize - offset].
 	^ answer
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 16:44:22'!
+fromStrings: aStringArray
+	^ self fromStrings: aStringArray shape: (TF_Tensor shapeOf: aStringArray) allButLast.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 17:20:48'!
+fromStrings: strings shape: shape
+	| flatten |
+	flatten _ self elementsOf: strings.
+	^ self fromStringArray:  flatten shape: shape.
 ! !
 
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:23:13'!
