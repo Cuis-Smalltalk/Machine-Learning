@@ -217,6 +217,32 @@ testPrediction
 	self assert: prediction allInt64s first equals: labels first.
 	self assert: prediction allInt64s second equals: labels second! !
 
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 2/18/2017 17:52:54'!
+testPredictionMany
+	| imageSet images labelSet labels loss plan result prediction n |
+	n _ 200.
+	
+	plan _ MNISTSoftMaxExamplePlan new.
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	
+	images _ (1 to: n) collect: [:i | imageSet bytesAt: i].
+	labels _ (1 to: n) collect: [:i | labelSet at: i].
+	
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self deny: (loss closeTo: 0).
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: (loss closeTo: 0).
+	
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers equals: labels.
+! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
 	| shape transposed |
