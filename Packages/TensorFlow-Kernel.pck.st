@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:10:59 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 5:12:50 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Kernel' 1 377!
 !requires: 'FFI' 1 18 nil!
@@ -3006,13 +3006,13 @@ testTensorElementsOf
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:31:50'!
 testTensorFromFloats
 	| tensor template values |
-	template _ #(1.23456 0.0 -1.234567).
+	template _ #(1.23456 0.0 -1.234567 3.402823466e38 1.175494351e-38).
 	tensor _ TF_Tensor fromFloats: template.
 	values _ tensor allFloats.
 		
-	self assert: tensor shape equals: #(3).
-	self assert: tensor size equals: 3.
-	self assert: tensor byteSize equals: (3*4).
+	self assert: tensor shape equals: #(5).
+	self assert: tensor size equals: 5.
+	self assert: tensor byteSize equals: (5*4).
 	template @ values do: [:point |
 		self assert: (point x closeTo: point y)]
 ! !
@@ -3050,6 +3050,25 @@ testTensorFromFloats2x2SameElementsOrder
 	
 	consts with: values do: [:const :value |
 		self assert: (const closeTo: value)].! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:57:18'!
+testTensorFromFloatsOutOfRange
+	| tensor template values |
+	template _ #(1.23456 0.0 -1.234567 3.402824e38 1.175494351e-46 1.0e39 1.0e-50) copy.
+	tensor _ TF_Tensor fromFloats: template.
+	
+	template at: 4 put: Float infinity.
+	template at: 6 put: Float infinity.
+	
+	values _ tensor allElements.
+		
+	self assert: tensor shape equals: #(7).
+	self assert: tensor size equals: 7.
+	self assert: tensor byteSize equals: (7*4).
+	template with: values do: [:expected :actual |
+		self assert: expected closeTo: actual].
+	self assert: 0.0 equals: values last.
+	self assert: 0.0 equals: (values at: 5).! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 11:32:12'!
 testTensorFromFloatsScalar
