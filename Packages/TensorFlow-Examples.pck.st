@@ -1,11 +1,11 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 7:33:08 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 17 February 2017 at 7:46:27 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 18!
+!provides: 'TensorFlow-Examples' 1 19!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
-	instanceVariableNames: ''
+	instanceVariableNames: 'images labels'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -164,6 +164,16 @@ SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
 
+!TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 19:38:42'!
+setUp
+	| imageSet labelSet |
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	images _ {	imageSet bytesAt: 1. 
+					imageSet bytesAt: 2}.
+	labels _  {	labelSet at: 1. 
+					labelSet at: 2}.! !
+
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:51'!
 testImages
 	| testing training |
@@ -197,14 +207,26 @@ testMagic
 	self assert: images magic = MNISTImageFile magic.
 	self assert: labels magic = MNISTLabelFile magic.! !
 
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/11/2017 14:56:16'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/17/2017 19:45:57'!
 testPrediction
-	| imageSet images labelSet labels loss plan result prediction |
+	| loss plan prediction result |
 	plan _ MNISTSoftMaxExamplePlan new.
-	imageSet _ MNISTImageFile testSet.
-	labelSet _ MNISTLabelFile testSet.
-	images _ {(imageSet bytesAt: 1). (imageSet bytesAt: 2)}.
-	labels _ {(labelSet at: 1). (labelSet at: 2)}.
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers .
+	self deny: (loss closeTo: 0).
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: 0 closeTo: loss.
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers first equals: labels first.
+	self assert: prediction asNumbers second equals: labels second! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/17/2017 19:37:41'!
+testPrediction3Layers
+	|   loss plan result prediction |
+	plan _ MNIST3LayersNNExamplePlan new.
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
 	self deny: (loss first closeTo: 0).
@@ -214,8 +236,8 @@ testPrediction
 	loss _ (result at:2) allFloats.
 	self assert: (loss first closeTo: 0).
 	prediction _ plan predict: images.
-	self assert: prediction allInt64s first equals: labels first.
-	self assert: prediction allInt64s second equals: labels second! !
+	self assert: prediction asNumbers first equals: labels first.
+	self assert: prediction asNumbers second equals: labels second! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
