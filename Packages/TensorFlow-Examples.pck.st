@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 February 2017 at 8:31:16 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 February 2017 at 8:37:14 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 24!
+!provides: 'TensorFlow-Examples' 1 25!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -630,9 +630,10 @@ testSimpleNeuralNetwork
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
 
-!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:28:38'!
+!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:36:29'!
 initialize
 	super initialize.
+	batchSize _ 100.
 	imageSet _ MNISTImageFile trainingSet.
 	labelSet _ MNISTLabelFile trainingSet.
 	imageTesting _ MNISTImageFile testSet.
