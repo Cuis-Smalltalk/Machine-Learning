@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:15:46 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:17:23 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 396!
+!provides: 'TensorFlow-Kernel' 1 397!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2005,6 +2005,22 @@ testGraphOperationsSelectEmpty
 	self assert: operations size equals: 0.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/19/2017 16:16:38'!
+testGraphRunInputsOutputs
+	| graph output result input |
+	graph _ TF_Graph create.
+	
+	output _ graph fromBlock: [:a |
+		input _ a.
+		a @* TF_Tensor pi].
+
+	result _ graph
+		runInputs: {input input: 0}
+		values: {7.23 asTensor}
+		outputs: {output output}.
+	
+	self assert: Float pi * 7.23 closeTo: result first asNumbers.! !
+
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/19/2017 15:47:12'!
 testGraphRunOutput
 	| graph output result |
@@ -2013,6 +2029,18 @@ testGraphRunOutput
 	result _ graph runOutput: output output.
 	
 	self assert: Float pi closeTo: result asNumbers.! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/19/2017 16:13:06'!
+testGraphRunOutputs
+	| graph output1 output2 results |
+	graph _ TF_Graph create.
+	output1 _ graph const: TF_Tensor pi.
+	output2 _ output1 @/ 2.0 asTensor.
+
+	results _ graph runOutputs: {output1 output. output2 output}.
+	
+	self assert: Float pi closeTo: results first asNumbers.
+	self assert: Float pi / 2 closeTo: results second asNumbers.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 02:56:35'!
 testImportBad
@@ -5675,12 +5703,27 @@ rankOf: aTF_OutputOrInput
 	status check.
 	^ answer! !
 
-!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 15:43:20'!
+!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:09:28'!
+runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+	| session |
+	session _ TF_Session onGraph: self.
+	self initializeOn: session.
+	^ session runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:07:15'!
 runOutput: aTF_Output
 	| session |
 	session _ TF_Session onGraph: self.
 	self initializeOn: session.
 	^ session runOutput: aTF_Output! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:08:50'!
+runOutputs: anArrayOfTF_Outputs
+	| session |
+	session _ TF_Session onGraph: self.
+	self initializeOn: session.
+	^ session runOutputs: anArrayOfTF_Outputs! !
 
 !TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
 shapeOf: aTF_OutputOrInput
