@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 February 2017 at 3:14:32 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 5:15:43 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 26!
-!requires: 'Protocols-HTTP' 1 25 nil!
+!provides: 'TensorFlow-Examples' 1 27!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
+!requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -101,6 +101,16 @@ Object subclass: #MNIST3LayersNNExamplePlan
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'MNIST3LayersNNExamplePlan class' category: #'TensorFlow-Examples'!
 MNIST3LayersNNExamplePlan class
+	instanceVariableNames: ''!
+
+!classDefinition: #MNIST3LayersNNSigmoid category: #'TensorFlow-Examples'!
+MNIST3LayersNNExamplePlan subclass: #MNIST3LayersNNSigmoid
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'MNIST3LayersNNSigmoid class' category: #'TensorFlow-Examples'!
+MNIST3LayersNNSigmoid class
 	instanceVariableNames: ''!
 
 !classDefinition: #MNISTFile category: #'TensorFlow-Examples'!
@@ -248,6 +258,26 @@ testPrediction3Layers
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
 	self assert: (loss first closeTo: 0).
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers first equals: labels first.
+	self assert: prediction asNumbers second equals: labels second! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/19/2017 17:15:08'!
+testPrediction3LayersSigmoid
+	|   loss plan result prediction |
+	plan _ MNIST3LayersNNSigmoid new.
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self deny: (loss first closeTo: 0).
+	100 timesRepeat: [ |interval index im lb|
+		interval _ 1 to: images size.
+		index _ interval collect:[:i| interval atRandom].
+		im _ index collect:[:i| images at: i].
+		lb _ index collect:[:i| labels at: i].
+		plan predict: im andLearnFrom: lb].
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: (loss < 1).
 	prediction _ plan predict: images.
 	self assert: prediction asNumbers first equals: labels first.
 	self assert: prediction asNumbers second equals: labels second! !
@@ -683,6 +713,10 @@ trainAt: index
 use3Layers
 	plan _ MNIST3LayersNNExamplePlan new.! !
 
+!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/19/2017 17:09:45'!
+use3LayersSigmoid
+	plan _ MNIST3LayersNNSigmoid new.! !
+
 !BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:28:22'!
 useSoftmax
 	plan _ MNISTSoftMaxExamplePlan new.! !
@@ -1059,6 +1093,52 @@ predict: inputs andLearnFrom: label
 					learnWeights2 output. learnBiases2 output.
 					 learnWeights3 output. learnBiases3 output.}.
 	^ results! !
+
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'JB 2/19/2017 17:06:24'!
+initializeInferenceGraph
+	hidden1 _ graph
+		fromBlock: [:image |
+			input _ image.
+			(image * weights1 + biases1) sigmoid]
+		named: 'layer1'.
+	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) sigmoid] named: 'layer2'.
+	prediction _ graph
+		fromBlock: [:image | | axis |
+			netInput _ hidden2 * weights3 + biases3.
+			axis _ graph const: 1 asInt32Tensor.
+			netInput softmax findMaxOn: axis]
+		named: 'layer3'.
+! !
+
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'JB 2/19/2017 17:08:33'!
+initializeLearningGraph
+	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient learningRateBias one |
+	
+	learningRateValue _ 0.001 asTensor.
+	learningRate _ graph const: 'learningRate' value: learningRateValue.
+	learningRateBias _ 0.1 asTensor asOperationOn: graph.
+	axis0 _ #(0) asInt32Tensor. 
+	graph
+		fromBlock: [
+			gradient _ activation useOutput: 1.
+			meanGradient _ gradient meanOn: axis0.
+			"todo: divide by the number of inputs (the batch size)"
+			learnWeights3 _ weights3 descent: hidden2 \* gradient rate: learningRate.
+			learnBiases3 _ biases3 descent: meanGradient rate: learningRateBias]
+		named: 'learning3'.
+		
+	one _ 1.0 asTensor asOperationOn: graph.
+	graph fromBlock: [
+		gradient2 _ (gradient *\ weights3) @* hidden2 @* (one - hidden2).
+		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
+		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
+			named: 'learning2'.
+			
+	graph fromBlock: [
+		gradient1 _ (gradient2 *\ weights2) @* hidden1 @* ( one - hidden1).
+		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
+		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRateBias] 
+			named: 'learning1'.	! !
 
 !MNISTFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:04:26'!
 asTensor
