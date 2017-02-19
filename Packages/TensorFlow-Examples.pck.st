@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:23:04 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 February 2017 at 4:30:13 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 24!
-!requires: 'Protocols-HTTP' 1 25 nil!
+!provides: 'TensorFlow-Examples' 1 25!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
+!requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: ''
@@ -1118,7 +1118,7 @@ initializeInferenceGraph
 			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'inference'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 15:50:06'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 16:28:46'!
 initializeLearningGraph
 	| learningRate activationGradient biasGradient |
 	graph
@@ -1126,7 +1126,6 @@ initializeLearningGraph
 			learningRate _ 0.9 asTensor.
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: #(0) asInt32Tensor.
-			"todo: divide by the number of inputs (the batch size)"
 			batchSize _ (input sizeOn: 0) castTo: TF_Tensor typeFloat.
 			learnWeights _ weights descent: input \* activationGradient @/ batchSize rate: learningRate.
 			learnBiases _ biases descent: biasGradient rate: learningRate]
