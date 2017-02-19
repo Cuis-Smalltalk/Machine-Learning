@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:36:34 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:44:13 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 392!
+!provides: 'TensorFlow-Kernel' 1 393!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5651,6 +5651,12 @@ rankOf: aTF_OutputOrInput
 	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
 	status check.
 	^ answer! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 15:43:20'!
+runOutput: aTF_Output
+	| session |
+	session _ TF_Session onGraph: self.
+	^ session runOutput: aTF_Output! !
 
 !TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
 shapeOf: aTF_OutputOrInput
