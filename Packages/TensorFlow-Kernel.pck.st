@@ -5768,18 +5768,9 @@ cos
 	^ self unaryOp: 'Cos'
 	! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/17/2017 00:39:03'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:35:54'!
 descent: delta rate: learningRate
-	| name operation |
-	operation _ 'ApplyGradientDescent'.
-	name _ self nameFor: operation.
-	
-	^ graph newOperation: operation named: name described: [:description |
-		description
-			addInput: self output;
-			addInput: (learningRate asOperationOn: graph) output;
-			addInput: (delta asOperationOn: graph)  output].
-! !
+	^ self op:  'ApplyGradientDescent' withAll: {learningRate. delta}! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
 device
