@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 7:58:34 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 8:14:16 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 28!
+!provides: 'TensorFlow-Examples' 1 29!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -992,7 +992,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 19:57:48'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 20:13:54'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -1001,10 +1001,9 @@ initializeInferenceGraph
 		named: 'layer1'.
 	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified] named: 'layer2'.
 	prediction _ graph
-		fromBlock: [:image | | axis |
+		fromBlock: [:image |
 			netInput _ hidden2 * weights3 + biases3.
-			axis _ graph const: 1 asInt32Tensor.
-			netInput softmax findMaxOn: axis]
+			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'layer3'.
 ! !
 
