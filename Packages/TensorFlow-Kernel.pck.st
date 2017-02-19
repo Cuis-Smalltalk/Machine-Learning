@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 12:43:11 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:15:43 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 386!
+!provides: 'TensorFlow-Kernel' 1 388!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3387,6 +3387,19 @@ assert: aNumber closeTo: anotherNumber
 		description: (self comparingStringBetween: aNumber and: anotherNumber)
 ! !
 
+!TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 15:15:39'!
+assert: integers sizeOn: dimension is: expected
+	| graph session const result size |
+	graph _ TF_Graph create.
+	const _ graph const: integers asInt32Tensor.
+	
+	size _ const sizeOn: dimension.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: size output.
+	
+	self assert: expected equals: result asNumbers.! !
+
 !TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:07:26'!
 assertAll: expectedArray closeTo: actualArray
 	expectedArray with: actualArray do: [:expected :actual |
@@ -4289,6 +4302,21 @@ testOperationSin
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 15:11:43'!
+testOperationSizeOn
+	| t3x1x4 |
+	t3x1x4 _ #(	"shape: (3 1 3)"
+		((1 2 3 0))
+		((4 5 6 0))
+		((7 8 9 0))
+	).
+	self assert: #(1 2 3 4 5 6 7) sizeOn: 0 is: #(7).
+	self assert: t3x1x4 sizeOn: 0 is: #(3).
+	self assert: t3x1x4 sizeOn: 1 is: #(1).
+	self assert: t3x1x4 sizeOn: 2 is: #(4).
+ 
+! !
 
 !TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 12:43:03'!
 testOperationSlice
@@ -5973,6 +6001,10 @@ sigmoid
 sin
 	^ self unaryOp: 'Sin'
 	! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:14:55'!
+sizeOn: dimensionInteger
+	^ self shape sliceFrom: {dimensionInteger} asInt32Tensor size: #(1) asInt32Tensor.! !
 
 !TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:39:00'!
 sliceFrom: begin size: size
