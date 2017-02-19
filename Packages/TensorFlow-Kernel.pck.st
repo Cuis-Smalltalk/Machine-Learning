@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 7:49:34 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 7:52:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 399!
+!provides: 'TensorFlow-Kernel' 1 401!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -242,9 +242,9 @@ ignoreFinalization
 useFinalization
 	self finalizationRegistry add: self! !
 
-!Boolean methodsFor: '*TensorFlow-Kernel' stamp: 'JB 2/15/2017 23:51:26'!
+!Boolean methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/19/2017 19:48:34'!
 asBooleanTensor
-	^ TF_Tensor fromBools: self! !
+	^ TF_Tensor fromBooleans: self! !
 
 !Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:18:09'!
 asFloatTensor
@@ -266,9 +266,9 @@ asTensor
 asTensor
 	^ TF_Tensor fromFloats: self! !
 
-!SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'JB 2/15/2017 23:50:46'!
+!SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/19/2017 19:48:45'!
 asBooleanTensor
-	^ TF_Tensor fromBools: self! !
+	^ TF_Tensor fromBooleans: self! !
 
 !SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/30/2017 16:19:25'!
 asFloatTensor
@@ -3393,7 +3393,7 @@ testTensorType
 	self assert: tensor type equals: tensor class typeFloat.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:51'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/19/2017 19:52:20'!
 testTensorTypes
 	| types |
 	types _ #(
@@ -3406,7 +3406,7 @@ testTensorTypes
 		String 7
 		Complex64 8
 		Int64 9
-		Bool 10
+		Boolean 10
 		QInt8 11
 		QUInt8 12
 		QInt32 13
@@ -7067,14 +7067,14 @@ elementsOf: tensorArray do: oneArgBlock
 				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: tensorArray]! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'JB 2/16/2017 00:16:01'!
-fromBools: values
-	^ self fromNumbers: values type: self typeBool
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:36'!
+fromBooleans: values
+	^ self fromNumbers: values type: self typeBoolean
 ! !
 
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'JB 2/16/2017 00:15:33'!
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:38'!
 fromBools: values shape: shape
-	^ self fromNumbers: values type: self typeBool shape: shape
+	^ self fromNumbers: values type: self typeBoolean shape: shape
 ! !
 
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:45:34'!
@@ -7206,13 +7206,13 @@ fromStrings: strings shape: shape
 	^ self fromStringArray:  flatten shape: shape.
 ! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:23:13'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:41'!
 getterBlockFor: type
 	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset | data signedLongAt: offset]].
 	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset | data signedLongLongAt: offset]].
 	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset | data floatAt: offset]].
 	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset | data doubleAt: offset]].
-	TF_Tensor typeBool = type ifTrue: [^ [:data :offset | data booleanAt: offset]].
+	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset | data booleanAt: offset]].
 	^ self shouldBeImplemented ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 22:29:58'!
@@ -7230,13 +7230,13 @@ rankOf: aMultidimensionalTensor
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:46:38'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:44'!
 setterBlockFor: type
 	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset :value | data signedLongAt: offset put: value]].
 	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset :value | data signedLongLongAt: offset put: value]].
 	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset :value | data floatAt: offset put: value]].
 	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset :value | data doubleAt: offset put: value]].
-	TF_Tensor typeBool = type ifTrue: [^ [:data :offset :value | data booleanAt: offset put: value]].
+	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset :value | data booleanAt: offset put: value]].
 	^ self shouldBeImplemented ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
@@ -7247,13 +7247,13 @@ shapeOf: aMultidimensionalTensor
 			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:46:24'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:47'!
 sizeForType: anInteger
 	self typeFloat = anInteger ifTrue: [^4].
 	self typeInt64 = anInteger ifTrue: [^8].
 	self typeInt32 = anInteger ifTrue: [^4].
 	self typeDouble = anInteger ifTrue: [^8].
-	self typeBool = anInteger ifTrue: [^1].
+	self typeBoolean = anInteger ifTrue: [^1].
 
 "
 8
@@ -7348,8 +7348,8 @@ type: anInteger shape: anIntegerArray bytesize: bytesizeInteger
 typeBFloat16
 	^14! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:52'!
-typeBool
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:24'!
+typeBoolean
 	^10! !
 
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:37'!
