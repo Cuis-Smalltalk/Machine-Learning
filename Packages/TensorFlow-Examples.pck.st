@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:04:02 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:23:04 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 23!
+!provides: 'TensorFlow-Examples' 1 24!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -627,9 +627,9 @@ initializeGraph
 	graph _ TF_Graph create
 	! !
 
-!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:20:08'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:35'!
 initializeSession
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.
 ! !
 
@@ -913,9 +913,9 @@ initializeParameters
 			named: 'parameters'
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:41'!
 initializeSession
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
@@ -1151,9 +1151,9 @@ initializeParameters
 	aux _ graph zerosShaped: {self outputSize}.
 	biases _ graph variable: 'biases' initialValueFrom: aux.! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:27:12'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:44'!
 initializeSession
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:30:14'!
@@ -1191,7 +1191,7 @@ predict: inputs andLearnFrom: label
 		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 2/19/2017 16:22:46'!
 decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
 		
@@ -1200,7 +1200,7 @@ decodeCSV: csvLines graphRun: description
 	output _ graph operationNamed: 'output'.
 	values _ TF_Tensor fromStringArray: csvLines.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session
 		runOperations: {output}
 		inputs: {records}

@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:17:23 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:19:13 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 397!
+!provides: 'TensorFlow-Kernel' 1 398!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -516,7 +516,7 @@ testRunGraphMulTwoInputsConstTensorDeleted
 	
 	mul _ graph operationNamed: 'mul2'.
 	output _ mul output: 0.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session
 		runOperations: (Array with: mul)
 		inputs: inputs
@@ -551,7 +551,7 @@ testSessionFinalizationReleasesExternalMemory
 		total _ total + tries.
 		handles addAll: ((1 to: tries) collect: [:i |
 			Smalltalk garbageCollect.
-			(TF_Session onGraph: graph) getHandle]).
+			(TF_Session on: graph) getHandle]).
 		handles size < total ifTrue: [
 			^ self]].
 	
@@ -884,7 +884,7 @@ get2x2FloatFromGraphDef
 	graph _ self constant2x2FloatGraphFromDef.
 	
 	const _ (graph operationNamed: 'a') output: 0.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: const.
 	
 	^ result! !
@@ -950,7 +950,7 @@ runFloatAsStringGraph
 	| session graph output result |
 	
 	graph _ self floatAsStringGraph.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	output _ graph operationNamed: 'output'.
 	result _ session
 		runOperation: output
@@ -975,7 +975,7 @@ should: aBlock raiseError: aString
 tesCloseSessionTwiceNoCrash
 	| graph session |
 	graph _ TF_Graph create.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	self deny: session isNull.
 	session ignoreFinalization.
 	session close.
@@ -994,7 +994,7 @@ testAddControlInput
 			addInput: (in output: 0);
 			addControlInput: (in output: 0)].
 	
-	result _ (TF_Session onGraph: graph) runOutput: (op output: 0).
+	result _ (TF_Session on: graph) runOutput: (op output: 0).
 	
 	self assert: 12345678*12345678 equals: result allInt64s first.
 ! !
@@ -1138,7 +1138,7 @@ testAsInt64Tensor: tensorArray shape: shapeArray
 testAsStringGraphRunOn: tensor
 	| graph session in out result |
 	graph _ self asStringGraphType: tensor type.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	
 	in _ graph operationNamed: 'in'.
 	out _ graph operationNamed: 'out'.
@@ -1366,7 +1366,7 @@ testAttrSetStrings: aAnArrayOfStrings
 		description at: 'debug_urls' putStrings: aAnArrayOfStrings.
 		description addInput: (in output: 0)].
 	
-	(TF_Session onGraph: graph)
+	(TF_Session on: graph)
 		runOutput: (op output: 0).
 
 ! !
@@ -1420,7 +1420,7 @@ testBufferNoNeedExternalize
 testCloseSession
 	| graph session |
 	graph _ TF_Graph create.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	self deny: session isNull.
 	session ignoreFinalization.
 	self shouldnt: [session close] raise: Error.
@@ -1489,7 +1489,7 @@ testDecodeCSVGraphRunCSV: csvLines
 	output _ graph operationNamed: 'output'.
 	values _ TF_Tensor fromStringArray: csvLines.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session
 		runOperations: {output}
 		inputs: {records}
@@ -1548,7 +1548,7 @@ testDescriptionDevice
 	 [[Node: out = Mul[T=DT_INT64, _class=[], _device="anInvalidDevice"](const, const)]]'.
 
 	self
-		should: [(TF_Session onGraph: graph) runOutput: (op output: 0)]
+		should: [(TF_Session on: graph) runOutput: (op output: 0)]
 		raiseError: expected.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 00:57:35'!
@@ -1824,7 +1824,7 @@ testGraphDeletionDoesntBreakSessions
 		with: (TF_Tensor fromInt64: 16r2221202221202221).
 	add _ graph operationNamed: 'add'.
 	output _ add output: 0.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph delete.
 
 	graph _ self addGraphTwoInputsInt64.
@@ -1853,7 +1853,7 @@ testGraphFromBlockIdentity
 	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
 	output _ graph operationNamed: 'output'.
 	
-	results _ (TF_Session onGraph: graph)
+	results _ (TF_Session on: graph)
 		runInputs: inputs
 		values: {TF_Tensor fromFloats: 3.1415}
 		outputs: {output output: 0}.
@@ -1867,7 +1867,7 @@ testGraphFromBlockIdentityInstance
 	output _ graph fromBlock: [:a | a alias: 'a_1'].	
 	inputs _ graph allInputs collect: [:input | input input: 0].
 	
-	results _ (TF_Session onGraph: graph)
+	results _ (TF_Session on: graph)
 		runInputs: inputs
 		values: {TF_Tensor fromFloats: 3.1415}
 		outputs: {output output: 0}.
@@ -1882,7 +1882,7 @@ testGraphFromBlockSimple
 	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
 	output _ graph operationNamed: 'output'.
 	
-	results _ (TF_Session onGraph: graph)
+	results _ (TF_Session on: graph)
 		runInputs: inputs
 		values: {TF_Tensor fromFloats: 3.1415. TF_Tensor fromFloats: 1.2345.}
 		outputs: {output output: 0}.
@@ -1896,7 +1896,7 @@ testGraphFromBlockSimpleInstance
 	output _ graph fromBlock: [:a :b | a + b].	
 	inputs _ graph allInputs collect: [:placeholder | placeholder input: 0].
 	
-	results _ (TF_Session onGraph: graph)
+	results _ (TF_Session on: graph)
 		runInputs: inputs
 		values: {TF_Tensor fromFloats: 3.1415. TF_Tensor fromFloats: 1.2345.}
 		outputs: {output output: 0}.
@@ -2072,7 +2072,7 @@ testImportEmpty
 testInitializeOn
 	| graph session |
 	graph _ TF_Graph create.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	self shouldnt: [graph initializeOn: session] raise: Error.! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/13/2017 12:23:08'!
@@ -2215,7 +2215,7 @@ testNewOperationPlaceholderNoType
 testNewSession
 	| graph session |
 	graph _ TF_Graph create.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	session ignoreFinalization.
 	self deny: session isNull.
 	session delete.
@@ -2251,7 +2251,7 @@ testNewVariableForTensor
 			addInput: (var output: 0);
 			addInput: (pis output: 0)].
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	
 	session runOutput: (assign output: 0).
 	result _ session runOutput: (var output: 0).
@@ -2266,7 +2266,7 @@ testNewVariableInitialValue
 	var _ graph variable: 'var' initialValue: pisTensor.
 	assign _ graph operationNamed: 'var_initializer'.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	
 	session runOutput: (assign output: 0).
 	result _ session runOutput: (var output: 0).
@@ -2280,7 +2280,7 @@ testNewVariableInitialValueAutomaticInitialization
 	pisTensor _ TF_Tensor fromFloats: #(3.14 3.1415 3.141516).
 	var _ graph variable: 'var' initialValue: pisTensor.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	
 	graph initializeOn: session.
 	result _ session runOutput: (var output: 0).
@@ -2298,7 +2298,7 @@ testNewVariableInitialization
 			addInput: (var output: 0);
 			addInput: (pi output: 0)].
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	
 	session runOutput: (assign output: 0).
 	result _ session runOutput: (var output: 0).
@@ -2316,7 +2316,7 @@ testNewVariableInitializationNodeNotRun
 			addInput: (var output: 0);
 			addInput: (pi output: 0)].
 	
-	[(TF_Session onGraph: graph)
+	[(TF_Session on: graph)
 		runOutput: (var output: 0)] ifError: [:description :receiver | lastError _ description].
 	
 	self
@@ -2337,7 +2337,7 @@ testNewVariableNoInitialization
 	| graph var expectedError lastError |
 	graph _ TF_Graph create.
 	var _ graph variable: 'var' type: TF_Tensor typeFloat shape: #().
-	[(TF_Session onGraph: graph)
+	[(TF_Session on: graph)
 		runOutput: (var output: 0)] ifError: [:description :receiver | lastError _ description].
 
 	expectedError _ 'Error: FAILED_PRECONDITION: Attempting to use uninitialized value var'.
@@ -2403,7 +2403,7 @@ testPlaceholderType: type
 	var _ graph placeholder: 'var' type: type.
 	abs _ graph newOperation: 'Abs' named: 'abs' described: [:description |
 		description addInput: (var output: 0)].
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	
 	result _ session
 		runOperation: abs
@@ -2475,7 +2475,7 @@ testRunGraphAddTwoInputs
 		with: (TF_Tensor fromInt64: 16r2221202221202221).
 	add _ graph operationNamed: 'add'.
 	output _ add output: 0.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session
 		runOperations: (Array with: add)
 		inputs: inputs
@@ -2500,7 +2500,7 @@ testRunGraphMulOneInput
 	inputValue _ TF_Tensor fromInt64: 11.
 	mul _ graph operationNamed: 'mul'.
 	output _ mul output: 0.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOperation: mul input: input value: inputValue output: output.
 	
 	self deny: result isNull.
@@ -2525,7 +2525,7 @@ testRunGraphMulTwoInputs
 		with: (TF_Tensor fromInt64: 11).
 	mul _ graph operationNamed: 'mul2'.
 	output _ mul output: 0.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session
 		runOperations: (Array with: mul)
 		inputs: inputs
@@ -2554,7 +2554,7 @@ testRunGraphMulTwoInputsRunInputsOutputs
 		with: (TF_Tensor fromInt64: 11).
 	mul _ graph operationNamed: 'mul2'.
 	output _ mul output: 0.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	
 	results _ session
 		runInputs: inputs
@@ -2574,7 +2574,7 @@ testRunGraphMulTwoInputsRunInputsOutputs
 testRunOperationArray
 	| graph operation session |
 	graph _ self constantFloatGraphFromDef.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	operation _ graph operationNamed: 'a'.
 	
 	self shouldnt: [session runOperations: (Array with: operation)] raise: Error.
@@ -2585,7 +2585,7 @@ testRunOperationArray
 testSessionDeletionDoesntDeleteGraphs
 	| session graph allocatedObjects |
 	graph _ TF_Graph create.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	session ignoreFinalization.
 	session close.
 	session delete.
@@ -2603,7 +2603,7 @@ testSessionDeletionDoesntDeleteGraphs
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/29/2017 02:57:52'!
 testSessionOnEmptyGraph
 	| session |
-	session _ TF_Session onGraph: self emptyGraph.
+	session _ TF_Session on: self emptyGraph.
 	self
 		should: [session run]
 		raiseError: 'INVALID_ARGUMENT: Must specify at least one target to fetch or execute.'.! !
@@ -2647,7 +2647,7 @@ testSessionRunOutput
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/22/2017 16:25:23'!
 testSessionRunOutputOnGraph: graph
 	| operation session output tensor |
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	operation _ graph operationNamed: 'a'.
 	output _ operation output: 0.
 	
@@ -2664,7 +2664,7 @@ testSessionRunOutputOnGraph: graph
 testSessionRunTarget
 	| graph operation session |
 	graph _ self constantFloatGraphFromDef.
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	operation _ graph operationNamed: 'a'.
 	
 	self shouldnt: [session runOperation: operation] raise: Error.
@@ -2679,7 +2679,7 @@ testSessionRunTargetOutput
 !TensorFlowCAPITest methodsFor: 'testing session' stamp: 'gera 1/13/2017 12:29:42'!
 testSessionRunTargetOutputOnGraph: graph
 	| operation session output tensor |
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	operation _ graph operationNamed: 'a'.
 	output _ operation output: 0.
 	
@@ -2997,7 +2997,7 @@ testTensorAsOperation
 	a _ graph const: 3.14 asTensor.
 	b _ a + 1.234 asTensor.
 	
-	result _ (TF_Session onGraph: graph) runOutput: b output.
+	result _ (TF_Session on: graph) runOutput: b output.
 	
 	self assert: 3.14+1.234 closeTo: result asNumbers.! !
 
@@ -3432,7 +3432,7 @@ assert: integers sizeOn: dimension is: expected
 	
 	size _ const sizeOn: dimension.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: size output.
 	
 	self assert: expected equals: result asNumbers.! !
@@ -3450,7 +3450,7 @@ assertSlice: integers from: begin size: size is: expected
 	
 	slice _ const sliceFrom: begin asInt32Tensor size: size asInt32Tensor.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: slice output.
 	
 	self assert: expected equals: result asNumbers.! !
@@ -3481,7 +3481,7 @@ testGraphTruncatedNormal
 	
 	random _ graph truncatedNormalRandomShaped: #(100 100 10).
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (random output: 0).
 	
 	values _ result allFloats.
@@ -3509,7 +3509,7 @@ testGraphTruncatedNormalStddev
 	twoSigma _ 2 * sigma.
 	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: sigma.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (random output: 0).
 	values _ result allFloats.
 	
@@ -3538,7 +3538,7 @@ testGraphUnnamedConst
 	
 	const _ graph const: #(1 2 3 4) asFloatTensor.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (const output: 0).
 	
 	self assert: result shape equals: #(4).
@@ -3554,7 +3554,7 @@ testGraphVariableFromTruncatedNormalStddev
 	random _ graph truncatedNormalRandomShaped: #(100 100 10) stddev: sigma.
 	var _ graph variable: 'var' initialValueFrom: random.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	init _ graph operationNamed: 'var_initializer'.
 	result1 _ session runOutput: (init output: 0).
 	result2 _ session runOutput: (var output: 0).
@@ -3579,7 +3579,7 @@ testGraphZeros
 	
 	zeros _ graph zerosShaped: #(100 100 10).
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (zeros output: 0).
 	
 	values _ result allFloats.
@@ -3599,7 +3599,7 @@ testOperationAbs
 	const _ graph const: 'const' value: template.
 	output _ const abs output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: template shape.
@@ -3618,7 +3618,7 @@ testOperationAcos
 	const _ graph const: 'const' value: intput.
 	output _ const arcCos output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: intput shape.
@@ -3646,7 +3646,7 @@ testOperationArgMax
 	output0 _ const findMaxOn: axis0.
 	output1 _ const findMaxOn: axis1.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output0 output: 0).
 	
 	self assert: result shape equals: #(2).
@@ -3678,7 +3678,7 @@ testOperationArgMin
 	output0 _ const findMinOn: axis0.
 	output1 _ const findMinOn: axis1.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output0 output: 0).
 	
 	self assert: result shape equals: #(2).
@@ -3710,7 +3710,7 @@ testOperationArgMinTwoOutputs
 	output0 _ (const findMinOn: axis0) output: 0.
 	output1 _ (const findMinOn: axis1) output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session
 		runOutputs: {output0. output1}.
 	
@@ -3736,7 +3736,7 @@ testOperationAsin
 	const _ graph const: 'const' value: intput.
 	output _ const arcSin output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: intput shape.
@@ -3753,7 +3753,7 @@ testOperationAssignSub
 	pi _ graph const: 'pi' value: TF_Tensor pi.
 	output _ var -= pi.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.
 	result _ session runOutput: (output output: 0).
 	
@@ -3770,7 +3770,7 @@ testOperationAtan
 	const _ graph const: 'const' value: intput.
 	output _ const arcTan output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: intput shape.
@@ -3804,7 +3804,7 @@ testOperationCos
 	const _ graph const: 'const' value: intput.
 	output _ const cos output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: intput shape.
@@ -3822,7 +3822,7 @@ testOperationDescentRate
 	rate _ graph const: 'rate' value: 0.7 asTensor.
 	output _ var descent: pi rate: rate.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.
 	result _ session runOutput: (output output: 0).
 	
@@ -3837,7 +3837,7 @@ testOperationDescentRateConstants
 	rate _ 0.7 asTensor.
 	output _ var descent: pi rate: rate.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.
 	result _ session runOutput: (output output: 0).
 	
@@ -3858,7 +3858,7 @@ testOperationDiv
 	output _ constA @/ constB.
 	template _ a allFloats / b allFloats.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -3880,7 +3880,7 @@ testOperationDivScalar
 	div _ constA @/ constB.
 	template _ a allFloats / 2.0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (div output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -3899,7 +3899,7 @@ testOperationExp
 	const _ graph const: 'const' value: inputs.
 	output _ const exp output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: inputs shape.
@@ -3920,12 +3920,12 @@ testOperationIAlias
 	same1 _ const alias: 'another_name'.
 	same2 _ graph operationNamed: 'another_name'.
 	
-	result _ (TF_Session onGraph: graph) runOutput: (same1 output: 0).
+	result _ (TF_Session on: graph) runOutput: (same1 output: 0).
 	
 	self assert: template shape equals: result shape.
 	self assert: #(1 2 3 4 5 6) equals: result allFloats.
 	
-	result _ (TF_Session onGraph: graph) runOutput: (same2 output: 0).
+	result _ (TF_Session on: graph) runOutput: (same2 output: 0).
 	
 	self assert: template shape equals: result shape.
 	self assert: #(1 2 3 4 5 6) equals: result allFloats.
@@ -3943,7 +3943,7 @@ testOperationIdentity
 	const _ graph const: 'const' value: template.
 	same _ const identity output: 0.
 	
-	result _ (TF_Session onGraph: graph) runOutput: same.
+	result _ (TF_Session on: graph) runOutput: same.
 	
 	self assert: template shape equals: result shape.
 	self assert: #(1 2 3 4 5 6) equals: result allFloats.! !
@@ -3966,7 +3966,7 @@ testOperationMatMul
 		2.1*2.0+(2.2*8.0).		2.1*4.0+(2.2*16.0).
 	}.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 
 	self assert: result shape equals: a shape.
@@ -3987,7 +3987,7 @@ testOperationMatMul1x1
 
 	output _ constA * constB.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 
 	self assert: (1.1 * 3.14 closeTo: result allFloats first)! !
@@ -4006,7 +4006,7 @@ testOperationMatMul1x1Wrong
 
 	output _ constA * constB.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	self
 		should: [session runOutput: (output output: 0)]
 		raiseError: 'INVALID_ARGUMENT: In[0] is not a matrix
@@ -4031,7 +4031,7 @@ testOperationMatMulATransposed
 		1.2*2.0+(2.2*8.0).		1.2*4.0+(2.2*16.0).
 	}.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4056,7 +4056,7 @@ testOperationMatMulBTransposed
 		2.1*2.0+(2.2*4.0).		2.1*8.0+(2.2*16.0).
 	}.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4090,7 +4090,7 @@ testOperationMatrixInverse
 	inverse _ const inverse.
 	identity _ const * inverse output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: identity.
 	
 	self assert: result shape equals: template shape.
@@ -4115,7 +4115,7 @@ testOperationMeanOn
 	mean01 _ a meanOn: #(0 1) asInt32Tensor.
 	meanNone _ a meanOn: #() asInt32Tensor.
 		
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session runOutputs: {mean0 output: 0. mean1 output: 0. mean01 output: 0. meanNone output: 0}." mean01bis output: 0}."
 	
 	self assert: #(2) equals: results first shape.
@@ -4148,7 +4148,7 @@ testOperationMinus
 	
 	sum _ constA - constB.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (sum output: 0).
 	
 	template _ a allFloats - b allFloats.
@@ -4172,7 +4172,7 @@ testOperationMod
 	output _ constA \\ constB.
 	template _ a allFloats \\ b allFloats.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4194,7 +4194,7 @@ testOperationMul
 	output _ constA @* constB.
 	template _ a allFloats * b allFloats.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4216,7 +4216,7 @@ testOperationMulScalar
 	mul _ constA @* constB.
 	template _ a allFloats * 2.0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (mul output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4233,7 +4233,7 @@ testOperationNegated
 	const _ graph const: 'const' value: template.
 	negated _ const negated output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: negated.
 	
 	self assert: result shape equals: template shape.
@@ -4256,7 +4256,7 @@ testOperationPlus
 	sum _ constA + constB.
 	template _ a allFloats + b allFloats.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (sum output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4277,7 +4277,7 @@ testOperationPlusNegated
 	
 	sum _ constA + constB negated.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (sum output: 0).
 	
 	template _ a allFloats - b allFloats.
@@ -4301,7 +4301,7 @@ testOperationPlusNegatedNegated
 	sum _ (constA + constB negated) negated.
 	template _ (a allFloats + b allFloats negated) negated.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (sum output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4323,7 +4323,7 @@ testOperationPlusNegatedNegatedPlus
 	sum _ (constA + constB negated) negated + constB negated.
 	template _ (a allFloats + b allFloats negated) negated + b allFloats negated.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (sum output: 0).
 	
 	self assert: result shape equals: a shape.
@@ -4348,7 +4348,7 @@ testOperationRelu
 	const _ graph const: 'const' value: template.
 	output _ const rectified output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: template shape.
@@ -4365,7 +4365,7 @@ testOperationShape
 	const _ graph const: 'const' value: template.
 	shape _ const shape output.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: shape.
 	
 	self assert: {template rank} equals: result shape.
@@ -4384,7 +4384,7 @@ testOperationSigmoid
 	const _ graph const: 'const' value: inputs.
 	output _ const sigmoid output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	transformed _ template collect:[:x| (x negated exp + 1) reciprocal].
@@ -4405,7 +4405,7 @@ testOperationSin
 	const _ graph const: 'const' value: intput.
 	output _ const sin output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: intput shape.
@@ -4453,7 +4453,7 @@ testOperationSliceSimple
 	const _ graph const: #(1 2 3 4 5 6 7) asInt32Tensor.
 	slice _ const sliceFrom: #(0) asInt32Tensor size: #(1) asInt32Tensor.
 
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: slice output.
 	
 	self assert: #(1) equals: result asNumbers.! !
@@ -4472,7 +4472,7 @@ testOperationSparseSoftmaxCrossEntropyWithLogits
 	
 	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session runOutputs: {xentropy output: 0. xentropy output: 1}.
 	
 	loss _ results first.
@@ -4502,7 +4502,7 @@ testOperationSparseSoftmaxCrossEntropyWithLogitsUseOutput
 	
 	xentropy _ prediction sparseSoftmaxCrossEntropyWithLogits: label.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session runOutputs: {xentropy output. (xentropy useOutput: 1) output}.
 	
 	loss _ results first.
@@ -4528,7 +4528,7 @@ testOperationSquared
 	const _ graph const: 'const' value: template.
 	output _ const squared output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: template shape.
@@ -4551,7 +4551,7 @@ testOperationSub
 	
 	sub _ constA - constB.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: (sub output: 0).
 	
 	template _ a allFloats - b allFloats.
@@ -4584,7 +4584,7 @@ testOperationSum
 	output0 _ const sumOn: axis0.
 	output1 _ const sumOn: axis1.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session
 		runOperation: output0
 		output: (output0 output: 0).
@@ -4625,7 +4625,7 @@ testOperationSumOnOutputs
 	output0 _ const sumOn: axis0.
 	output1 _ const sumOn: axis1.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session runOutputs: {output0 output: 0. output1 output: 0}.
 	first _ results at: 1.
 	second _ results at: 2.
@@ -4649,7 +4649,7 @@ testOperationTan
 	const _ graph const: 'const' value: intput.
 	output _ const tan output: 0.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 	
 	self assert: result shape equals: intput shape.
@@ -4668,7 +4668,7 @@ testSoftmax
 	const _ graph const: 'const' value: template.
 	output _ const softmax output.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: output.
 
 	self assert: result shape equals: template shape.
@@ -4912,7 +4912,7 @@ newOperationDescriptionOn: graph type: type named: name
 	! !
 
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:21:09'!
-newSessionGraph: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
+newSession: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
 	<cdecl: TF_Session* 'TF_NewSession' (TF_Graph* TF_SessionOptions* TF_Status*)>
 	^self externalCallFailed! !
 
@@ -5706,7 +5706,7 @@ rankOf: aTF_OutputOrInput
 !TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:09:28'!
 runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
 	| session |
-	session _ TF_Session onGraph: self.
+	session _ TF_Session on: self.
 	self initializeOn: session.
 	^ session runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
 ! !
@@ -5714,14 +5714,14 @@ runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_
 !TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:07:15'!
 runOutput: aTF_Output
 	| session |
-	session _ TF_Session onGraph: self.
+	session _ TF_Session on: self.
 	self initializeOn: session.
 	^ session runOutput: aTF_Output! !
 
 !TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:08:50'!
 runOutputs: anArrayOfTF_Outputs
 	| session |
-	session _ TF_Session onGraph: self.
+	session _ TF_Session on: self.
 	self initializeOn: session.
 	^ session runOutputs: anArrayOfTF_Outputs! !
 
@@ -6626,12 +6626,22 @@ runOutputs: aTF_OutputArray size: anInteger
 	status check.
 	^ outvalues! !
 
-!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
-onGraph: aTF_Graph
+!TF_Session class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 16:18:56'!
+on: aTF_Graph
 	| options status answer |
 	options _ TF_SessionOptions create.
 	status _ TF_Status create.
-	answer _ TensorFlowCAPI current newSessionGraph: aTF_Graph options: options status: status.
+	answer _ TensorFlowCAPI current newSession: aTF_Graph options: options status: status.
+	status check.
+	answer useFinalization.
+	^ answer! !
+
+!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
+on: aTF_Graph
+	| options status answer |
+	options _ TF_SessionOptions create.
+	status _ TF_Status create.
+	answer _ TensorFlowCAPI current newSession: aTF_Graph options: options status: status.
 	status check.
 	answer useFinalization.
 	^ answer! !
