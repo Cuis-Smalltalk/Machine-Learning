@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 February 2017 at 7:15:50 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 11:27:17 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 382!
+!provides: 'TensorFlow-Kernel' 1 383!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5749,14 +5749,9 @@ binaryOp: aString with: aTF_Operation named: name
 	^ self binaryOp: aString with: aTF_Operation named: name described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/17/2017 00:20:56'!
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 11:26:18'!
 binaryOp: aString with: aTF_Operation named: name described: oneArgBlock
-	^ graph newOperation: aString named: name described: [:description |
-		description
-			addInput: self output;
-			addInput: (aTF_Operation asOperationOn: graph) output.
-		oneArgBlock value: description].
-	! !
+	^ self op: aString withAll: {aTF_Operation} named: name described: oneArgBlock! !
 
 !TF_Operation methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:44:59'!
 boolAt: nameString
@@ -5859,6 +5854,17 @@ nameFor: namePrefix
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
 negated
 	^ self unaryOp: 'Neg'! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:26:38'!
+op: aString withAll: aTF_OperationArray named: name described: oneArgBlock
+	^ graph newOperation: aString named: name described: [:description |
+		description addInput: self output.
+		aTF_OperationArray do: [:each |
+			| output |
+			output _ (each asOperationOn: graph) output.
+			description addInput: output].
+		oneArgBlock value: description].
+	! !
 
 !TF_Operation methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:10:23'!
 output
@@ -6028,11 +6034,9 @@ unaryOp: aString named: name
 	^ self unaryOp: aString named: name described: [:description | ].
 	! !
 
-!TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/9/2017 20:25:08'!
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 2/19/2017 11:26:59'!
 unaryOp: aString named: name described: oneArgBlock
-	^ graph newOperation: aString named: name described: [:description |
-		description addInput: self output.
-		oneArgBlock value: description]! !
+	^ self op: aString withAll: {} named: name described: oneArgBlock! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'JB 2/9/2017 20:22:33'!
 useOutput: anInteger
