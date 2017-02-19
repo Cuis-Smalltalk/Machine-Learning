@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:44:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:47:32 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 393!
+!provides: 'TensorFlow-Kernel' 1 394!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2004,6 +2004,15 @@ testGraphOperationsSelectEmpty
 	
 	self assert: operations size equals: 0.
 ! !
+
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/19/2017 15:47:12'!
+testGraphRunOutput
+	| graph output result |
+	graph _ TF_Graph create.
+	output _ graph const: TF_Tensor pi.
+	result _ graph runOutput: output output.
+	
+	self assert: Float pi closeTo: result asNumbers.! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 02:56:35'!
 testImportBad
