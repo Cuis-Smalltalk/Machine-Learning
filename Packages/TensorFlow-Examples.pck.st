@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 5:15:43 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 7:58:34 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 27!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
+!provides: 'TensorFlow-Examples' 1 28!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -992,9 +992,8 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 15:09:58'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 19:57:48'!
 initializeInferenceGraph
-	| hidden1 hidden2 |
 	hidden1 _ graph
 		fromBlock: [:image |
 			input _ image.
