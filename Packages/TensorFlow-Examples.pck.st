@@ -282,6 +282,32 @@ testPrediction3LayersSigmoid
 	self assert: prediction asNumbers first equals: labels first.
 	self assert: prediction asNumbers second equals: labels second! !
 
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 2/18/2017 17:52:54'!
+testPredictionMany
+	| imageSet images labelSet labels loss plan result prediction n |
+	n _ 200.
+	
+	plan _ MNISTSoftMaxExamplePlan new.
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	
+	images _ (1 to: n) collect: [:i | imageSet bytesAt: i].
+	labels _ (1 to: n) collect: [:i | labelSet at: i].
+	
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self deny: (loss closeTo: 0).
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: (loss closeTo: 0).
+	
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers equals: labels.
+! !
+
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
 	| shape transposed |
@@ -503,7 +529,7 @@ testMNIST3LayersNNLossGraph
 				andCompareTo: #(1 2).
 				]
 		raise: Error.
-		
+
 	self assert: {2} equals: results first shape.
 	first _ results first asNumbers first.
 	second _ results first asNumbers second.
@@ -731,9 +757,9 @@ initializeGraph
 	graph _ TF_Graph create
 	! !
 
-!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:20:08'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:35'!
 initializeSession
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.
 ! !
 
@@ -873,15 +899,14 @@ initializeGraph
 	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'JB 1/23/2017 10:49:44'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:48:53'!
 initializeGraphWithOperations
-	| axis axisValue distance testing training prediction |
+	| axis distance testing training prediction |
 	graph _ TF_Graph create.
 	
 	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
 	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
-	axisValue _ TF_Tensor fromInt32: 0.
-	axis _ graph const: 'axis' value: axisValue.
+	axis _ 0 asInt32Tensor.
 	
 	distance _ (testing - training) abs sumOn: axis.
 	prediction _ distance findMinOn: axis.
@@ -945,11 +970,11 @@ initializeGraphWithOperations
 graph
 	^ graph! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'JB 2/18/2017 18:55:24'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:15'!
 hidden1Size
 	^ 128! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'JB 2/18/2017 18:55:28'!
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:18'!
 hidden2Size
 	^ 32! !
 
@@ -969,6 +994,7 @@ initializeGraph
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 15:09:58'!
 initializeInferenceGraph
+	| hidden1 hidden2 |
 	hidden1 _ graph
 		fromBlock: [:image |
 			input _ image.
@@ -1022,7 +1048,7 @@ initializeLossGraph
 		inputTypes: {TF_Tensor typeInt32}
 		named: 'loss'.! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 15:08:51'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 09:35:09'!
 initializeParameters
 	| aux |
 		graph
@@ -1044,9 +1070,9 @@ initializeParameters
 			named: 'parameters'
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:42:14'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:41'!
 initializeSession
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
@@ -1074,7 +1100,7 @@ predict: inputs
 		outputs: {prediction output: 0}.
 	^ results first! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'JB 2/17/2017 21:20:04'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
@@ -1309,27 +1335,25 @@ initializeGraph
 initializeInferenceGraph
 	prediction _ graph
 		fromBlock: [:image |
-			| axis |
 			input _ image.
 			netInput _ image * weights + biases.
-			axis _ graph const: 1 asInt32Tensor.
-			netInput softmax findMaxOn: axis]
+			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'inference'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/18/2017 18:48:22'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 16:28:46'!
 initializeLearningGraph
 	| learningRate activationGradient biasGradient |
 	graph
-		fromBlock: [
-			learningRate _ graph const: 'learningRate' value: 0.001 asTensor.
+		fromBlock: [ | batchSize |
+			learningRate _ 0.9 asTensor.
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: #(0) asInt32Tensor.
-			"todo: divide by the number of inputs (the batch size)"
-			learnWeights _ weights descent: input \* activationGradient rate: learningRate.
+			batchSize _ (input sizeOn: 0) castTo: TF_Tensor typeFloat.
+			learnWeights _ weights descent: input \* activationGradient @/ batchSize rate: learningRate.
 			learnBiases _ biases descent: biasGradient rate: learningRate]
 		named: 'learning'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:12:29'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:09:05'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
@@ -1348,9 +1372,9 @@ initializeParameters
 	aux _ graph zerosShaped: {self outputSize}.
 	biases _ graph variable: 'biases' initialValueFrom: aux.! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:27:12'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:44'!
 initializeSession
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	graph initializeOn: session.! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:30:14'!
@@ -1379,16 +1403,16 @@ predict: inputs andCompareTo: label
 		outputs: {prediction output. loss output}.
 	^ results! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'JB 2/18/2017 18:43:11'!
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/19/2017 10:52:34'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {prediction output. loss output. learnWeights output. learnBiases output}.
+		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 2/19/2017 16:22:46'!
 decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
 		
@@ -1397,7 +1421,7 @@ decodeCSV: csvLines graphRun: description
 	output _ graph operationNamed: 'output'.
 	values _ TF_Tensor fromStringArray: csvLines.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	results _ session
 		runOperations: {output}
 		inputs: {records}
