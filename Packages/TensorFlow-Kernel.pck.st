@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 11:36:18 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 12:43:11 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 384!
+!provides: 'TensorFlow-Kernel' 1 386!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3392,6 +3392,19 @@ assertAll: expectedArray closeTo: actualArray
 	expectedArray with: actualArray do: [:expected :actual |
 		self assert: expected closeTo: actual]! !
 
+!TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 12:36:46'!
+assertSlice: integers from: begin size: size is: expected
+	| graph session const result slice |
+	graph _ TF_Graph create.
+	const _ graph const: integers asInt32Tensor.
+	
+	slice _ const sliceFrom: begin asInt32Tensor size: size asInt32Tensor.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: slice output.
+	
+	self assert: expected equals: result asNumbers.! !
+
 !TensorFlowOperationsTest methodsFor: 'private' stamp: 'JB 2/7/2017 11:13:02'!
 percentile: percent from: collection
 	| position sorted |
@@ -3736,7 +3749,7 @@ testOperationCos
 	
 	output free.! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/29/2017 23:20:01'!
+!TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 1/29/2017 23:20:01'!
 testOperationDescentRate
 	| graph var output pi result session rate |
 	graph _ TF_Graph create.
@@ -3751,7 +3764,7 @@ testOperationDescentRate
 	
 	self assert: (1-(Float pi * 0.7) closeTo: result allFloats first)! !
 
-!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/17/2017 00:41:44'!
+!TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/17/2017 00:41:44'!
 testOperationDescentRateConstants
 	| graph var output pi result session rate |
 	graph _ TF_Graph create.
@@ -4276,6 +4289,35 @@ testOperationSin
 		self assert: (res closeTo: temp)].
 	
 	output free.! !
+
+!TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 12:43:03'!
+testOperationSlice
+	| m3x3 |
+	m3x3 _ #(	"shape: (3 1 3)"
+		((1 2 3))
+		((4 5 6))
+		((7 8 9))
+	).
+	self assertSlice: #(1 2 3 4 5 6 7) from: #(0) size: #(1) is: #(1).
+	self assertSlice: m3x3 from: #(0 0 0) size: #(1 1 1) is: #(((1))).
+	self assertSlice: m3x3 from: #(1 0 1) size: #(1 1 1) is: #(((5))).
+	self assertSlice: m3x3 from: #(1 0 1) size: #(1 -1 1) is: #(((5))).
+	self assertSlice: m3x3 from: #(1 0 1) size: #(1 1 -1) is: #(((5 6))).
+	self assertSlice: m3x3 from: #(1 0 1) size: #(1 -1 -1) is: #(((5 6))).
+	self assertSlice: m3x3 from: #(1 0 1) size: #(-1 1 -1) is: #(((5 6)) ((8 9))).
+! !
+
+!TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 12:34:58'!
+testOperationSliceSimple
+	| graph session const result slice |
+	graph _ TF_Graph create.
+	const _ graph const: #(1 2 3 4 5 6 7) asInt32Tensor.
+	slice _ const sliceFrom: #(0) asInt32Tensor size: #(1) asInt32Tensor.
+
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: slice output.
+	
+	self assert: #(1) equals: result asNumbers.! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/12/2017 19:07:07'!
 testOperationSparseSoftmaxCrossEntropyWithLogits
@@ -5768,9 +5810,9 @@ cos
 	^ self unaryOp: 'Cos'
 	! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:35:54'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:37:15'!
 descent: delta rate: learningRate
-	^ self op:  'ApplyGradientDescent' withAll: {learningRate. delta}! !
+	^ self op: 'ApplyGradientDescent' withAll: {learningRate. delta}! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
 device
@@ -5931,6 +5973,10 @@ sigmoid
 sin
 	^ self unaryOp: 'Sin'
 	! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:39:00'!
+sliceFrom: begin size: size
+	^ self op: 'Slice' withAll: {begin. size}! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/7/2017 11:32:45'!
 softmax
