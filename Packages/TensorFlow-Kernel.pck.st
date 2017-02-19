@@ -3742,6 +3742,20 @@ testOperationAtan
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:43:55'!
+testOperationCastTo
+	| graph template cast input result |
+	
+	template _ #((1.1 1.2) (2.1 2.2)).	
+	graph _ TF_Graph create.
+	
+	input _ graph const: template asFloatTensor.
+	cast _ input castTo: TF_Tensor typeInt32.
+
+	result _ graph runOutput: cast output.
+
+	self assert: template truncated equals: result asNumbers.! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/21/2017 22:00:53'!
 testOperationCos
 	| graph template session const result output intput |
@@ -5903,6 +5917,11 @@ boolAt: nameString
 	status check.
 	^ (value booleanAt: 1) 
 ! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:40:22'!
+castTo: typeInteger
+	^ self unaryOp: 'Cast' described: [:description |
+		description at: 'DstT' putType: typeInteger]! !
 
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:18'!
 cos
