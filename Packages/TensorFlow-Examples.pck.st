@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 8:14:16 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 8:20:19 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 29!
+!provides: 'TensorFlow-Examples' 1 30!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1007,9 +1007,9 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 15:12:59'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 20:20:18'!
 initializeLearningGraph
-	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient learningRateBias |
+	|  axis0 activationGradient gradient1 gradient2 learningRate learningRateValue meanGradient learningRateBias |
 	
 	learningRateValue _ 0.001 asTensor.
 	learningRate _ graph const: 'learningRate' value: learningRateValue.
@@ -1017,15 +1017,15 @@ initializeLearningGraph
 	axis0 _ #(0) asInt32Tensor. 
 	graph
 		fromBlock: [
-			gradient _ activation useOutput: 1.
-			meanGradient _ gradient meanOn: axis0.
+			activationGradient _ activation useOutput: 1.
+			meanGradient _ activationGradient meanOn: axis0.
 			"todo: divide by the number of inputs (the batch size)"
-			learnWeights3 _ weights3 descent: hidden2 \* gradient rate: learningRate.
+			learnWeights3 _ weights3 descent: hidden2 \* activationGradient rate: learningRate.
 			learnBiases3 _ biases3 descent: meanGradient rate: learningRateBias]
 		named: 'learning3'.
 		
 	graph fromBlock: [
-		gradient2 _ (gradient *\ weights3) timesRectifiedGradOf: hidden2.
+		gradient2 _ (activationGradient *\ weights3) timesRectifiedGradOf: hidden2.
 		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
 		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
 			named: 'learning2'.
