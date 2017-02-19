@@ -1181,13 +1181,13 @@ predict: inputs andCompareTo: label
 		outputs: {prediction output. loss output}.
 	^ results! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/18/2017 18:21:06'!
+!MNISTSoftMaxExamplePlan methodsFor: 'running' stamp: 'gera 2/19/2017 10:52:34'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {learnWeights output. learnBiases output}.
+		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 23:23:00'!
