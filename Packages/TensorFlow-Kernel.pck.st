@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:19:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 7:52:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 398!
+!provides: 'TensorFlow-Kernel' 1 401!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -242,6 +242,10 @@ ignoreFinalization
 useFinalization
 	self finalizationRegistry add: self! !
 
+!Boolean methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/19/2017 19:48:34'!
+asBooleanTensor
+	^ TF_Tensor fromBooleans: self! !
+
 !Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:18:09'!
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
@@ -262,6 +266,10 @@ asTensor
 asTensor
 	^ TF_Tensor fromFloats: self! !
 
+!SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/19/2017 19:48:45'!
+asBooleanTensor
+	^ TF_Tensor fromBooleans: self! !
+
 !SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/30/2017 16:19:25'!
 asFloatTensor
 	^ TF_Tensor fromFloats: self! !
@@ -281,6 +289,10 @@ asAsciiZ
 !String methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/31/2017 00:46:29'!
 asTensor
 	^ TF_Tensor fromString: self! !
+
+!TestCase methodsFor: '*TensorFlow-Kernel' stamp: 'JB 2/17/2017 19:41:08'!
+assert: expected closeTo: actual
+	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -629,10 +641,6 @@ asStringGraphType: type
 	graph asString: 'out' described: [:description |
 		description addInput: (in output: 0)].
 	^ graph! !
-
-!TensorFlowCAPITest methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:36:43'!
-assert: expected closeTo: actual
-	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/18/2017 16:59:33'!
 assertElementsOf: tensorArray are: allElementsArray
@@ -1069,6 +1077,28 @@ testArrayFromStream
 	array _ t arrayFromStream: template reset shape: #(2 4 2).
 	self assert: #(((1 2) (3 4) (5 6) (7 8)) ((9 10) (11 12) (13 14) (15 16))) equals: array.
 	! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'JB 2/15/2017 23:54:30'!
+testAsBooleanTensor
+	self testAsBooleanTensor: true shape: #().
+	self testAsBooleanTensor: #(true false true false) shape: #(4).
+	self testAsBooleanTensor: #((true false true false) (false true false true)) shape: #(2 4).
+! !
+
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'JB 2/15/2017 23:43:58'!
+testAsBooleanTensor: tensorArray shape: shapeArray
+	| tensor index bools |
+	tensor _ tensorArray asBooleanTensor.
+	
+	self assert: tensor shape equals: shapeArray.
+	
+	index _ 1.
+	bools _ tensor allElements.
+	TF_Tensor elementsOf: tensorArray do: [:each |
+		self assert: (bools at: index) equals: each.
+		index _ index + 1].
+
+! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/30/2017 18:09:11'!
 testAsFloatTensor
@@ -3363,7 +3393,7 @@ testTensorType
 	self assert: tensor type equals: tensor class typeFloat.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/13/2017 10:18:51'!
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/19/2017 19:52:20'!
 testTensorTypes
 	| types |
 	types _ #(
@@ -3376,7 +3406,7 @@ testTensorTypes
 		String 7
 		Complex64 8
 		Int64 9
-		Bool 10
+		Boolean 10
 		QInt8 11
 		QUInt8 12
 		QInt32 13
@@ -3908,6 +3938,28 @@ testOperationExp
 	
 	output free.! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/15/2017 23:43:39'!
+testOperationGreater
+	| graph a b session constA constB result  template comparisons |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (3.14 2.2)).
+	b _ TF_Tensor fromFloats: #((3.14 3.14) (2.1 3.14)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	comparisons _ constA > constB.
+	template _ a allFloats with: b allFloats collect:[:x :y| x > y].
+	
+	session _ TF_Session on: graph.
+	result _ session runOutput: (comparisons output: 0).
+	
+	self assert: result shape equals: a shape.
+	result allElements with: template do: [:r :t |
+		self assert: r equals: t].! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/29/2017 12:03:01'!
 testOperationIAlias
 	| graph template const result same1 same2 |
@@ -4012,6 +4064,31 @@ testOperationMatMul1x1Wrong
 		raiseError: 'INVALID_ARGUMENT: In[0] is not a matrix
 	 [[Node: MatMul_2 = MatMul[T=DT_FLOAT, _class=[], transpose_a=false, transpose_b=false, _device="/job:localhost/replica:0/task:0/cpu:0"](a, b)]]'
 ! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'JB 2/17/2017 20:09:02'!
+testOperationMatMulABTransposed
+	| graph a b session constA constB result output template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((2.0 4.0) (8.0 16.0)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	output _ constA \*\ constB.
+	template _ {
+		1.1*2.0+(2.1*4.0).		1.1*8.0+(2.1*16.0).
+		1.2*2.0+(2.2*4.0).		1.2*8.0+(2.2*16.0).
+	}.
+
+	session _ TF_Session on: graph.
+	result _ session runOutput: (output output: 0).
+	
+	self assert: result shape equals: a shape.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:09'!
 testOperationMatMulATransposed
@@ -4353,6 +4430,34 @@ testOperationRelu
 	
 	self assert: result shape equals: template shape.
 	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
+! !
+
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 2/19/2017 19:47:31'!
+testOperationReluGrad
+	| graph template session result previousGradient rectifiedGrad expected previousGradientTemplate |
+	
+	template _ #(
+		(-1.1	1.2)
+		(-2.1	2.2)
+		(0		-0)) asFloatTensor.
+		
+
+	graph _ TF_Graph create.
+	
+	previousGradientTemplate _ #(
+		(0	1)
+		(1	0)
+		(1		1)) asFloatTensor.
+		
+	previousGradient _ previousGradientTemplate asOperationOn: graph.
+	rectifiedGrad _ previousGradient timesRectifiedGradOf: template.
+	
+	session _ TF_Session on: graph.
+	result _ session runOutput: rectifiedGrad output.
+	
+	self assert: result shape equals: template shape.
+	expected _ template allFloats with: previousGradientTemplate allFloats collect:[:x :y| (x sign max: 0) * y].
+	self assert: result allFloats equals: expected.
 ! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 2/18/2017 19:15:45'!
@@ -5871,6 +5976,10 @@ create
 -= aTF_Operation
 	^ self binaryOp: 'AssignSub' with: aTF_Operation! !
 
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/15/2017 23:27:00'!
+> aTF_Operation
+	^ self binaryOp: 'Greater' with: aTF_Operation! !
+
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
 @* aTF_Operation
 	^ self binaryOp: 'Mul' with: aTF_Operation! !
@@ -5887,6 +5996,16 @@ create
 		with: aTF_Operation
 		described: [:description |
 			description at: 'transpose_a' putBoolean: true]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 20:01:18'!
+\*\ aTF_Operation
+	^ self
+		binaryOp: 'MatMul'
+		with: aTF_Operation
+		described: [:description |
+			description at: 'transpose_a' putBoolean: true.
+			description at: 'transpose_b' putBoolean: true]
 ! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 12:52:43'!
@@ -6230,6 +6349,10 @@ tensorAt: nameString
 	status check.
 	^ TF_Tensor fromHandle: (value pointerAt: 1)
 ! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 11:38:27'!
+timesRectifiedGradOf: aTF_Operation
+	^ self binaryOp: 'ReluGrad' with: aTF_Operation! !
 
 !TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
 type
@@ -6626,16 +6749,6 @@ runOutputs: aTF_OutputArray size: anInteger
 	status check.
 	^ outvalues! !
 
-!TF_Session class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 16:18:56'!
-on: aTF_Graph
-	| options status answer |
-	options _ TF_SessionOptions create.
-	status _ TF_Status create.
-	answer _ TensorFlowCAPI current newSession: aTF_Graph options: options status: status.
-	status check.
-	answer useFinalization.
-	^ answer! !
-
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
 on: aTF_Graph
 	| options status answer |
@@ -6954,6 +7067,16 @@ elementsOf: tensorArray do: oneArgBlock
 				self elementsOf: each do: oneArgBlock]]
 		ifFalse: [oneArgBlock value: tensorArray]! !
 
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:36'!
+fromBooleans: values
+	^ self fromNumbers: values type: self typeBoolean
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:38'!
+fromBools: values shape: shape
+	^ self fromNumbers: values type: self typeBoolean shape: shape
+! !
+
 !TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:45:34'!
 fromDoubles: values
 	^ self fromNumbers: values type: self typeDouble
@@ -7083,12 +7206,13 @@ fromStrings: strings shape: shape
 	^ self fromStringArray:  flatten shape: shape.
 ! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:23:13'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:41'!
 getterBlockFor: type
 	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset | data signedLongAt: offset]].
 	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset | data signedLongLongAt: offset]].
 	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset | data floatAt: offset]].
 	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset | data doubleAt: offset]].
+	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset | data booleanAt: offset]].
 	^ self shouldBeImplemented ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 22:29:58'!
@@ -7106,12 +7230,13 @@ rankOf: aMultidimensionalTensor
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:24:25'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:44'!
 setterBlockFor: type
 	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset :value | data signedLongAt: offset put: value]].
 	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset :value | data signedLongLongAt: offset put: value]].
 	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset :value | data floatAt: offset put: value]].
 	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset :value | data doubleAt: offset put: value]].
+	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset :value | data booleanAt: offset put: value]].
 	^ self shouldBeImplemented ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
@@ -7122,12 +7247,13 @@ shapeOf: aMultidimensionalTensor
 			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:27:10'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:47'!
 sizeForType: anInteger
 	self typeFloat = anInteger ifTrue: [^4].
 	self typeInt64 = anInteger ifTrue: [^8].
 	self typeInt32 = anInteger ifTrue: [^4].
 	self typeDouble = anInteger ifTrue: [^8].
+	self typeBoolean = anInteger ifTrue: [^1].
 
 "
 8
@@ -7222,8 +7348,8 @@ type: anInteger shape: anIntegerArray bytesize: bytesizeInteger
 typeBFloat16
 	^14! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:52'!
-typeBool
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:24'!
+typeBoolean
 	^10! !
 
 !TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:37'!
