@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:26:35 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:36:34 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 391!
+!provides: 'TensorFlow-Kernel' 1 392!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4011,6 +4011,22 @@ testOperationMatMulBTransposed
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
 		self assert: (r closeTo: t)].! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:36:27'!
+testOperationMatMulWrongType
+	| graph a b constA constB |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ #((2 4) (8 16)) asInt32Tensor.
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+
+	self
+		should: [constA * constB]
+		raiseError: 'INVALID_ARGUMENT: Inconsistent values for attr ''T'' DT_FLOAT vs. DT_INT32 while building NodeDef ''MatMul_2'' using Op<name=MatMul; signature=a:T, b:T -> product:T; attr=transpose_a:bool,default=false; attr=transpose_b:bool,default=false; attr=T:type,allowed=[DT_HALF, DT_FLOAT, DT_DOUBLE, DT_INT32, DT_COMPLEX64, DT_COMPLEX128]>'.! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:25'!
 testOperationMatrixInverse
