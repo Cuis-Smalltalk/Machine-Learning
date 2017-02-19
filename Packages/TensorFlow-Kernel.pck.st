@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 11:27:17 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 11:36:18 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 383!
+!provides: 'TensorFlow-Kernel' 1 384!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5854,6 +5854,22 @@ nameFor: namePrefix
 !TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
 negated
 	^ self unaryOp: 'Neg'! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:50'!
+op: aString withAll: aTF_OperationArray
+	^ self op: aString withAll: aTF_OperationArray described: [:nothing]
+! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:46'!
+op: aString withAll: aTF_OperationArray described: oneArgBlock
+	| name |
+	name _ self nameFor: aString.
+	^ self op: aString withAll: aTF_OperationArray named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:33:17'!
+op: aString withAll: aTF_OperationArray named: name
+	^ self op: aString withAll: aTF_OperationArray named: name described: [:nothing]
+! !
 
 !TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:26:38'!
 op: aString withAll: aTF_OperationArray named: name described: oneArgBlock
