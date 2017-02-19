@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:25:03 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 3:26:35 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 390!
+!provides: 'TensorFlow-Kernel' 1 391!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -3792,6 +3792,50 @@ testOperationDescentRateConstants
 	
 	self assert: (1-(Float pi * 0.7) closeTo: result allFloats first)! !
 
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:26:04'!
+testOperationDiv
+	| graph a b session constA constB result output template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: #((2.0 4.0) (8.0 16.0)).
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	output _ constA @/ constB.
+	template _ a allFloats / b allFloats.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (output output: 0).
+	
+	self assert: result shape equals: a shape.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
+!TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:26:31'!
+testOperationDivScalar
+	| graph a b session constA constB result div template |
+	
+	a _ TF_Tensor fromFloats: #((1.1 1.2) (2.1 2.2)).
+	b _ TF_Tensor fromFloats: 2.0.
+	
+	graph _ TF_Graph create.
+	
+	constA _ graph const: 'a' value: a.
+	constB _ graph const: 'b' value: b.
+	
+	div _ constA @/ constB.
+	template _ a allFloats / 2.0.
+	
+	session _ TF_Session onGraph: graph.
+	result _ session runOutput: (div output: 0).
+	
+	self assert: result shape equals: a shape.
+	result allFloats with: template do: [:r :t |
+		self assert: (r closeTo: t)].! !
+
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/23/2017 10:44:28'!
 testOperationExp
 	| graph inputs template session const result output |
@@ -5741,6 +5785,11 @@ create
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
 @* aTF_Operation
 	^ self binaryOp: 'Mul' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:19:17'!
+@/ aTF_Operation
+	^ self binaryOp: 'Div' with: aTF_Operation
+	! !
 
 !TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:26:18'!
 \* aTF_Operation
