@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 4:19:13 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 7:49:34 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 398!
+!provides: 'TensorFlow-Kernel' 1 399!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -4432,7 +4432,7 @@ testOperationRelu
 	self assert: result allFloats equals: (template allFloats collect: [:each | each max: 0]).
 ! !
 
-!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 2/17/2017 12:48:03'!
+!TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 2/19/2017 19:47:31'!
 testOperationReluGrad
 	| graph template session result previousGradient rectifiedGrad expected previousGradientTemplate |
 	
@@ -4452,7 +4452,7 @@ testOperationReluGrad
 	previousGradient _ previousGradientTemplate asOperationOn: graph.
 	rectifiedGrad _ previousGradient timesRectifiedGradOf: template.
 	
-	session _ TF_Session onGraph: graph.
+	session _ TF_Session on: graph.
 	result _ session runOutput: rectifiedGrad output.
 	
 	self assert: result shape equals: template shape.
@@ -6749,16 +6749,6 @@ runOutputs: aTF_OutputArray size: anInteger
 	status check.
 	^ outvalues! !
 
-!TF_Session class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 16:18:56'!
-on: aTF_Graph
-	| options status answer |
-	options _ TF_SessionOptions create.
-	status _ TF_Status create.
-	answer _ TensorFlowCAPI current newSession: aTF_Graph options: options status: status.
-	status check.
-	answer useFinalization.
-	^ answer! !
-
 !TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
 on: aTF_Graph
 	| options status answer |
@@ -7240,13 +7230,14 @@ rankOf: aMultidimensionalTensor
 		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
 		ifFalse: [0].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:24:25'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:46:38'!
 setterBlockFor: type
 	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset :value | data signedLongAt: offset put: value]].
 	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset :value | data signedLongLongAt: offset put: value]].
 	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset :value | data floatAt: offset put: value]].
 	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset :value | data doubleAt: offset put: value]].
-	TF_Tensor typeBool = type ifTrue: [^ [:data :offset :value | data booleanAt: offset put: value]].	^ self shouldBeImplemented ! !
+	TF_Tensor typeBool = type ifTrue: [^ [:data :offset :value | data booleanAt: offset put: value]].
+	^ self shouldBeImplemented ! !
 
 !TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
 shapeOf: aMultidimensionalTensor
@@ -7256,13 +7247,13 @@ shapeOf: aMultidimensionalTensor
 			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
 		ifFalse: [#()].! !
 
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/17/2017 09:27:10'!
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:46:24'!
 sizeForType: anInteger
 	self typeFloat = anInteger ifTrue: [^4].
 	self typeInt64 = anInteger ifTrue: [^8].
 	self typeInt32 = anInteger ifTrue: [^4].
 	self typeDouble = anInteger ifTrue: [^8].
-	anInteger = self typeBool ifTrue:[^1].
+	self typeBool = anInteger ifTrue: [^1].
 
 "
 8
