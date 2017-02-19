@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 18 February 2017 at 8:37:14 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3040] on 19 February 2017 at 3:14:32 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 25!
+!provides: 'TensorFlow-Examples' 1 26!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -933,7 +933,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/18/2017 19:50:47'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 15:09:58'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -943,13 +943,13 @@ initializeInferenceGraph
 	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified] named: 'layer2'.
 	prediction _ graph
 		fromBlock: [:image | | axis |
-			netInput _ hidden1 * weights3 + biases3.
+			netInput _ hidden2 * weights3 + biases3.
 			axis _ graph const: 1 asInt32Tensor.
 			netInput softmax findMaxOn: axis]
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:15:38'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 15:12:59'!
 initializeLearningGraph
 	|  axis0 gradient gradient1 gradient2 learningRate learningRateValue meanGradient learningRateBias |
 	
@@ -962,18 +962,18 @@ initializeLearningGraph
 			gradient _ activation useOutput: 1.
 			meanGradient _ gradient meanOn: axis0.
 			"todo: divide by the number of inputs (the batch size)"
-			learnWeights3 _ weights3 descent: hidden1 \* gradient rate: learningRate.
+			learnWeights3 _ weights3 descent: hidden2 \* gradient rate: learningRate.
 			learnBiases3 _ biases3 descent: meanGradient rate: learningRateBias]
 		named: 'learning3'.
 		
-	"graph fromBlock: [
+	graph fromBlock: [
 		gradient2 _ (gradient *\ weights3) timesRectifiedGradOf: hidden2.
 		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
 		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
-			named: 'learning2'."
+			named: 'learning2'.
 			
 	graph fromBlock: [
-		gradient1 _ (gradient *\ weights3) timesRectifiedGradOf: hidden1.
+		gradient1 _ (gradient2 *\ weights2) timesRectifiedGradOf: hidden1.
 		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
 		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRateBias] 
 			named: 'learning1'.	! !
@@ -988,7 +988,7 @@ initializeLossGraph
 		inputTypes: {TF_Tensor typeInt32}
 		named: 'loss'.! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/18/2017 19:51:16'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 15:08:51'!
 initializeParameters
 	| aux |
 		graph
@@ -1003,7 +1003,7 @@ initializeParameters
 				aux _ graph zerosShaped: {self hidden2Size}.
 				biases2 _ graph variable: 'biases2' initialValueFrom: aux.
 
-				aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
+				aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
 				weights3 _ graph variable: 'weights3' initialValueFrom: aux.
 				aux _ graph zerosShaped: {self outputSize}.
 				biases3 _ graph variable: 'biases3' initialValueFrom: aux]
@@ -1049,14 +1049,14 @@ predict: inputs andCompareTo: label
 		outputs: {prediction output: 0. loss output: 0}.
 	^ results! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'JB 2/18/2017 20:14:25'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'JB 2/19/2017 15:09:02'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {prediction output. loss output:0. learnWeights1 output. learnBiases1 output.
-					" learnWeights2 output. learnBiases2 output."
+					learnWeights2 output. learnBiases2 output.
 					 learnWeights3 output. learnBiases3 output.}.
 	^ results! !
 
