@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 6:36:10 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 20 February 2017 at 5:54:35 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Examples' 1 31!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -1007,14 +1007,13 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 20:20:18'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/20/2017 17:54:33'!
 initializeLearningGraph
-	|  axis0 activationGradient gradient1 gradient2 learningRate learningRateValue meanGradient learningRateBias |
+	|  axis0 activationGradient gradient1 gradient2 learningRate meanGradient learningRateBias |
 	
-	learningRateValue _ 0.001 asTensor.
-	learningRate _ graph const: 'learningRate' value: learningRateValue.
-	learningRateBias _ 0.1 asTensor asOperationOn: graph.
-	axis0 _ #(0) asInt32Tensor. 
+	learningRate _ graph const: 0.001 asTensor.
+	learningRateBias _ graph const: 0.1 asTensor.
+	axis0 _ graph const: #(0) asInt32Tensor. 
 	graph
 		fromBlock: [
 			activationGradient _ activation useOutput: 1.
