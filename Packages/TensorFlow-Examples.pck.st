@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 21 February 2017 at 7:41:12 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 21 February 2017 at 7:46:53 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 33!
+!provides: 'TensorFlow-Examples' 1 34!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1132,12 +1132,12 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'JB 2/19/2017 18:35:45'!
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/21/2017 19:45:40'!
 initializeLearningGraph
 	|  axis0 gradient gradient1 gradient2 learningRate  meanGradient one batchSize |
 	
 	learningRate _ 0.1 asTensor.
-	batchSize _ (input sizeOn: 0) castTo: TF_Tensor typeFloat.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ #(0) asInt32Tensor. 
 	graph
 		fromBlock: [
