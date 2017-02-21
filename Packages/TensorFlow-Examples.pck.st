@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 20 February 2017 at 5:54:35 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 21 February 2017 at 7:40:42 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 31!
+!provides: 'TensorFlow-Examples' 1 32!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -262,7 +262,7 @@ testPrediction3Layers
 	self assert: prediction asNumbers first equals: labels first.
 	self assert: prediction asNumbers second equals: labels second! !
 
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/19/2017 17:15:08'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'gera 2/21/2017 19:41:11'!
 testPrediction3LayersSigmoid
 	|   loss plan result prediction |
 	plan _ MNIST3LayersNNSigmoid new.
@@ -279,8 +279,8 @@ testPrediction3LayersSigmoid
 	loss _ (result at:2) asNumbers.
 	self assert: (loss < 1).
 	prediction _ plan predict: images.
-	self assert: prediction asNumbers first equals: labels first.
-	self assert: prediction asNumbers second equals: labels second! !
+	self assert: prediction asNumbers equals: labels.
+! !
 
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 2/18/2017 17:52:54'!
 testPredictionMany
