@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 21 February 2017 at 7:40:42 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 21 February 2017 at 7:41:12 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 32!
+!provides: 'TensorFlow-Examples' 1 33!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1007,9 +1007,9 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/20/2017 17:54:33'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/20/2017 17:59:03'!
 initializeLearningGraph
-	|  axis0 activationGradient gradient1 gradient2 learningRate meanGradient learningRateBias |
+	|  axis0 activationGradient gradient1 gradient2 learningRate biasGradient learningRateBias |
 	
 	learningRate _ graph const: 0.001 asTensor.
 	learningRateBias _ graph const: 0.1 asTensor.
@@ -1017,10 +1017,10 @@ initializeLearningGraph
 	graph
 		fromBlock: [
 			activationGradient _ activation useOutput: 1.
-			meanGradient _ activationGradient meanOn: axis0.
+			biasGradient _ activationGradient meanOn: axis0.
 			"todo: divide by the number of inputs (the batch size)"
 			learnWeights3 _ weights3 descent: hidden2 \* activationGradient rate: learningRate.
-			learnBiases3 _ biases3 descent: meanGradient rate: learningRateBias]
+			learnBiases3 _ biases3 descent: biasGradient rate: learningRateBias]
 		named: 'learning3'.
 		
 	graph fromBlock: [
