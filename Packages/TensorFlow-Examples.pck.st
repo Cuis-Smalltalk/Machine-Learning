@@ -1117,7 +1117,7 @@ predict: inputs andLearnFrom: label
 					 learnWeights3 output. learnBiases3 output.}.
 	^ results! !
 
-!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'JB 2/19/2017 17:06:24'!
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/21/2017 19:40:20'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -1126,10 +1126,9 @@ initializeInferenceGraph
 		named: 'layer1'.
 	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) sigmoid] named: 'layer2'.
 	prediction _ graph
-		fromBlock: [:image | | axis |
+		fromBlock: [
 			netInput _ hidden2 * weights3 + biases3.
-			axis _ graph const: 1 asInt32Tensor.
-			netInput softmax findMaxOn: axis]
+			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'layer3'.
 ! !
 
