@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 23 February 2017 at 12:09:43 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 23 February 2017 at 12:16:43 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 36!
+!provides: 'TensorFlow-Examples' 1 37!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1715,6 +1715,37 @@ predict: inputs andLearnFrom: label
 					 learnWeights3 output. learnBiases3 output.
 					learnWeights4 output. learnBiases4 output}.
 	^ results! !
+
+!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/23/2017 00:12:28'!
+exampleFunction
+	^ [ :x | | y |
+			y _ x * 10 - 5.
+			y * y sin ].! !
+
+!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/23/2017 00:15:33'!
+exampleTrainedAndPlot
+	| function net predictor g |
+	function _  self exampleFunction.
+	net _ self exampleTrainedOn: function.
+	predictor _ [:x| |result| result _ net predict: {{x}}. result asNumbers first first] .
+	g _ FunctionGraphMorph new.
+	g domain: (0 to: 1).
+	g addFunction: function color: Color green.
+	g addFunction: predictor color: Color red.
+	(g embeddedInMorphicWindowLabeled: 'graph') openInWorld.
+	^ net! !
+
+!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/23/2017 00:15:50'!
+exampleTrainedOn: function
+	| net rnd |
+	net _ self new.
+	rnd _ Random new.
+
+	1000 timesRepeat: [|x y|
+		x _ (1 to: 10) collect:[:i| {rnd next}].
+		y _  x collect:[:xp| {function value: xp first}].
+		net predict: x andLearnFrom: y].
+	^ net! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
