@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 21 February 2017 at 7:46:53 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 22 February 2017 at 11:04:09 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 34!
-!requires: 'Protocols-HTTP' 1 25 nil!
+!provides: 'TensorFlow-Examples' 1 35!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
+!requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -173,6 +173,16 @@ Object subclass: #OLSExample
 OLSExample class
 	instanceVariableNames: ''!
 
+!classDefinition: #RegressionNNExample category: #'TensorFlow-Examples'!
+Object subclass: #RegressionNNExample
+	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 learnWeights3 learnBiases3 learnWeights2 learnBiases2 learnWeights1 learnBiases1 expectedLabel loss session'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'RegressionNNExample class' category: #'TensorFlow-Examples'!
+RegressionNNExample class
+	instanceVariableNames: ''!
+
 !classDefinition: #SimpleNeuralNetworkExample category: #'TensorFlow-Examples'!
 Object subclass: #SimpleNeuralNetworkExample
 	instanceVariableNames: 'forward backward weights'
@@ -183,6 +193,10 @@ Object subclass: #SimpleNeuralNetworkExample
 SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
+
+!RegressionNNExample commentStamp: '<historical>' prior: 0!
+I compute a regression on arbitrary functions.
+Implementation of http://cs.stanford.edu/people/karpathy/convnetjs/demo/regression.html!
 
 !TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:01:05'!
 setUp
@@ -1536,6 +1550,156 @@ regress: x on: y
 	| result |
 	result _ plan runOn: {x. y}.
 	^ result allFloats! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:25'!
+graph
+	^ graph! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:41'!
+hidden1Size
+	^ 20! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:46'!
+hidden2Size
+	^ 20! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:54'!
+hidden3Size
+	^ 20! !
+
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:33:07'!
+initialize
+	self
+		initializeGraph;
+		initializeParameters;
+		initializeInferenceGraph;
+		initializeLossGraph;
+		initializeLearningGraph;
+		initializeSession.! !
+
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:33:07'!
+initializeGraph
+	graph _ TF_Graph create! !
+
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:57:16'!
+initializeInferenceGraph
+	hidden1 _ graph
+		fromBlock: [:image |
+			input _ image.
+			(image * weights1 + biases1) rectified]
+		named: 'layer1'.
+	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) sigmoid] named: 'layer2'.
+	prediction _ graph
+		fromBlock: [:image |
+			netInput _ hidden2 * weights3 + biases3.
+			netInput rectified]
+		named: 'layer4'.
+! !
+
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:00:46'!
+initializeLearningGraph
+	|  axis0 gradient1 gradient2 learningRate batchSize gradient meanGradient one |
+	
+	learningRate _ 0.1 asTensor.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
+	axis0 _ graph const: #(0) asInt32Tensor. 
+	one _ 1.0 asTensor asOperationOn: graph.
+	graph
+		fromBlock: [
+			gradient _ (prediction - expectedLabel) timesRectifiedGradOf: netInput.
+			meanGradient _ gradient meanOn: axis0.
+			learnWeights3 _ weights3 descent: hidden2 \* gradient @/ batchSize rate: learningRate.
+			learnBiases3 _ biases3 descent: meanGradient rate: learningRate]
+		named: 'learning3'.
+		
+	graph fromBlock: [
+		gradient2 _ (gradient *\ weights3) @* hidden2 @* (one - hidden2).
+		learnWeights2 _ weights2 descent: hidden1 \* gradient2 @/ batchSize  rate: learningRate.
+		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate]
+			named: 'learning2'.
+			
+	graph fromBlock: [
+		gradient1 _ (gradient2 *\ weights2) timesRectifiedGradOf: hidden1.
+		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
+		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
+			named: 'learning1'.	! !
+
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:02:27'!
+initializeLossGraph
+	loss _ graph
+		fromBlock: [ :expected |
+			expectedLabel _ expected.
+			(prediction - expectedLabel) squared ]
+		inputTypes: {TF_Tensor typeFloat}
+		named: 'loss'.! !
+
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:33:07'!
+initializeParameters
+	| aux |
+		graph
+			fromBlock: [
+				aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
+				weights1 _ graph variable: 'weights1' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self hidden1Size}.
+				biases1 _ graph variable: 'biases1' initialValueFrom: aux.
+
+				aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
+				weights2 _ graph variable: 'weights2' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self hidden2Size}.
+				biases2 _ graph variable: 'biases2' initialValueFrom: aux.
+
+				aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
+				weights3 _ graph variable: 'weights3' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self outputSize}.
+				biases3 _ graph variable: 'biases3' initialValueFrom: aux]
+			named: 'parameters'
+! !
+
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:02:42'!
+initializeSession
+	session _ TF_Session on: graph.
+	graph initializeOn: session! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:59'!
+inputSize
+	^ 1! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:34:03'!
+intput
+	^ input! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:34:23'!
+outputSize
+	^ 1! !
+
+!RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 22:33:07'!
+predict: inputs
+	| results |
+	results _ session
+		runInputs: {input input: 0}
+		values: {inputs asFloatTensor}
+		outputs: {prediction output: 0}.
+	^ results first! !
+
+!RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 23:03:05'!
+predict: inputs andCompareTo: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asFloatTensor}
+		outputs: {prediction output: 0. loss output: 0}.
+	^ results! !
+
+!RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 23:03:52'!
+predict: inputs andLearnFrom: label
+	| results |
+	results _ session
+		runInputs: {input input: 0. expectedLabel input: 0}
+		values: {inputs asFloatTensor. label asFloatTensor}
+		outputs: {loss output:0. learnWeights1 output. learnBiases1 output.
+					learnWeights2 output. learnBiases2 output.
+					 learnWeights3 output. learnBiases3 output.}.
+	^ results! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
