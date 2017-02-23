@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 22 February 2017 at 11:04:09 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 23 February 2017 at 12:09:43 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 35!
+!provides: 'TensorFlow-Examples' 1 36!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -175,7 +175,7 @@ OLSExample class
 
 !classDefinition: #RegressionNNExample category: #'TensorFlow-Examples'!
 Object subclass: #RegressionNNExample
-	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 learnWeights3 learnBiases3 learnWeights2 learnBiases2 learnWeights1 learnBiases1 expectedLabel loss session'
+	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 learnWeights3 learnBiases3 learnWeights2 learnBiases2 learnWeights1 learnBiases1 expectedLabel loss session hidden3 learnWeights4 learnBiases4'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -1581,7 +1581,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:57:16'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:41:36'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -1589,31 +1589,38 @@ initializeInferenceGraph
 			(image * weights1 + biases1) rectified]
 		named: 'layer1'.
 	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) sigmoid] named: 'layer2'.
+	hidden3 _ graph fromBlock: [(hidden2 * weights3 + biases3) sigmoid] named: 'layer3'.
 	prediction _ graph
-		fromBlock: [:image |
-			netInput _ hidden2 * weights3 + biases3.
-			netInput rectified]
+		fromBlock: [:image | hidden3 * weights4 + biases4]
 		named: 'layer4'.
 ! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:00:46'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:51:57'!
 initializeLearningGraph
-	|  axis0 gradient1 gradient2 learningRate batchSize gradient meanGradient one |
+	|  axis0 gradient1 gradient2 learningRate batchSize meanGradient one gradient3 gradient4 |
 	
-	learningRate _ 0.1 asTensor.
+	learningRate _ 0.01 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	one _ 1.0 asTensor asOperationOn: graph.
 	graph
 		fromBlock: [
-			gradient _ (prediction - expectedLabel) timesRectifiedGradOf: netInput.
-			meanGradient _ gradient meanOn: axis0.
-			learnWeights3 _ weights3 descent: hidden2 \* gradient @/ batchSize rate: learningRate.
+			gradient4 _ (prediction - expectedLabel).
+			meanGradient _ gradient4 meanOn: axis0.
+			learnWeights4 _ weights4 descent: hidden3 \* gradient4 @/ batchSize rate: learningRate.
+			learnBiases4 _ biases4 descent: meanGradient rate: learningRate]
+		named: 'learning4'.	
+	
+	graph
+		fromBlock: [
+			gradient3 _ (gradient4 *\ weights4) timesRectifiedGradOf: hidden3.
+			meanGradient _ gradient3 meanOn: axis0.
+			learnWeights3 _ weights3 descent: hidden2 \* gradient3 @/ batchSize rate: learningRate.
 			learnBiases3 _ biases3 descent: meanGradient rate: learningRate]
 		named: 'learning3'.
 		
 	graph fromBlock: [
-		gradient2 _ (gradient *\ weights3) @* hidden2 @* (one - hidden2).
+		gradient2 _ (gradient3 *\ weights3) @* hidden2 @* (one - hidden2).
 		learnWeights2 _ weights2 descent: hidden1 \* gradient2 @/ batchSize  rate: learningRate.
 		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate]
 			named: 'learning2'.
@@ -1633,7 +1640,7 @@ initializeLossGraph
 		inputTypes: {TF_Tensor typeFloat}
 		named: 'loss'.! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:33:07'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/23/2017 00:04:43'!
 initializeParameters
 	| aux |
 		graph
@@ -1648,11 +1655,18 @@ initializeParameters
 				aux _ graph zerosShaped: {self hidden2Size}.
 				biases2 _ graph variable: 'biases2' initialValueFrom: aux.
 
-				aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self outputSize} stddev: 1.0 / self hidden2Size sqrt.
+				aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self hidden3Size } stddev: 1.0 / self hidden2Size sqrt.
 				weights3 _ graph variable: 'weights3' initialValueFrom: aux.
-				aux _ graph zerosShaped: {self outputSize}.
-				biases3 _ graph variable: 'biases3' initialValueFrom: aux]
+				aux _ graph zerosShaped: {self hidden3Size }.
+				biases3 _ graph variable: 'biases3' initialValueFrom: aux.
+				
+				aux _ graph truncatedNormalRandomShaped: {self hidden3Size. self outputSize } stddev: 1.0 / self hidden3Size sqrt.
+				weights4 _ graph variable: 'weights4' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self outputSize }.
+				biases4 _ graph variable: 'biases4' initialValueFrom: aux]
 			named: 'parameters'
+			
+			
 ! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:02:42'!
@@ -1690,7 +1704,7 @@ predict: inputs andCompareTo: label
 		outputs: {prediction output: 0. loss output: 0}.
 	^ results! !
 
-!RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 23:03:52'!
+!RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 23:45:31'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
@@ -1698,7 +1712,8 @@ predict: inputs andLearnFrom: label
 		values: {inputs asFloatTensor. label asFloatTensor}
 		outputs: {loss output:0. learnWeights1 output. learnBiases1 output.
 					learnWeights2 output. learnBiases2 output.
-					 learnWeights3 output. learnBiases3 output.}.
+					 learnWeights3 output. learnBiases3 output.
+					learnWeights4 output. learnBiases4 output}.
 	^ results! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
