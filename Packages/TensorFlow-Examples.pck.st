@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 23 February 2017 at 12:16:43 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 23 February 2017 at 11:11:57 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 37!
+!provides: 'TensorFlow-Examples' 1 38!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -699,6 +699,20 @@ testSimpleNeuralNetwork
 	prediction _ nn predict: inputs.
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/23/2017 11:11:22'!
+testSinglePointRegression
+	| function loss net results rnd x y |
+	net _ RegressionNNExample new.
+	function _ RegressionNNExample exampleFunction.
+	rnd _ Random new.
+	x _ rnd next.
+	y _ function value: x.
+	100 timesRepeat:[net predict: {{x}} andLearnFrom:{{y}}].
+	results _ net predict: {{x}} andCompareTo: {{y}}.
+	loss _ (results at:2) asNumbers.
+	self assert: loss first closeTo: 0.
+	! !
 
 !BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:36:29'!
 initialize
@@ -1631,12 +1645,12 @@ initializeLearningGraph
 		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
 			named: 'learning1'.	! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:02:27'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/23/2017 11:03:56'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [ :expected |
 			expectedLabel _ expected.
-			(prediction - expectedLabel) squared ]
+			(prediction - expectedLabel) squared meanOn: #(0) asInt32Tensor ]
 		inputTypes: {TF_Tensor typeFloat}
 		named: 'loss'.! !
 
