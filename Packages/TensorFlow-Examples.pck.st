@@ -184,6 +184,9 @@ SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
 
+!MNIST3LayersNNSigmoid commentStamp: '<historical>' prior: 0!
+self new graph writeDefToFileNamed: 'graph.pb'!
+
 !TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:01:05'!
 setUp
 	| imageSet labelSet N|
@@ -992,7 +995,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 20:13:54'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/22/2017 00:10:23'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
