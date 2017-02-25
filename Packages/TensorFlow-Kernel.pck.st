@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 February 2017 at 7:52:24 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:52:34 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 401!
+!provides: 'TensorFlow-Kernel' 1 403!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2960,6 +2960,30 @@ testTensorAllStrings
 	result delete.
 ! !
 
+!TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'JB 2/23/2017 11:24:10'!
+testTensorArrayNumbersAt
+	| graph inputValues inputs mul numbers output results session |
+	graph _ self mulGraphTwoInputsInt64.
+	
+	inputs _ Array
+		with: ((graph operationNamed: 'in1') input: 0)
+		with: ((graph operationNamed: 'in2') input: 0).
+	inputValues _ Array
+		with: (TF_Tensor fromInt64: 6)
+		with: (TF_Tensor fromInt64: 11).
+	mul _ graph operationNamed: 'mul2'.
+	output _ mul output: 0.
+	session _ TF_Session on: graph.
+	results _ session
+		runOperations: (Array with: mul)
+		inputs: inputs
+		values: inputValues
+		outputs: (Array with: output).
+		
+	numbers _ results numbersAt: 1.
+	self assert: numbers equals: 16r4242424242424242
+	! !
+
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 08:05:27'!
 testTensorAsNumbers
 	| tensor template array |
@@ -5424,9 +5448,15 @@ fields
 new: unused
 	^ self shouldNotImplement! !
 
-!TF_TensorPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/27/2016 09:09:07'!
+!TF_TensorPtrArray methodsFor: 'accessing' stamp: 'gera 12/27/2016 09:09:07'!
 elementClass
 	^TF_Tensor! !
+
+!TF_TensorPtrArray methodsFor: 'accessing' stamp: 'JB 2/23/2017 11:14:36'!
+numbersAt: index
+	| tensor |
+	tensor _ self at: index.
+	^ tensor asNumbers! !
 
 !TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:07'!
 isBoolean
@@ -5756,11 +5786,11 @@ operationsCount
 	self operationsDo: [:each | answer _ answer + 1].
 	^ answer! !
 
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:23:10'!
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 2/25/2017 11:46:38'!
 operationsDo: oneArgBlock
-	| context operation |
-	context _ self newOperationIteratorContext.
-	[operation _ self operationAt: context.
+	| iterator operation |
+	iterator _ self newOperationIteratorContext.
+	[operation _ self operationAt: iterator.
 		operation isNull] whileFalse: [oneArgBlock value: operation].
 ! !
 
@@ -6194,14 +6224,14 @@ op: aString withAll: aTF_OperationArray named: name
 	^ self op: aString withAll: aTF_OperationArray named: name described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:26:38'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/25/2017 11:47:40'!
 op: aString withAll: aTF_OperationArray named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
 		description addInput: self output.
 		aTF_OperationArray do: [:each |
-			| output |
-			output _ (each asOperationOn: graph) output.
-			description addInput: output].
+			| input |
+			input _ (each asOperationOn: graph) output.
+			description addInput: input].
 		oneArgBlock value: description].
 	! !
 
