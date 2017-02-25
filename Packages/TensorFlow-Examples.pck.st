@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:53:33 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 12:04:25 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 39!
+!provides: 'TensorFlow-Examples' 1 41!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1786,12 +1786,17 @@ exampleFunction
 			y _ x * 10 - 5.
 			y * y sin ].! !
 
-!RegressionNNExample class methodsFor: 'examples' stamp: 'JB 2/23/2017 00:15:33'!
+!RegressionNNExample class methodsFor: 'examples' stamp: 'gera 2/25/2017 12:02:17'!
 exampleTrainedAndPlot
+	" self exampleTrainedAndPlot "
 	| function net predictor g |
 	function _  self exampleFunction.
 	net _ self exampleTrainedOn: function.
-	predictor _ [:x| |result| result _ net predict: {{x}}. result asNumbers first first] .
+	predictor _ [:x |
+		| result |
+		result _ net predict: {{x}}.
+		result asNumbers first first] .
+	
 	g _ FunctionGraphMorph new.
 	g domain: (0 to: 1).
 	g addFunction: function color: Color green.
@@ -1799,19 +1804,20 @@ exampleTrainedAndPlot
 	(g embeddedInMorphicWindowLabeled: 'graph') openInWorld.
 	^ net! !
 
-!RegressionNNExample class methodsFor: 'examples' stamp: 'JB 2/24/2017 23:27:19'!
+!RegressionNNExample class methodsFor: 'examples' stamp: 'gera 2/25/2017 12:03:03'!
 exampleTrainedOn: function
 	| net rnd interval xs ys |
 	net _ self new.
 	rnd _ Random new.
-	xs _  (1 to: 100) collect:[:i| {rnd next}].
-	ys _ xs collect:[:x| {function value: x first}].
+	xs _  (1 to: 100) collect: [:i | {rnd next}].
+	ys _ xs collect: [:x | {function value: x first}].
 	interval _ 1 to: xs size.
 	
-	10000 timesRepeat: [|x indices y |
-		indices _ (1 to: 60) collect:[:i| interval atRandom].
-		x _ indices collect:[:index| xs at: index].
-		y _  indices collect:[:index| ys at: index].
+	10000 timesRepeat: [
+		|x indices y |
+		indices _ (1 to: 60) collect: [:i| interval atRandom].
+		x _ indices collect: [:index | xs at: index].
+		y _  indices collect: [:index | ys at: index].
 		net predict: x andLearnFrom: y].
 	^ net! !
 
