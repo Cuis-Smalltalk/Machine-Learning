@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 24 February 2017 at 10:33:17 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:07:13 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Examples' 1 35!
-!requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
+!requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -1037,7 +1037,7 @@ initializeLearningGraph
 		gradient _ backprop timesRectifiedGradOf: hidden1.
 		learnWeights1 _ weights1 descent: input \* gradient @/ batchSize rate: learningRate.
 		learnBiases1 _ biases1 descent: (gradient meanOn: axis0) rate: learningRate] 
-			named: 'learning1'.	! !
+			named: 'learning1'.
 			
 	learn _ graph newOperation: 'Identity' named: 'learn' described: [:description |
 		description
