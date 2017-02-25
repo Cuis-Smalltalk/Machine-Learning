@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 21 February 2017 at 7:46:53 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 24 February 2017 at 11:51:45 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 34!
+!provides: 'TensorFlow-Examples' 1 35!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1007,32 +1007,33 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/20/2017 17:59:03'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/24/2017 23:47:26'!
 initializeLearningGraph
-	|  axis0 activationGradient gradient1 gradient2 learningRate biasGradient learningRateBias |
+	|  axis0 backprop  learningRate  batchSize |
 	
-	learningRate _ graph const: 0.001 asTensor.
-	learningRateBias _ graph const: 0.1 asTensor.
+	learningRate _ graph const: 0.1 asTensor.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	graph
-		fromBlock: [
+		fromBlock: [ | biasGradient activationGradient | 
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: axis0.
-			"todo: divide by the number of inputs (the batch size)"
-			learnWeights3 _ weights3 descent: hidden2 \* activationGradient rate: learningRate.
-			learnBiases3 _ biases3 descent: biasGradient rate: learningRateBias]
+			learnWeights3 _ weights3 descent: hidden2 \* activationGradient @/ batchSize rate: learningRate.
+			learnBiases3 _ biases3 descent: biasGradient rate: learningRate.
+			backprop _ activationGradient *\ weights3]
 		named: 'learning3'.
 		
-	graph fromBlock: [
-		gradient2 _ (activationGradient *\ weights3) timesRectifiedGradOf: hidden2.
-		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
-		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
+	graph fromBlock: [ | gradient |
+		gradient _ backprop timesRectifiedGradOf: hidden2.
+		learnWeights2 _ weights2 descent: hidden1 \* gradient @/ batchSize rate: learningRate.
+		learnBiases2 _ biases2 descent: (gradient meanOn: axis0) rate: learningRate.
+		backprop _ gradient *\ weights2] 
 			named: 'learning2'.
 			
-	graph fromBlock: [
-		gradient1 _ (gradient2 *\ weights2) timesRectifiedGradOf: hidden1.
-		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
-		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRateBias] 
+	graph fromBlock: [ | gradient | 
+		gradient _ backprop timesRectifiedGradOf: hidden1.
+		learnWeights1 _ weights1 descent: input \* gradient @/ batchSize rate: learningRate.
+		learnBiases1 _ biases1 descent: (gradient meanOn: axis0) rate: learningRate] 
 			named: 'learning1'.	! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/15/2017 21:25:29'!
