@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:07:13 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:21:56 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 35!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
+!provides: 'TensorFlow-Examples' 1 36!
 !requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -1010,15 +1010,16 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/23/2017 19:54:20'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:17:13'!
 initializeLearningGraph
-	|  axis0 backprop  learningRate  batchSize |
+	|  axis0 backprop learningRate batchSize |
 	
 	learningRate _ graph const: 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	graph
-		fromBlock: [ | biasGradient activationGradient | 
+		fromBlock: [
+			| biasGradient activationGradient | 
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: axis0.
 			learnWeights3 _ weights3 descent: hidden2 \* activationGradient @/ batchSize rate: learningRate.
@@ -1026,14 +1027,16 @@ initializeLearningGraph
 			backprop _ activationGradient *\ weights3]
 		named: 'learning3'.
 		
-	graph fromBlock: [ | gradient |
+	graph fromBlock: [
+		| gradient |
 		gradient _ backprop timesRectifiedGradOf: hidden2.
 		learnWeights2 _ weights2 descent: hidden1 \* gradient @/ batchSize rate: learningRate.
 		learnBiases2 _ biases2 descent: (gradient meanOn: axis0) rate: learningRate.
 		backprop _ gradient *\ weights2] 
 			named: 'learning2'.
 			
-	graph fromBlock: [ | gradient | 
+	graph fromBlock: [
+		| gradient | 
 		gradient _ backprop timesRectifiedGradOf: hidden1.
 		learnWeights1 _ weights1 descent: input \* gradient @/ batchSize rate: learningRate.
 		learnBiases1 _ biases1 descent: (gradient meanOn: axis0) rate: learningRate] 
