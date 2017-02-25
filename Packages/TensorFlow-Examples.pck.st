@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 23 February 2017 at 11:25:21 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 24 February 2017 at 11:18:57 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 39!
+!provides: 'TensorFlow-Examples' 1 40!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -183,6 +183,16 @@ Object subclass: #RegressionNNExample
 RegressionNNExample class
 	instanceVariableNames: ''!
 
+!classDefinition: #RegressionLogisticNNExample category: #'TensorFlow-Examples'!
+RegressionNNExample subclass: #RegressionLogisticNNExample
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'RegressionLogisticNNExample class' category: #'TensorFlow-Examples'!
+RegressionLogisticNNExample class
+	instanceVariableNames: ''!
+
 !classDefinition: #SimpleNeuralNetworkExample category: #'TensorFlow-Examples'!
 Object subclass: #SimpleNeuralNetworkExample
 	instanceVariableNames: 'forward backward weights'
@@ -321,6 +331,37 @@ testPredictionMany
 	prediction _ plan predict: images.
 	self assert: prediction asNumbers equals: labels.
 ! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:14'!
+testSinglePointRegression
+	| function loss net results rnd x y |
+	net _ RegressionNNExample new.
+	function _ RegressionNNExample exampleFunction.
+	rnd _ Random new.
+	x _ rnd next.
+	y _ function value: x.
+	100 timesRepeat:[net predict: {{x}} andLearnFrom:{{y}}].
+	results _ net predict: {{x}} andCompareTo: {{y}}.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:04'!
+testTwoPointsRegression
+	| function loss net results  interval xs ys |
+	net _ RegressionNNExample new.
+	function _ RegressionNNExample exampleFunction.
+	xs _ {{0.1}. {0.6}}.
+	ys _ {{function value: xs first first}. 
+			{function value: xs second first}}.
+	interval _ 1 to: xs size.
+	1000 timesRepeat: [ |index |
+		index _ interval atRandom.
+		net predict: {xs at: index} andLearnFrom:{ys at: index}].
+	results _ net predict: xs andCompareTo: ys.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
 tensorFrom: points
@@ -699,20 +740,6 @@ testSimpleNeuralNetwork
 	prediction _ nn predict: inputs.
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/23/2017 11:24:58'!
-testSinglePointRegression
-	| function loss net results rnd x y |
-	net _ RegressionNNExample new.
-	function _ RegressionNNExample exampleFunction.
-	rnd _ Random new.
-	x _ rnd next.
-	y _ function value: x.
-	100 timesRepeat:[net predict: {{x}} andLearnFrom:{{y}}].
-	results _ net predict: {{x}} andCompareTo: {{y}}.
-	loss _ results numbersAt: 2.
-	self assert: loss first closeTo: 0.
-	! !
 
 !BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:36:29'!
 initialize
@@ -1609,40 +1636,43 @@ initializeInferenceGraph
 		named: 'layer4'.
 ! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:51:57'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/24/2017 23:15:59'!
 initializeLearningGraph
-	|  axis0 gradient1 gradient2 learningRate batchSize meanGradient one gradient3 gradient4 |
+	|  axis0 learningRate batchSize meanGradient one backprop |
 	
-	learningRate _ 0.01 asTensor.
+	learningRate _ 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	one _ 1.0 asTensor asOperationOn: graph.
 	graph
-		fromBlock: [
-			gradient4 _ (prediction - expectedLabel).
-			meanGradient _ gradient4 meanOn: axis0.
-			learnWeights4 _ weights4 descent: hidden3 \* gradient4 @/ batchSize rate: learningRate.
-			learnBiases4 _ biases4 descent: meanGradient rate: learningRate]
+		fromBlock: [ | gradient|
+			gradient _ (prediction - expectedLabel).
+			meanGradient _ gradient meanOn: axis0.
+			learnWeights4 _ weights4 descent: hidden3 \* gradient @/ batchSize rate: learningRate.
+			learnBiases4 _ biases4 descent: meanGradient rate: learningRate.
+			backprop _  (gradient *\ weights4)]
 		named: 'learning4'.	
 	
 	graph
-		fromBlock: [
-			gradient3 _ (gradient4 *\ weights4) timesRectifiedGradOf: hidden3.
-			meanGradient _ gradient3 meanOn: axis0.
-			learnWeights3 _ weights3 descent: hidden2 \* gradient3 @/ batchSize rate: learningRate.
-			learnBiases3 _ biases3 descent: meanGradient rate: learningRate]
+		fromBlock: [ | gradient | 
+			gradient _ backprop @* hidden3 @* (one - hidden3).
+			meanGradient _ gradient meanOn: axis0.
+			learnWeights3 _ weights3 descent: hidden2 \* gradient @/ batchSize rate: learningRate.
+			learnBiases3 _ biases3 descent: meanGradient rate: learningRate.
+			backprop _ (gradient *\ weights3)]
 		named: 'learning3'.
 		
-	graph fromBlock: [
-		gradient2 _ (gradient3 *\ weights3) @* hidden2 @* (one - hidden2).
-		learnWeights2 _ weights2 descent: hidden1 \* gradient2 @/ batchSize  rate: learningRate.
-		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate]
+	graph fromBlock: [ | gradient |
+		gradient _  backprop @* hidden2 @* (one - hidden2).
+		learnWeights2 _ weights2 descent: hidden1 \* gradient @/ batchSize  rate: learningRate.
+		learnBiases2 _ biases2 descent: (gradient meanOn: axis0) rate: learningRate.
+		backprop _  (gradient *\ weights2)]
 			named: 'learning2'.
 			
-	graph fromBlock: [
-		gradient1 _ (gradient2 *\ weights2) timesRectifiedGradOf: hidden1.
-		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
-		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
+	graph fromBlock: [ | gradient |
+		gradient _ backprop timesRectifiedGradOf: hidden1.
+		learnWeights1 _ weights1 descent: input \* gradient rate: learningRate.
+		learnBiases1 _ biases1 descent: (gradient meanOn: axis0) rate: learningRate] 
 			named: 'learning1'.	! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/23/2017 11:03:56'!
@@ -1749,15 +1779,19 @@ exampleTrainedAndPlot
 	(g embeddedInMorphicWindowLabeled: 'graph') openInWorld.
 	^ net! !
 
-!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/23/2017 00:15:50'!
+!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/24/2017 23:12:23'!
 exampleTrainedOn: function
-	| net rnd |
+	| net rnd interval xs ys |
 	net _ self new.
 	rnd _ Random new.
-
-	1000 timesRepeat: [|x y|
-		x _ (1 to: 10) collect:[:i| {rnd next}].
-		y _  x collect:[:xp| {function value: xp first}].
+	xs _  (1 to: 100) collect:[:i| {rnd next}].
+	ys _ xs collect:[:x| {function value: x first}].
+	interval _ 1 to: xs size.
+	
+	1000 timesRepeat: [|x indices y |
+		indices _ (1 to: 10) collect:[:i| interval atRandom].
+		x _ indices collect:[:index| xs at: index].
+		y _  indices collect:[:index| ys at: index].
 		net predict: x andLearnFrom: y].
 	^ net! !
 
