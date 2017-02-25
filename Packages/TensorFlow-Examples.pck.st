@@ -1012,30 +1012,32 @@ initializeInferenceGraph
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/23/2017 19:54:20'!
 initializeLearningGraph
-	|  axis0 activationGradient gradient1 gradient2 learningRate biasGradient batchSize |
+	|  axis0 backprop  learningRate  batchSize |
 	
 	learningRate _ graph const: 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	graph
-		fromBlock: [
+		fromBlock: [ | biasGradient activationGradient | 
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: axis0.
 			learnWeights3 _ weights3 descent: hidden2 \* activationGradient @/ batchSize rate: learningRate.
-			learnBiases3 _ biases3 descent: biasGradient rate: learningRate]
+			learnBiases3 _ biases3 descent: biasGradient rate: learningRate.
+			backprop _ activationGradient *\ weights3]
 		named: 'learning3'.
 		
-	graph fromBlock: [
-		gradient2 _ (activationGradient *\ weights3) timesRectifiedGradOf: hidden2.
-		learnWeights2 _ weights2 descent: hidden1 \* gradient2 @/ batchSize rate: learningRate.
-		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
+	graph fromBlock: [ | gradient |
+		gradient _ backprop timesRectifiedGradOf: hidden2.
+		learnWeights2 _ weights2 descent: hidden1 \* gradient @/ batchSize rate: learningRate.
+		learnBiases2 _ biases2 descent: (gradient meanOn: axis0) rate: learningRate.
+		backprop _ gradient *\ weights2] 
 			named: 'learning2'.
 			
-	graph fromBlock: [
-		gradient1 _ (gradient2 *\ weights2) timesRectifiedGradOf: hidden1.
-		learnWeights1 _ weights1 descent: input \* gradient1 @/ batchSize rate: learningRate.
-		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
-			named: 'learning1'.
+	graph fromBlock: [ | gradient | 
+		gradient _ backprop timesRectifiedGradOf: hidden1.
+		learnWeights1 _ weights1 descent: input \* gradient @/ batchSize rate: learningRate.
+		learnBiases1 _ biases1 descent: (gradient meanOn: axis0) rate: learningRate] 
+			named: 'learning1'.	! !
 			
 	learn _ graph newOperation: 'Identity' named: 'learn' described: [:description |
 		description
@@ -1142,7 +1144,7 @@ initializeInferenceGraph
 	prediction _ graph
 		fromBlock: [
 			netInput _ hidden2 * weights3 + biases3.
-			netInput findMaxOn: 1 asInt32Tensor]
+			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'layer3'.
 ! !
 
