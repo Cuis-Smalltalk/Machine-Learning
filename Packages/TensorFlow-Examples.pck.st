@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 24 February 2017 at 11:18:57 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 24 February 2017 at 11:31:33 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 40!
+!provides: 'TensorFlow-Examples' 1 41!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -181,16 +181,6 @@ Object subclass: #RegressionNNExample
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'RegressionNNExample class' category: #'TensorFlow-Examples'!
 RegressionNNExample class
-	instanceVariableNames: ''!
-
-!classDefinition: #RegressionLogisticNNExample category: #'TensorFlow-Examples'!
-RegressionNNExample subclass: #RegressionLogisticNNExample
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Examples'!
-!classDefinition: 'RegressionLogisticNNExample class' category: #'TensorFlow-Examples'!
-RegressionLogisticNNExample class
 	instanceVariableNames: ''!
 
 !classDefinition: #SimpleNeuralNetworkExample category: #'TensorFlow-Examples'!
@@ -1760,13 +1750,13 @@ predict: inputs andLearnFrom: label
 					learnWeights4 output. learnBiases4 output}.
 	^ results! !
 
-!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/23/2017 00:12:28'!
+!RegressionNNExample class methodsFor: 'examples' stamp: 'JB 2/23/2017 00:12:28'!
 exampleFunction
 	^ [ :x | | y |
 			y _ x * 10 - 5.
 			y * y sin ].! !
 
-!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/23/2017 00:15:33'!
+!RegressionNNExample class methodsFor: 'examples' stamp: 'JB 2/23/2017 00:15:33'!
 exampleTrainedAndPlot
 	| function net predictor g |
 	function _  self exampleFunction.
@@ -1779,7 +1769,7 @@ exampleTrainedAndPlot
 	(g embeddedInMorphicWindowLabeled: 'graph') openInWorld.
 	^ net! !
 
-!RegressionNNExample class methodsFor: 'as yet unclassified' stamp: 'JB 2/24/2017 23:12:23'!
+!RegressionNNExample class methodsFor: 'examples' stamp: 'JB 2/24/2017 23:27:19'!
 exampleTrainedOn: function
 	| net rnd interval xs ys |
 	net _ self new.
@@ -1788,8 +1778,8 @@ exampleTrainedOn: function
 	ys _ xs collect:[:x| {function value: x first}].
 	interval _ 1 to: xs size.
 	
-	1000 timesRepeat: [|x indices y |
-		indices _ (1 to: 10) collect:[:i| interval atRandom].
+	10000 timesRepeat: [|x indices y |
+		indices _ (1 to: 60) collect:[:i| interval atRandom].
 		x _ indices collect:[:index| xs at: index].
 		y _  indices collect:[:index| ys at: index].
 		net predict: x andLearnFrom: y].
