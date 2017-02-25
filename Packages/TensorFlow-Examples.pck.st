@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:29:36 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:31:05 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 37!
+!provides: 'TensorFlow-Examples' 1 38!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1136,7 +1136,7 @@ predict: inputs andLearnFrom: label
 					learnWeights3 output. learnBiases3 output.}".
 	^ results! !
 
-!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/23/2017 20:01:46'!
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:31:02'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -1147,7 +1147,7 @@ initializeInferenceGraph
 	prediction _ graph
 		fromBlock: [
 			netInput _ hidden2 * weights3 + biases3.
-			netInput softmax findMaxOn: 1 asInt32Tensor]
+			netInput findMaxOn: 1 asInt32Tensor]
 		named: 'layer3'.
 ! !
 
