@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 24 February 2017 at 11:31:33 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:31:05 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Examples' 1 41!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
@@ -95,7 +95,7 @@ ExampleOLSPlan class
 
 !classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNIST3LayersNNExamplePlan
-	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput activation learnWeights3 hidden2 learnBiases3 learnWeights2 hidden1 learnBiases2 learnWeights1 learnBiases1'
+	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput activation learnWeights3 hidden2 learnBiases3 learnWeights2 hidden1 learnBiases2 learnWeights1 learnBiases1 learn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -193,6 +193,9 @@ Object subclass: #SimpleNeuralNetworkExample
 SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
+
+!MNIST3LayersNNSigmoid commentStamp: '<historical>' prior: 0!
+self new graph writeDefToFileNamed: 'graph.pb'!
 
 !RegressionNNExample commentStamp: '<historical>' prior: 0!
 I compute a regression on arbitrary functions.
@@ -1037,7 +1040,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 20:13:54'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/22/2017 00:10:23'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -1046,39 +1049,54 @@ initializeInferenceGraph
 		named: 'layer1'.
 	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) rectified] named: 'layer2'.
 	prediction _ graph
-		fromBlock: [:image |
+		fromBlock: [
 			netInput _ hidden2 * weights3 + biases3.
 			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/20/2017 17:59:03'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:17:13'!
 initializeLearningGraph
-	|  axis0 activationGradient gradient1 gradient2 learningRate biasGradient learningRateBias |
+	|  axis0 backprop learningRate batchSize |
 	
-	learningRate _ graph const: 0.001 asTensor.
-	learningRateBias _ graph const: 0.1 asTensor.
+	learningRate _ graph const: 0.1 asTensor.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	graph
 		fromBlock: [
+			| biasGradient activationGradient | 
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: axis0.
-			"todo: divide by the number of inputs (the batch size)"
-			learnWeights3 _ weights3 descent: hidden2 \* activationGradient rate: learningRate.
-			learnBiases3 _ biases3 descent: biasGradient rate: learningRateBias]
+			learnWeights3 _ weights3 descent: hidden2 \* activationGradient @/ batchSize rate: learningRate.
+			learnBiases3 _ biases3 descent: biasGradient rate: learningRate.
+			backprop _ activationGradient *\ weights3]
 		named: 'learning3'.
 		
 	graph fromBlock: [
-		gradient2 _ (activationGradient *\ weights3) timesRectifiedGradOf: hidden2.
-		learnWeights2 _ weights2 descent: hidden1 \* gradient2 rate: learningRate.
-		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
+		| gradient |
+		gradient _ backprop timesRectifiedGradOf: hidden2.
+		learnWeights2 _ weights2 descent: hidden1 \* gradient @/ batchSize rate: learningRate.
+		learnBiases2 _ biases2 descent: (gradient meanOn: axis0) rate: learningRate.
+		backprop _ gradient *\ weights2] 
 			named: 'learning2'.
 			
 	graph fromBlock: [
-		gradient1 _ (gradient2 *\ weights2) timesRectifiedGradOf: hidden1.
-		learnWeights1 _ weights1 descent: input \* gradient1 rate: learningRate.
-		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRateBias] 
-			named: 'learning1'.	! !
+		| gradient | 
+		gradient _ backprop timesRectifiedGradOf: hidden1.
+		learnWeights1 _ weights1 descent: input \* gradient @/ batchSize rate: learningRate.
+		learnBiases1 _ biases1 descent: (gradient meanOn: axis0) rate: learningRate] 
+			named: 'learning1'.
+			
+	learn _ graph newOperation: 'Identity' named: 'learn' described: [:description |
+		description
+			addInput: loss output;
+			addControlInput: learnWeights1 output;
+			addControlInput: learnBiases1 output;
+			addControlInput: learnWeights2 output;
+			addControlInput: learnBiases2 output;
+			addControlInput: learnWeights3 output;
+			addControlInput: learnBiases3 output].
+! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/15/2017 21:25:29'!
 initializeLossGraph
@@ -1133,36 +1151,37 @@ lossGradient
 outputSize
 	^ 10! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 1/31/2017 02:06:26'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/22/2017 00:10:30'!
 predict: inputs
 	| results |
 	results _ session
 		runInputs: {input input: 0}
 		values: {inputs asFloatTensor}
-		outputs: {prediction output: 0}.
+		outputs: {prediction output}.
 	^ results first! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/2/2017 02:18:26'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/22/2017 00:10:58'!
 predict: inputs andCompareTo: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {prediction output: 0. loss output: 0}.
+		outputs: {prediction output. loss output}.
 	^ results! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'JB 2/19/2017 15:09:02'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/22/2017 00:28:53'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {prediction output. loss output:0. learnWeights1 output. learnBiases1 output.
+		outputs: {loss output. learn output.}
+					"learnWeights1 output. learnBiases1 output..
 					learnWeights2 output. learnBiases2 output.
-					 learnWeights3 output. learnBiases3 output.}.
+					learnWeights3 output. learnBiases3 output.}".
 	^ results! !
 
-!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/21/2017 19:40:20'!
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:31:02'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -1173,28 +1192,28 @@ initializeInferenceGraph
 	prediction _ graph
 		fromBlock: [
 			netInput _ hidden2 * weights3 + biases3.
-			netInput softmax findMaxOn: 1 asInt32Tensor]
+			netInput findMaxOn: 1 asInt32Tensor]
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/21/2017 19:45:40'!
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:24:00'!
 initializeLearningGraph
-	|  axis0 gradient gradient1 gradient2 learningRate  meanGradient one batchSize |
+	| axis0 activationGradient gradient1 gradient2 learningRate biasGradient one batchSize |
 	
-	learningRate _ 0.1 asTensor.
+	learningRate _ graph const: 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
 	axis0 _ #(0) asInt32Tensor. 
 	graph
 		fromBlock: [
-			gradient _ activation useOutput: 1.
-			meanGradient _ gradient meanOn: axis0.
-			learnWeights3 _ weights3 descent: hidden2 \* gradient @/ batchSize rate: learningRate.
-			learnBiases3 _ biases3 descent: meanGradient rate: learningRate]
+			activationGradient _ activation useOutput: 1.
+			biasGradient _ activationGradient meanOn: axis0.
+			learnWeights3 _ weights3 descent: hidden2 \* activationGradient @/ batchSize rate: learningRate.
+			learnBiases3 _ biases3 descent: biasGradient rate: learningRate]
 		named: 'learning3'.
 		
 	one _ 1.0 asTensor asOperationOn: graph.
 	graph fromBlock: [
-		gradient2 _ (gradient *\ weights3) @* hidden2 @* (one - hidden2).
+		gradient2 _ (activationGradient *\ weights3) @* hidden2 @* (one - hidden2).
 		learnWeights2 _ weights2 descent: hidden1 \* gradient2 @/ batchSize  rate: learningRate.
 		learnBiases2 _ biases2 descent: (gradient2 meanOn: axis0) rate: learningRate] 
 			named: 'learning2'.
@@ -1203,7 +1222,18 @@ initializeLearningGraph
 		gradient1 _ (gradient2 *\ weights2) @* hidden1 @* ( one - hidden1).
 		learnWeights1 _ weights1 descent: input \* gradient1 @/ batchSize  rate: learningRate.
 		learnBiases1 _ biases1 descent: (gradient1 meanOn: axis0) rate: learningRate] 
-			named: 'learning1'.	! !
+			named: 'learning1'.
+			
+	learn _ graph newOperation: 'Identity' named: 'learn' described: [:description |
+		description
+			addInput: loss output;
+			addControlInput: learnWeights1 output;
+			addControlInput: learnBiases1 output;
+			addControlInput: learnWeights2 output;
+			addControlInput: learnBiases2 output;
+			addControlInput: learnWeights3 output;
+			addControlInput: learnBiases3 output].
+! !
 
 !MNISTFile methodsFor: 'converting' stamp: 'JB 2/5/2017 15:04:26'!
 asTensor
