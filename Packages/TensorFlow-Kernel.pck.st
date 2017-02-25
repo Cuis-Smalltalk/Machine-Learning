@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 23 February 2017 at 11:25:14 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:52:34 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 402!
+!provides: 'TensorFlow-Kernel' 1 403!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5786,11 +5786,11 @@ operationsCount
 	self operationsDo: [:each | answer _ answer + 1].
 	^ answer! !
 
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:23:10'!
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 2/25/2017 11:46:38'!
 operationsDo: oneArgBlock
-	| context operation |
-	context _ self newOperationIteratorContext.
-	[operation _ self operationAt: context.
+	| iterator operation |
+	iterator _ self newOperationIteratorContext.
+	[operation _ self operationAt: iterator.
 		operation isNull] whileFalse: [oneArgBlock value: operation].
 ! !
 
@@ -6224,14 +6224,14 @@ op: aString withAll: aTF_OperationArray named: name
 	^ self op: aString withAll: aTF_OperationArray named: name described: [:nothing]
 ! !
 
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:26:38'!
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/25/2017 11:47:40'!
 op: aString withAll: aTF_OperationArray named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
 		description addInput: self output.
 		aTF_OperationArray do: [:each |
-			| output |
-			output _ (each asOperationOn: graph) output.
-			description addInput: output].
+			| input |
+			input _ (each asOperationOn: graph) output.
+			description addInput: input].
 		oneArgBlock value: description].
 	! !
 
