@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 4:09:38 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 4:42:48 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 44!
+!provides: 'TensorFlow-Examples' 1 45!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -21,6 +21,36 @@ TestCase subclass: #TensorFlowExamplesTest
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
 TensorFlowExamplesTest class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowNeuralNetworkTest category: #'TensorFlow-Examples'!
+TestCase subclass: #TensorFlowNeuralNetworkTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowNeuralNetworkTest class' category: #'TensorFlow-Examples'!
+TensorFlowNeuralNetworkTest class
+	instanceVariableNames: ''!
+
+!classDefinition: #ActivationFunction category: #'TensorFlow-Examples'!
+Object subclass: #ActivationFunction
+	instanceVariableNames: 'graph'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'ActivationFunction class' category: #'TensorFlow-Examples'!
+ActivationFunction class
+	instanceVariableNames: ''!
+
+!classDefinition: #SigmoidActivationFunction category: #'TensorFlow-Examples'!
+ActivationFunction subclass: #SigmoidActivationFunction
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'SigmoidActivationFunction class' category: #'TensorFlow-Examples'!
+SigmoidActivationFunction class
 	instanceVariableNames: ''!
 
 !classDefinition: #BatchTrainer category: #'TensorFlow-Examples'!
@@ -817,6 +847,58 @@ testSimpleNeuralNetwork
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
 
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 16:41:10'!
+testLayerInference
+	| graph session in out result values layer|
+	graph _ TF_Graph create.
+	layer _ NNLayer on: graph named: 'layer1'.
+	layer useSigmoid;
+		inputSize: 3; 
+		outputSize: 1;
+		initializeParameters. 
+	session _ TF_Session on: graph.
+
+	values _ {{1.0. 2.0. 3.0}}.
+	out _ layer output.
+	in _ layer input.
+	result _ session
+		runOperation: out
+		input: (in input: 0)
+		value: values asTensor
+		output: out output.
+	graph delete.
+	self assert: result shape equals: #(#(1)).
+	self assert: result first <= 1.0.
+	self assert: result first >= -1.0
+
+	! !
+
+!ActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:34:37'!
+activate: netInput
+	^ self subclassResponsibility ! !
+
+!ActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:37:47'!
+gradientFrom: backprop at: output
+	^ self subclassResponsibility ! !
+
+!ActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:37:29'!
+on: aGraph
+	graph _ aGraph! !
+
+!ActivationFunction class methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:37:01'!
+on: graph
+	^ self new on: graph! !
+
+!SigmoidActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:35:05'!
+activate: netInput
+	^ netInput sigmoid! !
+
+!SigmoidActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:36:24'!
+gradientFrom: backprop at: output
+	| one |
+	one _ 1.0 asTensor asOperationOn: graph.
+	^ backprop @* output @* (one - output).! !
+
 !BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:36:29'!
 initialize
 	super initialize.
@@ -1610,6 +1692,10 @@ initializeParameters
 			named: name, '-parameters'
 			! !
 
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:39:53'!
+input
+	^ input! !
+
 !NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:32'!
 inputSize
 	^ inputSize! !
@@ -1622,6 +1708,10 @@ inputSize: anInteger
 name: aString
 	name _ aString! !
 
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:39:48'!
+output
+	^ output! !
+
 !NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:22'!
 outputSize
 	^ outputSize! !
@@ -1633,6 +1723,10 @@ outputSize: anInteger
 !NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:57:10'!
 previous: aNNLayer
 	previous _ aNNLayer! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:38:30'!
+useSigmoid
+	activation _ SigmoidActivationFunction on: graph! !
 
 !NNLayer class methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:52:51'!
 on: graph named: name
@@ -1988,13 +2082,13 @@ addDimensions
 				outputSize: outputSize.
 		inputSize _ outputSize]! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:57:59'!
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:42:31'!
 buildLayers
 	| layer1 layer2 layer3 layer4 output |
-	layer1 _ NNLayer on: graph named: 'layer1'; useRectified.
-	layer2 _ NNLayer on: graph named:  'layer2'; useSigmoid; previous: layer1.
-	layer3 _ NNLayer on: graph named: 'layer3'; useSigmoid; previous: layer2.
-	layer4 _ NNLayer on: graph named: 'layer4'; useIdentity; previous: layer3.
+	layer1 _ (NNLayer on: graph named: 'layer1') useRectified.
+	layer2 _ (NNLayer on: graph named:  'layer2') useSigmoid; previous: layer1.
+	layer3 _ (NNLayer on: graph named: 'layer3') useSigmoid; previous: layer2.
+	layer4 _ (NNLayer on: graph named: 'layer4') useIdentity; previous: layer3.
 	output _ L2Loss on: graph; previous: layer4.
 	layers _ {layer1. layer2. layer3. layer4. output}
 	 ! !
