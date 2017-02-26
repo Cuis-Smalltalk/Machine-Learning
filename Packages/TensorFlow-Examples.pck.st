@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 5:24:22 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 5:28:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 47!
+!provides: 'TensorFlow-Examples' 1 48!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -847,7 +847,7 @@ testSimpleNeuralNetwork
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
 
-!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 17:15:43'!
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 17:28:21'!
 testLayerInference
 	| graph session in out result values layer|
 	graph _ TF_Graph create.
@@ -869,7 +869,7 @@ testLayerInference
 		value: values asFloatTensor 
 		output: out output.
 	graph delete.
-	self halt.
+	
 	self assert: result shape equals: #(1 1).
 	self assert: result asNumbers first first <= 1.0.
 	self assert: result asNumbers first first >= -1.0
