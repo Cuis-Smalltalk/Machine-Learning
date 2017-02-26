@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 12:52:41 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 4:01:56 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 42!
+!provides: 'TensorFlow-Examples' 1 43!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -93,6 +93,16 @@ ExamplePlan subclass: #ExampleOLSPlan
 ExampleOLSPlan class
 	instanceVariableNames: ''!
 
+!classDefinition: #L2Loss category: #'TensorFlow-Examples'!
+Object subclass: #L2Loss
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'L2Loss class' category: #'TensorFlow-Examples'!
+L2Loss class
+	instanceVariableNames: ''!
+
 !classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNIST3LayersNNExamplePlan
 	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput activation learnWeights3 hidden2 learnBiases3 learnWeights2 hidden1 learnBiases2 learnWeights1 learnBiases1 learn'
@@ -153,6 +163,16 @@ Object subclass: #MNISTSoftMaxExamplePlan
 MNISTSoftMaxExamplePlan class
 	instanceVariableNames: ''!
 
+!classDefinition: #NNLayer category: #'TensorFlow-Examples'!
+Object subclass: #NNLayer
+	instanceVariableNames: 'graph inputSize outputSize output input weights biases activation name backprop learnWeights learningRate learnBiases previous'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'NNLayer class' category: #'TensorFlow-Examples'!
+NNLayer class
+	instanceVariableNames: ''!
+
 !classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
 Object subclass: #NearestNeighbor
 	instanceVariableNames: 'plan'
@@ -181,6 +201,16 @@ Object subclass: #RegressionNNExample
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'RegressionNNExample class' category: #'TensorFlow-Examples'!
 RegressionNNExample class
+	instanceVariableNames: ''!
+
+!classDefinition: #RegressionUsingLayersExample category: #'TensorFlow-Examples'!
+Object subclass: #RegressionUsingLayersExample
+	instanceVariableNames: 'graph layers'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'RegressionUsingLayersExample class' category: #'TensorFlow-Examples'!
+RegressionUsingLayersExample class
 	instanceVariableNames: ''!
 
 !classDefinition: #SimpleNeuralNetworkExample category: #'TensorFlow-Examples'!
@@ -1481,6 +1511,80 @@ predict: inputs andLearnFrom: label
 		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:55:58'!
+backprop: adjustedGradient
+	backprop _ adjustedGradient! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:54:23'!
+backpropagate: adjustedGradient
+	previous backprop: adjustedGradient! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:52:20'!
+graph: aTFGraph
+	graph _ aTFGraph! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 14:52:03'!
+initializeInferenceGraph
+	output _ graph fromBlock:[ | netInput |
+		netInput _ input * weights + biases.
+		activation activate: netInput]
+					named: name.
+	^ output! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 14:58:30'!
+initializeLearningGraph
+	| axis0 batchSize gradient |
+	axis0 _ graph const: #(0) asInt32Tensor.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: name, '-batchSize'.
+	graph
+		fromBlock: [ | meanGradient |
+			gradient _ activation gradientFrom: backprop at: output. 
+			meanGradient _ gradient meanOn: axis0.
+			learnWeights _ weights descent: input \* gradient @/ batchSize rate: learningRate.
+			learnBiases _ biases descent: meanGradient rate: learningRate]
+		named: name, '- learning'.
+	self backpropagate: gradient *\ weights! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:31:17'!
+initializeParameters
+	| aux |
+		graph
+			fromBlock: [
+				aux _ graph truncatedNormalRandomShaped: {self inputSize. self outputSize} stddev: 1.0 / self inputSize sqrt.
+				weights _ graph variable: name, '-weights' initialValueFrom: aux.
+				aux _ graph zerosShaped: {self outputSize}.
+				biases _ graph variable: name, '-biases' initialValueFrom: aux]
+			named: name, '-parameters'
+			! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:32'!
+inputSize
+	^ inputSize! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:05'!
+inputSize: anInteger
+	inputSize _ anInteger! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:50'!
+name: aString
+	name _ aString! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:22'!
+outputSize
+	^ outputSize! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:15'!
+outputSize: anInteger
+	outputSize _ anInteger! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:57:10'!
+previous: aNNLayer
+	previous _ aNNLayer! !
+
+!NNLayer class methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:52:51'!
+on: graph named: name
+	^ self new graph: graph; name: name! !
+
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 2/19/2017 16:22:46'!
 decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
@@ -1818,6 +1922,48 @@ exampleTrainedOn: function
 		y _  indices collect: [:index | ys at: index].
 		net predict: x andLearnFrom: y].
 	^ net! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:49:18'!
+addDimensions
+	| dimensions inputSize |
+	dimensions _ {self inputSize. self hidden1Size. 
+						self hidden2Size. self hidden3Size. 
+						self outputSize}.
+	inputSize _ dimensions first.
+	dimensions allButFirst with: layers allButLast do:[:outputSize :layer| 
+		layer 	inputSize: inputSize;
+				outputSize: outputSize.
+		inputSize _ outputSize]! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:57:59'!
+buildLayers
+	| layer1 layer2 layer3 layer4 output |
+	layer1 _ NNLayer on: graph named: 'layer1'; useRectified.
+	layer2 _ NNLayer on: graph named:  'layer2'; useSigmoid; previous: layer1.
+	layer3 _ NNLayer on: graph named: 'layer3'; useSigmoid; previous: layer2.
+	layer4 _ NNLayer on: graph named: 'layer4'; useIdentity; previous: layer3.
+	output _ L2Loss on: graph; previous: layer4.
+	layers _ {layer1. layer2. layer3. layer4. output}
+	 ! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:37:33'!
+initialize
+	super initialize.
+	self initializeGraph.
+	self initializeLayers.! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:37:14'!
+initializeGraph
+	graph _ TF_Graph create! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:00:56'!
+initializeLayers
+	self buildLayers;
+		addDimensions.
+	layers do:[:layer| layer 
+								initializeParameters;
+								initializeInferenceGraph].
+	layers reversed do:[:layer| layer initializeInferenceGraph]! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
