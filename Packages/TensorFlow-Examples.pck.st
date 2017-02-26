@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 4:42:48 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 5:04:09 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 45!
+!provides: 'TensorFlow-Examples' 1 46!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -847,7 +847,7 @@ testSimpleNeuralNetwork
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
 
-!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 16:41:10'!
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 17:03:43'!
 testLayerInference
 	| graph session in out result values layer|
 	graph _ TF_Graph create.
@@ -855,8 +855,10 @@ testLayerInference
 	layer useSigmoid;
 		inputSize: 3; 
 		outputSize: 1;
-		initializeParameters. 
+		initializeParameters;
+		initializeInferenceGraph. 
 	session _ TF_Session on: graph.
+	graph initializeOn: session.
 
 	values _ {{1.0. 2.0. 3.0}}.
 	out _ layer output.
@@ -864,12 +866,12 @@ testLayerInference
 	result _ session
 		runOperation: out
 		input: (in input: 0)
-		value: values asTensor
+		value: values asFloatTensor 
 		output: out output.
 	graph delete.
-	self assert: result shape equals: #(#(1)).
-	self assert: result first <= 1.0.
-	self assert: result first >= -1.0
+	self assert: result shape equals: #(1 1).
+	self assert: result asNumbers first first <= 1.0.
+	self assert: result asNumbers first first >= -1.0
 
 	! !
 
@@ -1658,12 +1660,16 @@ backpropagate: adjustedGradient
 graph: aTFGraph
 	graph _ aTFGraph! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 14:52:03'!
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:58:41'!
 initializeInferenceGraph
-	output _ graph fromBlock:[ | netInput |
+	| block operations |
+	operations _ [| netInput |
 		netInput _ input * weights + biases.
-		activation activate: netInput]
-					named: name.
+		activation activate: netInput].
+	block _ previous isNil 
+			ifTrue: [[:in| input _ in. operations value]]
+			ifFalse: [[operations value]].
+	output _ graph fromBlock: block named: name.
 	^ output! !
 
 !NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 14:58:30'!
@@ -1720,9 +1726,10 @@ outputSize
 outputSize: anInteger
 	outputSize _ anInteger! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:57:10'!
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:59:17'!
 previous: aNNLayer
-	previous _ aNNLayer! !
+	previous _ aNNLayer.
+	input _ previous output.! !
 
 !NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:38:30'!
 useSigmoid
