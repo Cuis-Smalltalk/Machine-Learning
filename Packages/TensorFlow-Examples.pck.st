@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 12:52:41 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 3:14:34 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 42!
+!provides: 'TensorFlow-Examples' 1 43!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -95,7 +95,7 @@ ExampleOLSPlan class
 
 !classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
 Object subclass: #MNIST3LayersNNExamplePlan
-	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput activation learnWeights3 hidden2 learnBiases3 learnWeights2 hidden1 learnBiases2 learnWeights1 learnBiases1 learn'
+	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput activation hidden2 hidden1 learn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -1055,9 +1055,9 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:17:13'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/26/2017 15:12:50'!
 initializeLearningGraph
-	|  axis0 backprop learningRate batchSize |
+	|  axis0 backprop learningRate batchSize learnBiases1 learnBiases2 learnBiases3 learnWeights1 learnWeights2 learnWeights3 |
 	
 	learningRate _ graph const: 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
@@ -1169,16 +1169,13 @@ predict: inputs andCompareTo: label
 		outputs: {prediction output. loss output}.
 	^ results! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/22/2017 00:28:53'!
+!MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/26/2017 15:13:22'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asInt32Tensor}
-		outputs: {loss output. learn output.}
-					"learnWeights1 output. learnBiases1 output..
-					learnWeights2 output. learnBiases2 output.
-					learnWeights3 output. learnBiases3 output.}".
+		outputs: {loss output. learn output}.
 	^ results! !
 
 !MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:31:02'!
@@ -1196,9 +1193,9 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/25/2017 11:24:00'!
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/26/2017 15:13:07'!
 initializeLearningGraph
-	| axis0 activationGradient gradient1 gradient2 learningRate biasGradient one batchSize |
+	| axis0 activationGradient gradient1 gradient2 learningRate biasGradient one batchSize learnBiases1 learnBiases2 learnBiases3 learnWeights1 learnWeights2 learnWeights3 |
 	
 	learningRate _ graph const: 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
