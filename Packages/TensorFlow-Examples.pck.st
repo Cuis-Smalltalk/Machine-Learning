@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 12:04:25 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 12:52:41 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 41!
+!provides: 'TensorFlow-Examples' 1 42!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1642,7 +1642,7 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:41:36'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 12:52:24'!
 initializeInferenceGraph
 	hidden1 _ graph
 		fromBlock: [:image |
@@ -1651,9 +1651,7 @@ initializeInferenceGraph
 		named: 'layer1'.
 	hidden2 _ graph fromBlock: [(hidden1 * weights2 + biases2) sigmoid] named: 'layer2'.
 	hidden3 _ graph fromBlock: [(hidden2 * weights3 + biases3) sigmoid] named: 'layer3'.
-	prediction _ graph
-		fromBlock: [:image | hidden3 * weights4 + biases4]
-		named: 'layer4'.
+	prediction _ graph fromBlock: [hidden3 * weights4 + biases4] named: 'layer4'.
 ! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/24/2017 23:15:59'!
