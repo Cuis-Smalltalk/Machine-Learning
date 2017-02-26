@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 3:14:34 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 3:18:01 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 43!
+!provides: 'TensorFlow-Examples' 1 44!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -175,7 +175,7 @@ OLSExample class
 
 !classDefinition: #RegressionNNExample category: #'TensorFlow-Examples'!
 Object subclass: #RegressionNNExample
-	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 learnWeights3 learnBiases3 learnWeights2 learnBiases2 learnWeights1 learnBiases1 expectedLabel loss session hidden3 learnWeights4 learnBiases4'
+	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 expectedLabel loss session hidden3 learn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -1651,9 +1651,9 @@ initializeInferenceGraph
 	prediction _ graph fromBlock: [hidden3 * weights4 + biases4] named: 'layer4'.
 ! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/24/2017 23:15:59'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 15:17:36'!
 initializeLearningGraph
-	|  axis0 learningRate batchSize meanGradient one backprop |
+	|  axis0 learningRate batchSize meanGradient one backprop learnBiases1 learnBiases2 learnBiases3 learnBiases4 learnWeights1 learnWeights2 learnWeights3 learnWeights4 |
 	
 	learningRate _ 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
@@ -1688,7 +1688,20 @@ initializeLearningGraph
 		gradient _ backprop timesRectifiedGradOf: hidden1.
 		learnWeights1 _ weights1 descent: input \* gradient rate: learningRate.
 		learnBiases1 _ biases1 descent: (gradient meanOn: axis0) rate: learningRate] 
-			named: 'learning1'.	! !
+			named: 'learning1'.
+
+	learn _ graph newOperation: 'Identity' named: 'learn' described: [:description |
+		description
+			addInput: loss output;
+			addControlInput: learnWeights1 output;
+			addControlInput: learnBiases1 output;
+			addControlInput: learnWeights2 output;
+			addControlInput: learnBiases2 output;
+			addControlInput: learnWeights3 output;
+			addControlInput: learnBiases3 output;
+			addControlInput: learnWeights4 output;
+			addControlInput: learnBiases4 output].
+! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/23/2017 11:03:56'!
 initializeLossGraph
@@ -1763,16 +1776,13 @@ predict: inputs andCompareTo: label
 		outputs: {prediction output: 0. loss output: 0}.
 	^ results! !
 
-!RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 23:45:31'!
+!RegressionNNExample methodsFor: 'running' stamp: 'gera 2/26/2017 15:17:10'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
 		runInputs: {input input: 0. expectedLabel input: 0}
 		values: {inputs asFloatTensor. label asFloatTensor}
-		outputs: {loss output:0. learnWeights1 output. learnBiases1 output.
-					learnWeights2 output. learnBiases2 output.
-					 learnWeights3 output. learnBiases3 output.
-					learnWeights4 output. learnBiases4 output}.
+		outputs: {loss output:0. learn output}.
 	^ results! !
 
 !RegressionNNExample class methodsFor: 'examples' stamp: 'JB 2/23/2017 00:12:28'!
