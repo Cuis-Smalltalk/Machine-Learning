@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 5:04:09 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 5:24:22 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 46!
+!provides: 'TensorFlow-Examples' 1 47!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -847,7 +847,7 @@ testSimpleNeuralNetwork
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
 
-!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 17:03:43'!
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 17:15:43'!
 testLayerInference
 	| graph session in out result values layer|
 	graph _ TF_Graph create.
@@ -869,21 +869,22 @@ testLayerInference
 		value: values asFloatTensor 
 		output: out output.
 	graph delete.
+	self halt.
 	self assert: result shape equals: #(1 1).
 	self assert: result asNumbers first first <= 1.0.
 	self assert: result asNumbers first first >= -1.0
 
 	! !
 
-!ActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:34:37'!
+!ActivationFunction methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:34:37'!
 activate: netInput
 	^ self subclassResponsibility ! !
 
-!ActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:37:47'!
+!ActivationFunction methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:37:47'!
 gradientFrom: backprop at: output
 	^ self subclassResponsibility ! !
 
-!ActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:37:29'!
+!ActivationFunction methodsFor: 'initialization' stamp: 'JB 2/26/2017 16:37:29'!
 on: aGraph
 	graph _ aGraph! !
 
@@ -891,11 +892,11 @@ on: aGraph
 on: graph
 	^ self new on: graph! !
 
-!SigmoidActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:35:05'!
+!SigmoidActivationFunction methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:35:05'!
 activate: netInput
 	^ netInput sigmoid! !
 
-!SigmoidActivationFunction methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:36:24'!
+!SigmoidActivationFunction methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:36:24'!
 gradientFrom: backprop at: output
 	| one |
 	one _ 1.0 asTensor asOperationOn: graph.
@@ -1648,19 +1649,19 @@ predict: inputs andLearnFrom: label
 		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:55:58'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:55:58'!
 backprop: adjustedGradient
 	backprop _ adjustedGradient! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:54:23'!
+!NNLayer methodsFor: 'backpropagation' stamp: 'JB 2/26/2017 15:54:23'!
 backpropagate: adjustedGradient
 	previous backprop: adjustedGradient! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:52:20'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:52:20'!
 graph: aTFGraph
 	graph _ aTFGraph! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:58:41'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 16:58:41'!
 initializeInferenceGraph
 	| block operations |
 	operations _ [| netInput |
@@ -1672,7 +1673,7 @@ initializeInferenceGraph
 	output _ graph fromBlock: block named: name.
 	^ output! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 14:58:30'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 14:58:30'!
 initializeLearningGraph
 	| axis0 batchSize gradient |
 	axis0 _ graph const: #(0) asInt32Tensor.
@@ -1686,7 +1687,7 @@ initializeLearningGraph
 		named: name, '- learning'.
 	self backpropagate: gradient *\ weights! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:31:17'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:31:17'!
 initializeParameters
 	| aux |
 		graph
@@ -1698,40 +1699,40 @@ initializeParameters
 			named: name, '-parameters'
 			! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:39:53'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 16:39:53'!
 input
 	^ input! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:32'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:51:32'!
 inputSize
 	^ inputSize! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:05'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:51:05'!
 inputSize: anInteger
 	inputSize _ anInteger! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:50'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:51:50'!
 name: aString
 	name _ aString! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:39:48'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 16:39:48'!
 output
 	^ output! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:22'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:51:22'!
 outputSize
 	^ outputSize! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:51:15'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:51:15'!
 outputSize: anInteger
 	outputSize _ anInteger! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:59:17'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 16:59:17'!
 previous: aNNLayer
 	previous _ aNNLayer.
 	input _ previous output.! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:38:30'!
+!NNLayer methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:38:30'!
 useSigmoid
 	activation _ SigmoidActivationFunction on: graph! !
 
@@ -2077,7 +2078,7 @@ exampleTrainedOn: function
 		net predict: x andLearnFrom: y].
 	^ net! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:49:18'!
+!RegressionUsingLayersExample methodsFor: 'layers' stamp: 'JB 2/26/2017 15:49:18'!
 addDimensions
 	| dimensions inputSize |
 	dimensions _ {self inputSize. self hidden1Size. 
@@ -2089,7 +2090,7 @@ addDimensions
 				outputSize: outputSize.
 		inputSize _ outputSize]! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:42:31'!
+!RegressionUsingLayersExample methodsFor: 'layers' stamp: 'JB 2/26/2017 16:42:31'!
 buildLayers
 	| layer1 layer2 layer3 layer4 output |
 	layer1 _ (NNLayer on: graph named: 'layer1') useRectified.
@@ -2100,17 +2101,17 @@ buildLayers
 	layers _ {layer1. layer2. layer3. layer4. output}
 	 ! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:37:33'!
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:37:33'!
 initialize
 	super initialize.
 	self initializeGraph.
 	self initializeLayers.! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:37:14'!
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:37:14'!
 initializeGraph
 	graph _ TF_Graph create! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:00:56'!
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 16:00:56'!
 initializeLayers
 	self buildLayers;
 		addDimensions.
