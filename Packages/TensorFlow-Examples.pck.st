@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 26 February 2017 at 3:18:01 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 27 February 2017 at 11:19:20 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 44!
+!provides: 'TensorFlow-Examples' 1 45!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -199,7 +199,9 @@ self new graph writeDefToFileNamed: 'graph.pb'!
 
 !RegressionNNExample commentStamp: '<historical>' prior: 0!
 I compute a regression on arbitrary functions.
-Implementation of http://cs.stanford.edu/people/karpathy/convnetjs/demo/regression.html!
+Implementation of http://cs.stanford.edu/people/karpathy/convnetjs/demo/regression.html
+
+RegressionNNExample exampleTrainedAndPlot!
 
 !TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:01:05'!
 setUp
@@ -1651,9 +1653,9 @@ initializeInferenceGraph
 	prediction _ graph fromBlock: [hidden3 * weights4 + biases4] named: 'layer4'.
 ! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 15:17:36'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 19:26:39'!
 initializeLearningGraph
-	|  axis0 learningRate batchSize meanGradient one backprop learnBiases1 learnBiases2 learnBiases3 learnBiases4 learnWeights1 learnWeights2 learnWeights3 learnWeights4 |
+	|  axis0 learningRate batchSize biasGradient one backprop learnBiases1 learnBiases2 learnBiases3 learnBiases4 learnWeights1 learnWeights2 learnWeights3 learnWeights4 |
 	
 	learningRate _ 0.1 asTensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
@@ -1662,18 +1664,18 @@ initializeLearningGraph
 	graph
 		fromBlock: [ | gradient|
 			gradient _ (prediction - expectedLabel).
-			meanGradient _ gradient meanOn: axis0.
+			biasGradient _ gradient meanOn: axis0.
 			learnWeights4 _ weights4 descent: hidden3 \* gradient @/ batchSize rate: learningRate.
-			learnBiases4 _ biases4 descent: meanGradient rate: learningRate.
+			learnBiases4 _ biases4 descent: biasGradient rate: learningRate.
 			backprop _  (gradient *\ weights4)]
 		named: 'learning4'.	
 	
 	graph
 		fromBlock: [ | gradient | 
 			gradient _ backprop @* hidden3 @* (one - hidden3).
-			meanGradient _ gradient meanOn: axis0.
+			biasGradient _ gradient meanOn: axis0.
 			learnWeights3 _ weights3 descent: hidden2 \* gradient @/ batchSize rate: learningRate.
-			learnBiases3 _ biases3 descent: meanGradient rate: learningRate.
+			learnBiases3 _ biases3 descent: biasGradient rate: learningRate.
 			backprop _ (gradient *\ weights3)]
 		named: 'learning3'.
 		
@@ -1712,33 +1714,33 @@ initializeLossGraph
 		inputTypes: {TF_Tensor typeFloat}
 		named: 'loss'.! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/23/2017 00:04:43'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 17:45:31'!
 initializeParameters
 	| aux |
-		graph
-			fromBlock: [
-				aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
-				weights1 _ graph variable: 'weights1' initialValueFrom: aux.
-				aux _ graph zerosShaped: {self hidden1Size}.
-				biases1 _ graph variable: 'biases1' initialValueFrom: aux.
+	graph
+		fromBlock: [
+			aux _ graph truncatedNormalRandomShaped: {self inputSize. self hidden1Size} stddev: 1.0 / self inputSize sqrt.
+			weights1 _ graph variable: 'weights1' initialValueFrom: aux.
+			aux _ graph zerosShaped: {self hidden1Size}.
+			biases1 _ graph variable: 'biases1' initialValueFrom: aux.
 
-				aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
-				weights2 _ graph variable: 'weights2' initialValueFrom: aux.
-				aux _ graph zerosShaped: {self hidden2Size}.
-				biases2 _ graph variable: 'biases2' initialValueFrom: aux.
+			aux _ graph truncatedNormalRandomShaped: {self hidden1Size. self hidden2Size} stddev: 1.0 / self hidden1Size sqrt.
+			weights2 _ graph variable: 'weights2' initialValueFrom: aux.
+			aux _ graph zerosShaped: {self hidden2Size}.
+			biases2 _ graph variable: 'biases2' initialValueFrom: aux.
 
-				aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self hidden3Size } stddev: 1.0 / self hidden2Size sqrt.
-				weights3 _ graph variable: 'weights3' initialValueFrom: aux.
-				aux _ graph zerosShaped: {self hidden3Size }.
-				biases3 _ graph variable: 'biases3' initialValueFrom: aux.
-				
-				aux _ graph truncatedNormalRandomShaped: {self hidden3Size. self outputSize } stddev: 1.0 / self hidden3Size sqrt.
-				weights4 _ graph variable: 'weights4' initialValueFrom: aux.
-				aux _ graph zerosShaped: {self outputSize }.
-				biases4 _ graph variable: 'biases4' initialValueFrom: aux]
-			named: 'parameters'
+			aux _ graph truncatedNormalRandomShaped: {self hidden2Size. self hidden3Size } stddev: 1.0 / self hidden2Size sqrt.
+			weights3 _ graph variable: 'weights3' initialValueFrom: aux.
+			aux _ graph zerosShaped: {self hidden3Size }.
+			biases3 _ graph variable: 'biases3' initialValueFrom: aux.
 			
-			
+			aux _ graph truncatedNormalRandomShaped: {self hidden3Size. self outputSize } stddev: 1.0 / self hidden3Size sqrt.
+			weights4 _ graph variable: 'weights4' initialValueFrom: aux.
+			aux _ graph zerosShaped: {self outputSize }.
+			biases4 _ graph variable: 'biases4' initialValueFrom: aux]
+		named: 'parameters'
+		
+		
 ! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:02:42'!
