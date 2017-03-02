@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 5:57:27 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 6:07:18 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 52!
+!provides: 'TensorFlow-Examples' 1 53!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -35,7 +35,7 @@ TensorFlowNeuralNetworkTest class
 
 !classDefinition: #ActivationFunction category: #'TensorFlow-Examples'!
 Object subclass: #ActivationFunction
-	instanceVariableNames: 'graph'
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -51,6 +51,16 @@ ActivationFunction subclass: #IdentityActivationFunction
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'IdentityActivationFunction class' category: #'TensorFlow-Examples'!
 IdentityActivationFunction class
+	instanceVariableNames: ''!
+
+!classDefinition: #RectifiedActivationFunction category: #'TensorFlow-Examples'!
+ActivationFunction subclass: #RectifiedActivationFunction
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'RectifiedActivationFunction class' category: #'TensorFlow-Examples'!
+RectifiedActivationFunction class
 	instanceVariableNames: ''!
 
 !classDefinition: #SigmoidActivationFunction category: #'TensorFlow-Examples'!
@@ -883,6 +893,32 @@ testActivationIdentity
 	self assert: result second asNumbers closeTo: 1
 	! !
 
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 18:06:37'!
+testActivationRectified
+	| graph session out result activation zero one neuronOutput |
+	graph _ TF_Graph create.
+	
+	activation _ RectifiedActivationFunction on: graph.
+	zero _ {1.5. -2} asFloatTensor asOperationOn: graph.
+	one _ {1. 1} asFloatTensor asOperationOn: graph.
+	
+	neuronOutput _ activation activate: zero.
+	out _ activation gradientFrom: one at: neuronOutput.
+	session _ TF_Session on: graph.
+	graph initializeOn: session.
+
+	result _ session
+		runOperations: {out}
+		inputs: {}
+		values: {}
+		outputs: {neuronOutput output. out output}.
+		
+	self assert: result first shape equals: #(2).
+	self assert: result second shape equals: #(2).
+	self assert: result first asNumbers closeTo: #(1.5 0.0).
+	self assert: result second asNumbers closeTo: #(1.0 0.0)
+	! !
+
 !TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 17:41:05'!
 testActivationSigmoidActivation
 	| graph session out result activation zero |
@@ -977,6 +1013,14 @@ activate: netInput
 !IdentityActivationFunction methodsFor: 'activation function' stamp: 'JB 3/2/2017 17:47:38'!
 gradientFrom: backprop at: output
 	^ backprop ! !
+
+!RectifiedActivationFunction methodsFor: 'activation function' stamp: 'JB 3/2/2017 18:01:10'!
+activate: aTF_Operation 
+	^ aTF_Operation rectified! !
+
+!RectifiedActivationFunction methodsFor: 'activation function' stamp: 'JB 3/2/2017 18:02:35'!
+gradientFrom: backprop at: output 
+	^ backprop timesRectifiedGradOf: output! !
 
 !SigmoidActivationFunction methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:35:05'!
 activate: netInput
@@ -1821,6 +1865,10 @@ previous: aNNLayer
 !NNLayer methodsFor: 'activation function' stamp: 'JB 3/2/2017 17:57:21'!
 useIdentity
 	activation _ IdentityActivationFunction on: graph! !
+
+!NNLayer methodsFor: 'activation function' stamp: 'JB 3/2/2017 18:07:10'!
+useRectified
+	activation _ RectifiedActivationFunction on: graph! !
 
 !NNLayer methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:38:30'!
 useSigmoid
