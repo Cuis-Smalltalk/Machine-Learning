@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 6:07:18 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 6:33:28 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 53!
+!provides: 'TensorFlow-Examples' 1 54!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -893,17 +893,17 @@ testActivationIdentity
 	self assert: result second asNumbers closeTo: 1
 	! !
 
-!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 18:06:37'!
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 18:33:15'!
 testActivationRectified
-	| graph session out result activation zero one neuronOutput |
+	| graph session out result activation zero backprop neuronOutput |
 	graph _ TF_Graph create.
 	
 	activation _ RectifiedActivationFunction on: graph.
 	zero _ {1.5. -2} asFloatTensor asOperationOn: graph.
-	one _ {1. 1} asFloatTensor asOperationOn: graph.
+	backprop _ {2. 1} asFloatTensor asOperationOn: graph.
 	
 	neuronOutput _ activation activate: zero.
-	out _ activation gradientFrom: one at: neuronOutput.
+	out _ activation gradientFrom: backprop at: neuronOutput.
 	session _ TF_Session on: graph.
 	graph initializeOn: session.
 
@@ -916,7 +916,7 @@ testActivationRectified
 	self assert: result first shape equals: #(2).
 	self assert: result second shape equals: #(2).
 	self assert: result first asNumbers closeTo: #(1.5 0.0).
-	self assert: result second asNumbers closeTo: #(1.0 0.0)
+	self assert: result second asNumbers closeTo: #(2.0 0.0)
 	! !
 
 !TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 17:41:05'!
