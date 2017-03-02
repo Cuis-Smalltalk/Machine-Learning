@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 5:45:30 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 5:54:15 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 50!
+!provides: 'TensorFlow-Examples' 1 51!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -41,6 +41,16 @@ Object subclass: #ActivationFunction
 	category: 'TensorFlow-Examples'!
 !classDefinition: 'ActivationFunction class' category: #'TensorFlow-Examples'!
 ActivationFunction class
+	instanceVariableNames: ''!
+
+!classDefinition: #IdentityActivationFunction category: #'TensorFlow-Examples'!
+ActivationFunction subclass: #IdentityActivationFunction
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'IdentityActivationFunction class' category: #'TensorFlow-Examples'!
+IdentityActivationFunction class
 	instanceVariableNames: ''!
 
 !classDefinition: #SigmoidActivationFunction category: #'TensorFlow-Examples'!
@@ -847,6 +857,32 @@ testSimpleNeuralNetwork
 	targetValues with: prediction do:[:real :predicted| 
 		self assert: (real - predicted) abs < 0.1]! !
 
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 17:54:02'!
+testActivationIdentity
+	| graph session out result activation zero one neuronOutput |
+	graph _ TF_Graph create.
+	
+	activation _ IdentityActivationFunction on: graph.
+	zero _ 0 asFloatTensor asOperationOn: graph.
+	one _ 1 asFloatTensor asOperationOn: graph.
+	
+	neuronOutput _ activation activate: zero.
+	out _ activation gradientFrom: one at: neuronOutput.
+	session _ TF_Session on: graph.
+	graph initializeOn: session.
+
+	result _ session
+		runOperations: {out}
+		inputs: {}
+		values: {}
+		outputs: {neuronOutput output. out output}.
+		
+	self assert: result first shape equals: #().
+	self assert: result second shape equals: #().
+	self assert: result first asNumbers closeTo: 0.
+	self assert: result second asNumbers closeTo: 1
+	! !
+
 !TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 17:41:05'!
 testActivationSigmoidActivation
 	| graph session out result activation zero |
@@ -933,6 +969,14 @@ on: aGraph
 !ActivationFunction class methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 16:37:01'!
 on: graph
 	^ self new on: graph! !
+
+!IdentityActivationFunction methodsFor: 'activation function' stamp: 'JB 3/2/2017 17:47:16'!
+activate: netInput
+	^ netInput ! !
+
+!IdentityActivationFunction methodsFor: 'activation function' stamp: 'JB 3/2/2017 17:47:38'!
+gradientFrom: backprop at: output
+	^ backprop ! !
 
 !SigmoidActivationFunction methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:35:05'!
 activate: netInput
