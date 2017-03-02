@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 5:54:15 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 5:57:27 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 51!
+!provides: 'TensorFlow-Examples' 1 52!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1817,6 +1817,10 @@ outputSize: anInteger
 previous: aNNLayer
 	previous _ aNNLayer.
 	input _ previous output.! !
+
+!NNLayer methodsFor: 'activation function' stamp: 'JB 3/2/2017 17:57:21'!
+useIdentity
+	activation _ IdentityActivationFunction on: graph! !
 
 !NNLayer methodsFor: 'activation function' stamp: 'JB 2/26/2017 16:38:30'!
 useSigmoid
