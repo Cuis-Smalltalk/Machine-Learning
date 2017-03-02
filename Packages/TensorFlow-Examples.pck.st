@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 5:41:15 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 5:45:30 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 49!
+!provides: 'TensorFlow-Examples' 1 50!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -865,6 +865,28 @@ testActivationSigmoidActivation
 		
 	self assert: result shape equals: #().
 	self assert: result asNumbers closeTo: 0.5.
+	! !
+
+!TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 3/2/2017 17:45:25'!
+testActivationSigmoidGradient
+	| graph session out result activation zero one neuronOutput |
+	graph _ TF_Graph create.
+	
+	activation _ SigmoidActivationFunction on: graph.
+	zero _ 0 asFloatTensor asOperationOn: graph.
+	one _ 1 asFloatTensor asOperationOn: graph.
+	
+	neuronOutput _ activation activate: zero.
+	out _ activation gradientFrom: one at: neuronOutput.
+	session _ TF_Session on: graph.
+	graph initializeOn: session.
+
+	result _ session
+		runOperation: out
+		output: out output.
+		
+	self assert: result shape equals: #().
+	self assert: result asNumbers closeTo: 0.25.
 	! !
 
 !TensorFlowNeuralNetworkTest methodsFor: 'testing - Layers' stamp: 'JB 2/26/2017 17:28:21'!
