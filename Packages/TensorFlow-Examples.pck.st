@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 2 March 2017 at 6:33:28 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 April 2017 at 8:31:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 54!
+!provides: 'TensorFlow-Examples' 1 55!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1778,6 +1778,11 @@ predict: inputs andLearnFrom: label
 		values: {inputs asFloatTensor. label asInt32Tensor}
 		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
+
+!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 4/15/2017 20:29:53'!
+, other 
+	other previous: self.
+	^ other! !
 
 !NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:55:58'!
 backprop: adjustedGradient
