@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 15 April 2017 at 8:31:24 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 7:56:01 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 55!
+!provides: 'TensorFlow-Examples' 1 56!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -145,7 +145,7 @@ ExampleOLSPlan class
 
 !classDefinition: #L2Loss category: #'TensorFlow-Examples'!
 Object subclass: #L2Loss
-	instanceVariableNames: ''
+	instanceVariableNames: 'graph previous prediction expectedLabel loss'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -215,7 +215,7 @@ MNISTSoftMaxExamplePlan class
 
 !classDefinition: #NNLayer category: #'TensorFlow-Examples'!
 Object subclass: #NNLayer
-	instanceVariableNames: 'graph inputSize outputSize output input weights biases activation name backprop learnWeights learningRate learnBiases previous'
+	instanceVariableNames: 'graph inputSize outputSize output input weights biases activation name backprop learnWeights learnBiases previous'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -1312,6 +1312,48 @@ initializeGraphWithOperations
 	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:52:32'!
+backpropagate: adjustedGradient
+	previous backprop: adjustedGradient! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:31:50'!
+graph: aGraph
+	graph _ aGraph! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:48:18'!
+initializeInferenceGraph
+	prediction _ previous output.! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:51:23'!
+initializeLearningGraph
+	| gradient |
+	graph
+		fromBlock: [ 
+			gradient _ (prediction - expectedLabel)]
+		named: 'learning-L2loss'.
+	self backpropagate: gradient.! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:50:37'!
+initializeLossGraph
+	loss _ graph
+		fromBlock: [ :expected |
+			expectedLabel _ expected.
+			(prediction - expectedLabel) squared meanOn: #(0) asInt32Tensor ]
+		inputTypes: {TF_Tensor typeFloat}
+		named: 'L2-loss'.! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:41:01'!
+initializeParameters
+	! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:32:21'!
+previous: aLayer
+	previous _ aLayer! !
+
+!L2Loss class methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:31:27'!
+on: graph
+	^ self new graph: graph! !
+
 !MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:44:41'!
 graph
 	^ graph! !
@@ -1788,15 +1830,15 @@ predict: inputs andLearnFrom: label
 backprop: adjustedGradient
 	backprop _ adjustedGradient! !
 
-!NNLayer methodsFor: 'backpropagation' stamp: 'JB 2/26/2017 15:54:23'!
+!NNLayer methodsFor: 'backpropagation' stamp: 'JB 4/19/2017 19:55:28'!
 backpropagate: adjustedGradient
-	previous backprop: adjustedGradient! !
+	previous  ifNotNil: [previous backprop: adjustedGradient]! !
 
 !NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:52:20'!
 graph: aTFGraph
 	graph _ aTFGraph! !
 
-!NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 16:58:41'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:39:08'!
 initializeInferenceGraph
 	| block operations |
 	operations _ [| netInput |
@@ -1804,15 +1846,16 @@ initializeInferenceGraph
 		activation activate: netInput].
 	block _ previous isNil 
 			ifTrue: [[:in| input _ in. operations value]]
-			ifFalse: [[operations value]].
+			ifFalse: [input _ previous output. [operations value]].
 	output _ graph fromBlock: block named: name.
 	^ output! !
 
-!NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 14:58:30'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:54:34'!
 initializeLearningGraph
-	| axis0 batchSize gradient |
+	| axis0 batchSize gradient learningRate |
 	axis0 _ graph const: #(0) asInt32Tensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: name, '-batchSize'.
+	learningRate _ 0.1 asTensor.
 	graph
 		fromBlock: [ | meanGradient |
 			gradient _ activation gradientFrom: backprop at: output. 
@@ -1862,10 +1905,9 @@ outputSize
 outputSize: anInteger
 	outputSize _ anInteger! !
 
-!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 16:59:17'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:37:57'!
 previous: aNNLayer
-	previous _ aNNLayer.
-	input _ previous output.! !
+	previous _ aNNLayer.! !
 
 !NNLayer methodsFor: 'activation function' stamp: 'JB 3/2/2017 17:57:21'!
 useIdentity
@@ -1879,7 +1921,7 @@ useRectified
 useSigmoid
 	activation _ SigmoidActivationFunction on: graph! !
 
-!NNLayer class methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:52:51'!
+!NNLayer class methodsFor: 'instance creation' stamp: 'JB 2/26/2017 15:52:51'!
 on: graph named: name
 	^ self new graph: graph; name: name! !
 
@@ -2233,16 +2275,28 @@ addDimensions
 				outputSize: outputSize.
 		inputSize _ outputSize]! !
 
-!RegressionUsingLayersExample methodsFor: 'layers' stamp: 'JB 2/26/2017 16:42:31'!
+!RegressionUsingLayersExample methodsFor: 'layers' stamp: 'JB 4/19/2017 19:34:42'!
 buildLayers
 	| layer1 layer2 layer3 layer4 output |
 	layer1 _ (NNLayer on: graph named: 'layer1') useRectified.
 	layer2 _ (NNLayer on: graph named:  'layer2') useSigmoid; previous: layer1.
 	layer3 _ (NNLayer on: graph named: 'layer3') useSigmoid; previous: layer2.
 	layer4 _ (NNLayer on: graph named: 'layer4') useIdentity; previous: layer3.
-	output _ L2Loss on: graph; previous: layer4.
-	layers _ {layer1. layer2. layer3. layer4. output}
+	output _ (L2Loss on: graph) previous: layer4.
+	layers _ {layer1. layer2.  layer3. layer4. output}
 	 ! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:37'!
+hidden1Size
+	^ 20! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:41'!
+hidden2Size
+	^ 20! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:45'!
+hidden3Size
+	^ 20! !
 
 !RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:37:33'!
 initialize
@@ -2254,14 +2308,23 @@ initialize
 initializeGraph
 	graph _ TF_Graph create! !
 
-!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 16:00:56'!
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:51:51'!
 initializeLayers
 	self buildLayers;
 		addDimensions.
 	layers do:[:layer| layer 
 								initializeParameters;
 								initializeInferenceGraph].
-	layers reversed do:[:layer| layer initializeInferenceGraph]! !
+	layers last initializeLossGraph.
+	layers reversed do:[:layer| layer initializeLearningGraph]! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:25'!
+inputSize
+	^ 1! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:31'!
+outputSize
+	^ 1! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
