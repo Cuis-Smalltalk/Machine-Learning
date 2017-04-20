@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 7:56:01 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 8:18:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 56!
+!provides: 'TensorFlow-Examples' 1 57!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -255,7 +255,7 @@ RegressionNNExample class
 
 !classDefinition: #RegressionUsingLayersExample category: #'TensorFlow-Examples'!
 Object subclass: #RegressionUsingLayersExample
-	instanceVariableNames: 'graph layers'
+	instanceVariableNames: 'graph layers session'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -1346,6 +1346,10 @@ initializeLossGraph
 initializeParameters
 	! !
 
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:12:12'!
+output
+	^ prediction output! !
+
 !L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:32:21'!
 previous: aLayer
 	previous _ aLayer! !
@@ -1850,7 +1854,7 @@ initializeInferenceGraph
 	output _ graph fromBlock: block named: name.
 	^ output! !
 
-!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:54:34'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 20:15:10'!
 initializeLearningGraph
 	| axis0 batchSize gradient learningRate |
 	axis0 _ graph const: #(0) asInt32Tensor.
@@ -1862,7 +1866,7 @@ initializeLearningGraph
 			meanGradient _ gradient meanOn: axis0.
 			learnWeights _ weights descent: input \* gradient @/ batchSize rate: learningRate.
 			learnBiases _ biases descent: meanGradient rate: learningRate]
-		named: name, '- learning'.
+		named: name, '-learning'.
 	self backpropagate: gradient *\ weights! !
 
 !NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:31:17'!
@@ -2298,11 +2302,13 @@ hidden2Size
 hidden3Size
 	^ 20! !
 
-!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:37:33'!
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 4/19/2017 20:13:41'!
 initialize
 	super initialize.
-	self initializeGraph.
-	self initializeLayers.! !
+	self
+			initializeGraph;
+			initializeLayers;
+			initializeSession ! !
 
 !RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:37:14'!
 initializeGraph
@@ -2318,13 +2324,35 @@ initializeLayers
 	layers last initializeLossGraph.
 	layers reversed do:[:layer| layer initializeLearningGraph]! !
 
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:13:13'!
+initializeSession
+	session _ TF_Session on: graph.
+	graph initializeOn: session! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:16:19'!
+input
+	^ layers first input input: 0! !
+
 !RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:25'!
 inputSize
 	^ 1! !
 
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:16:52'!
+output
+	^ layers last output! !
+
 !RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:31'!
 outputSize
 	^ 1! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:14:01'!
+predict: inputs
+	| results |
+	results _ session
+		runInputs: {self input}
+		values: {inputs asFloatTensor}
+		outputs: {self output}.
+	^ results first! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
