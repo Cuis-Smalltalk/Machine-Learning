@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 8:18:24 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 10:17:51 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 57!
+!provides: 'TensorFlow-Examples' 1 58!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -419,10 +419,41 @@ testSinglePointRegression
 	self assert: loss first closeTo: 0.
 	! !
 
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 4/19/2017 22:06:32'!
+testSinglePointRegressionLayers
+	| function loss net results rnd x y |
+	net _ RegressionUsingLayersExample new.
+	function _ RegressionNNExample exampleFunction.
+	rnd _ Random new.
+	x _ rnd next.
+	y _ function value: x.
+	100 timesRepeat:[net predict: {{x}} andLearnFrom:{{y}}].
+	results _ net predict: {{x}} andCompareTo: {{y}}.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
+
 !TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:04'!
 testTwoPointsRegression
 	| function loss net results  interval xs ys |
 	net _ RegressionNNExample new.
+	function _ RegressionNNExample exampleFunction.
+	xs _ {{0.1}. {0.6}}.
+	ys _ {{function value: xs first first}. 
+			{function value: xs second first}}.
+	interval _ 1 to: xs size.
+	1000 timesRepeat: [ |index |
+		index _ interval atRandom.
+		net predict: {xs at: index} andLearnFrom:{ys at: index}].
+	results _ net predict: xs andCompareTo: ys.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 4/19/2017 22:17:10'!
+testTwoPointsRegressionLayers
+	| function loss net results  interval xs ys |
+	net _ RegressionUsingLayersExample new.
 	function _ RegressionNNExample exampleFunction.
 	xs _ {{0.1}. {0.6}}.
 	ys _ {{function value: xs first first}. 
@@ -1316,6 +1347,10 @@ initializeGraphWithOperations
 backpropagate: adjustedGradient
 	previous backprop: adjustedGradient! !
 
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 21:58:55'!
+expectedOutput
+	^ expectedLabel! !
+
 !L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:31:50'!
 graph: aGraph
 	graph _ aGraph! !
@@ -1345,6 +1380,14 @@ initializeLossGraph
 !L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:41:01'!
 initializeParameters
 	! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:05:03'!
+learningObjects
+	^ {loss output}! !
+
+!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:15:42'!
+loss
+	^ loss output! !
 
 !L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:12:12'!
 output
@@ -1893,6 +1936,10 @@ inputSize
 inputSize: anInteger
 	inputSize _ anInteger! !
 
+!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 22:04:36'!
+learningObjects
+	^ {learnWeights output. learnBiases output}! !
+
 !NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:51:50'!
 name: aString
 	name _ aString! !
@@ -2290,6 +2337,10 @@ buildLayers
 	layers _ {layer1. layer2.  layer3. layer4. output}
 	 ! !
 
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 21:58:23'!
+expectedOutput
+	^ layers last expectedOutput input:0! !
+
 !RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:37'!
 hidden1Size
 	^ 20! !
@@ -2337,6 +2388,12 @@ input
 inputSize
 	^ 1! !
 
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:03:36'!
+learningObjects
+	^ layers inject: #() into: [:answer :layer| | objects | 
+		objects _ layer learningObjects.
+		answer, objects].! !
+
 !RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:16:52'!
 output
 	^ layers last output! !
@@ -2353,6 +2410,26 @@ predict: inputs
 		values: {inputs asFloatTensor}
 		outputs: {self output}.
 	^ results first! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:15:56'!
+predict: inputs andCompareTo: label
+	| results output outputLayer |
+	outputLayer _ layers last.
+	output _ {outputLayer output. outputLayer loss}.
+	results _ session
+		runInputs: {self input. self expectedOutput}
+		values: {inputs asFloatTensor. label asFloatTensor}
+		outputs: output.
+	^ results! !
+
+!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:05:16'!
+predict: inputs andLearnFrom: label
+	| results |
+	results _ session
+		runInputs: {self input. self expectedOutput}
+		values: {inputs asFloatTensor. label asFloatTensor}
+		outputs: self learningObjects.
+	^ results! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
