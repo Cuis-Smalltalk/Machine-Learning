@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 10:25:54 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 10:30:21 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 59!
+!provides: 'TensorFlow-Examples' 1 60!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -824,55 +824,6 @@ testOLS: ols
 !TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/29/2017 05:16:11'!
 testOLSWithOperations
 	self testOLS: OLSExample new initializeWithOperations! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/26/2017 16:08:31'!
-testRegressionLayersForwardGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| regressor result |
-	regressor _ RegressionUsingLayersExample new.
-	
-	self 
-		shouldnt: [
-			result _ regressor predict: {
-				ByteArray new: regressor inputSize.
-				(ByteArray new: regressor inputSize) + 1.
-			}]
-		raise: Error.
-
-	self assert: {2} equals: result shape.
-	self assert: (result asNumbers first closeTo: 0).
-	self assert: (result asNumbers second closeTo: 0).
-! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/26/2017 16:09:30'!
-testRegressionLayersGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| regressor results |
-	regressor _ RegressionUsingLayersExample new.
-	
-	self 
-		shouldnt: [
-			results _ regressor
-				predict: {
-					ByteArray new: regressor inputSize.
-					(ByteArray new: regressor inputSize) + 1}
-				andCompareTo: #(1 2).
-				]
-		raise: Error.
-
-	self assert: {2} equals: results first shape.
-	self assert: results first asNumbers first equals: 0.
-	self assert: results first asNumbers second equals: 0.
-
-	
-	self assert: #() equals: results second shape.
-	self assert: (results second allFloats sum abs > 0).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/26/2017 16:07:00'!
 testRegressionLayersItialization
