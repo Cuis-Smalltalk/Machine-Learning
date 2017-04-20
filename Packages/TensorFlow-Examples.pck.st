@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 10:17:51 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 10:25:54 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 58!
+!provides: 'TensorFlow-Examples' 1 59!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -1343,23 +1343,23 @@ initializeGraphWithOperations
 	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:52:32'!
+!L2Loss methodsFor: 'backpropagation' stamp: 'JB 4/19/2017 19:52:32'!
 backpropagate: adjustedGradient
 	previous backprop: adjustedGradient! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 21:58:55'!
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 21:58:55'!
 expectedOutput
 	^ expectedLabel! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:31:50'!
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:31:50'!
 graph: aGraph
 	graph _ aGraph! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:48:18'!
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:48:18'!
 initializeInferenceGraph
 	prediction _ previous output.! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:51:23'!
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:51:23'!
 initializeLearningGraph
 	| gradient |
 	graph
@@ -1368,7 +1368,7 @@ initializeLearningGraph
 		named: 'learning-L2loss'.
 	self backpropagate: gradient.! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:50:37'!
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:50:37'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [ :expected |
@@ -1377,27 +1377,27 @@ initializeLossGraph
 		inputTypes: {TF_Tensor typeFloat}
 		named: 'L2-loss'.! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:41:01'!
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:41:01'!
 initializeParameters
 	! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:05:03'!
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 22:05:03'!
 learningObjects
 	^ {loss output}! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:15:42'!
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 22:15:42'!
 loss
 	^ loss output! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:12:12'!
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 20:12:12'!
 output
 	^ prediction output! !
 
-!L2Loss methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:32:21'!
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:32:21'!
 previous: aLayer
 	previous _ aLayer! !
 
-!L2Loss class methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:31:27'!
+!L2Loss class methodsFor: 'instance creation' stamp: 'JB 4/19/2017 19:31:27'!
 on: graph
 	^ self new graph: graph! !
 
@@ -1868,11 +1868,6 @@ predict: inputs andLearnFrom: label
 		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
-!NNLayer methodsFor: 'as yet unclassified' stamp: 'JB 4/15/2017 20:29:53'!
-, other 
-	other previous: self.
-	^ other! !
-
 !NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:55:58'!
 backprop: adjustedGradient
 	backprop _ adjustedGradient! !
@@ -2337,19 +2332,19 @@ buildLayers
 	layers _ {layer1. layer2.  layer3. layer4. output}
 	 ! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 21:58:23'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 21:58:23'!
 expectedOutput
 	^ layers last expectedOutput input:0! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:37'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:37'!
 hidden1Size
 	^ 20! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:41'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:41'!
 hidden2Size
 	^ 20! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:45'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:45'!
 hidden3Size
 	^ 20! !
 
@@ -2375,34 +2370,34 @@ initializeLayers
 	layers last initializeLossGraph.
 	layers reversed do:[:layer| layer initializeLearningGraph]! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:13:13'!
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 4/19/2017 20:13:13'!
 initializeSession
 	session _ TF_Session on: graph.
 	graph initializeOn: session! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:16:19'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 20:16:19'!
 input
 	^ layers first input input: 0! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:25'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:25'!
 inputSize
 	^ 1! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:03:36'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 22:03:36'!
 learningObjects
 	^ layers inject: #() into: [:answer :layer| | objects | 
 		objects _ layer learningObjects.
 		answer, objects].! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:16:52'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 20:16:52'!
 output
 	^ layers last output! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 19:33:31'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:31'!
 outputSize
 	^ 1! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 20:14:01'!
+!RegressionUsingLayersExample methodsFor: 'running' stamp: 'JB 4/19/2017 20:14:01'!
 predict: inputs
 	| results |
 	results _ session
@@ -2411,7 +2406,7 @@ predict: inputs
 		outputs: {self output}.
 	^ results first! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:15:56'!
+!RegressionUsingLayersExample methodsFor: 'running' stamp: 'JB 4/19/2017 22:15:56'!
 predict: inputs andCompareTo: label
 	| results output outputLayer |
 	outputLayer _ layers last.
@@ -2422,7 +2417,7 @@ predict: inputs andCompareTo: label
 		outputs: output.
 	^ results! !
 
-!RegressionUsingLayersExample methodsFor: 'as yet unclassified' stamp: 'JB 4/19/2017 22:05:16'!
+!RegressionUsingLayersExample methodsFor: 'running' stamp: 'JB 4/19/2017 22:05:16'!
 predict: inputs andLearnFrom: label
 	| results |
 	results _ session
