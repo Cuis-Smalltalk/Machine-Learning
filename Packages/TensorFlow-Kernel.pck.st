@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 April 2018 at 9:27:08 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 April 2018 at 10:01:01 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 404!
+!provides: 'TensorFlow-Kernel' 1 405!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -5429,15 +5429,15 @@ elementAtOffset: byteOffset put: anExternalStructure
 elementClass
 	^TF_Output! !
 
-!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:03:14'!
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
 template
 	"This method was automatically generated. See TF_OutputArray class>>fields."
-	^TF_Output fromHandle: (handle structAt: 1 length: 12)! !
+	^TF_Output fromHandle: (handle structAt: 1 length: 16)! !
 
-!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:03:14'!
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
 template: anObject
 	"This method was automatically generated. See TF_OutputArray class>>fields."
-	handle structAt: 1 put: anObject getHandle length: 12.! !
+	handle structAt: 1 put: anObject getHandle length: 16.! !
 
 !TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:03'!
 fields
@@ -6586,17 +6586,28 @@ operationOn: aTF_Graph
 	answer graph: aTF_Graph.
 	^ answer! !
 
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
+pad
+	"This method was automatically generated. See TF_Output class>>fields."
+	^handle signedLongAt: 13! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
+pad: anObject
+	"This method was automatically generated. See TF_Output class>>fields."
+	handle signedLongAt: 13 put: anObject! !
+
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:26:22'!
 type
 	^ self library operationOutputType: self! !
 
-!TF_Output class methodsFor: 'field definition' stamp: 'JB 4/18/2018 20:13:14'!
+!TF_Output class methodsFor: 'field definition' stamp: 'JB 4/18/2018 21:58:22'!
 fields
 	"self initialize.
 	self defineFields"
 	^#(
 		(operation 'TF_Operation*')
-		(index 'long'))
+		(index 'long')
+		(pad 'long'))
 	! !
 
 !TF_Output class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 10:40:36'!
