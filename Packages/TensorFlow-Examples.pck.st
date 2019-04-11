@@ -1,7 +1,7 @@
 'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 27 February 2017 at 11:19:20 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Examples' 1 45!
-!requires: 'Protocols-HTTP' 1 25 nil!
+!requires: 'WebClient' 1 0 nil!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
@@ -238,10 +238,6 @@ testLabels
 
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:56'!
 testMagic
-	| images labels |
-	images _ MNISTImageFile testSet.
-	labels _ MNISTLabelFile testSet.
-	
 	self assert: images magic = MNISTImageFile magic.
 	self assert: labels magic = MNISTLabelFile magic.! !
 
@@ -303,12 +299,10 @@ testPrediction3LayersSigmoid
 
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 2/18/2017 17:52:54'!
 testPredictionMany
-	| imageSet images labelSet labels loss plan result prediction n |
+	| images labels loss plan result prediction n |
 	n _ 200.
 	
 	plan _ MNISTSoftMaxExamplePlan new.
-	imageSet _ MNISTImageFile testSet.
-	labelSet _ MNISTLabelFile testSet.
 	
 	images _ (1 to: n) collect: [:i | imageSet bytesAt: i].
 	labels _ (1 to: n) collect: [:i | labelSet at: i].
@@ -1258,10 +1252,10 @@ parse: aStream
 	! !
 
 !MNISTFile class methodsFor: 'private' stamp: 'JB 2/5/2017 15:56:42'!
-download: name
+download: aName
 		| url response content file |
-		url _ 'http://yann.lecun.com/exdb/mnist/', name.
-		response _ HTTPClient httpGet: url.
+		url _ 'http://yann.lecun.com/exdb/mnist/', aName.
+		response _ WebClient httpGet: url.
 		content _ response content asByteArray.
 		file _ ('dataset/', name) asFileEntry.
 		file < content.
