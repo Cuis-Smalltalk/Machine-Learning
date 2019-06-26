@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 25 February 2017 at 11:52:34 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 April 2018 at 10:01:01 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 403!
+!provides: 'TensorFlow-Kernel' 1 405!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -338,11 +338,11 @@ testExternalFromArrayOperation
 	self assert: (array at: 2) getHandle = op2 getHandle.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 1/13/2017 13:08:25'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'JB 4/18/2018 21:13:47'!
 testExternalFromArrayOutput
 	| o1 o2 array |
-	o1 _ TF_Output new index: 16r8070605040302010.
-	o2 _ TF_Output new index: 16rFEDCBA9876543210.
+	o1 _ TF_Output new index: 16r40302010.
+	o2 _ TF_Output new index: 16r76543210.
 	array _ TF_OutputArray externalFromArray: (Array with: o1 with: o2).
 
 	self assert: array first index = o1 index.
@@ -374,7 +374,7 @@ testOperationArrayElementsOfRightClass
 	^ self testArray: TF_OperationPtrArray sampleElement: TF_Operation new.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 15:37:49'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'JB 4/18/2018 20:05:49'!
 testOutputArrayAtPut
 	| array size one other operation |
 	size _ 4.
@@ -382,7 +382,7 @@ testOutputArrayAtPut
 	operation _ TF_Operation fromHandle: ExternalAddress new + 16rF1F2F3F4.
 	
 	one _ TF_Output new.
-	one index: 16rF1F2F3F4F5F6F7F8.
+	one index: 16r75F6F7F8.
 	one operation: operation.
 
 	other _ array first.
@@ -394,7 +394,7 @@ testOutputArrayAtPut
 	self assert: one operation = other operation.
 	
 	operation _ TF_Operation fromHandle: ExternalAddress new + 16r12345678.
-	one index: 16rF0F1F2F3F4F5F6F7.
+	one index: 16r75F6F7F8.
 	one operation: operation.
 
 	1 to: size do: [:index |
@@ -5421,20 +5421,20 @@ elementAtOffset: byteOffset
 	
 ! !
 
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:51:07'!
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:11:25'!
 elementAtOffset: byteOffset put: anExternalStructure
-	handle structAt: byteOffset put: anExternalStructure getHandle length: 16.! !
+	handle structAt: byteOffset put: anExternalStructure getHandle length: TF_Output byteSize.! !
 
 !TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:50:48'!
 elementClass
 	^TF_Output! !
 
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 14:09:24'!
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
 template
 	"This method was automatically generated. See TF_OutputArray class>>fields."
 	^TF_Output fromHandle: (handle structAt: 1 length: 16)! !
 
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 14:09:24'!
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
 template: anObject
 	"This method was automatically generated. See TF_OutputArray class>>fields."
 	handle structAt: 1 put: anObject getHandle length: 16.! !
@@ -6559,15 +6559,15 @@ finish
 	status check.
 	^ answer.! !
 
-!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 20:13:17'!
 index
 	"This method was automatically generated. See TF_Output class>>fields."
-	^handle unsignedLongLongAt: 9! !
+	^handle signedLongAt: 9! !
 
-!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 19:55:17'!
 index: anObject
 	"This method was automatically generated. See TF_Output class>>fields."
-	handle unsignedLongLongAt: 9 put: anObject! !
+	handle signedLongAt: 9 put: anObject! !
 
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
 operation
@@ -6586,17 +6586,28 @@ operationOn: aTF_Graph
 	answer graph: aTF_Graph.
 	^ answer! !
 
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
+pad
+	"This method was automatically generated. See TF_Output class>>fields."
+	^handle signedLongAt: 13! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
+pad: anObject
+	"This method was automatically generated. See TF_Output class>>fields."
+	handle signedLongAt: 13 put: anObject! !
+
 !TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:26:22'!
 type
 	^ self library operationOutputType: self! !
 
-!TF_Output class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:46:11'!
+!TF_Output class methodsFor: 'field definition' stamp: 'JB 4/18/2018 21:58:22'!
 fields
 	"self initialize.
 	self defineFields"
 	^#(
 		(operation 'TF_Operation*')
-		(index 'ulonglong'))
+		(index 'long')
+		(pad 'long'))
 	! !
 
 !TF_Output class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 10:40:36'!
