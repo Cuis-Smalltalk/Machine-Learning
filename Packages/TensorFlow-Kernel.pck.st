@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 18 April 2018 at 10:01:01 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 27 June 2019 at 3:52:43 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 405!
+!provides: 'TensorFlow-Kernel' 1 406!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -2353,11 +2353,11 @@ testNewVariableInitializationNodeNotRun
 		assert: 'Error: FAILED_PRECONDITION: Attempting to use uninitialized value var'
 		equals: lastError lines first! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 02:51:48'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 6/27/2019 15:52:17'!
 testNewVariableNoAttributes
 	| graph error |
 	graph _ TF_Graph create.
-	error _  'INVALID_ARGUMENT: NodeDef missing attrs ''dtype'', ''shape'' from Op<name=Variable; signature= -> ref:Ref(dtype); attr=shape:shape; attr=dtype:type; attr=container:string,default=""; attr=shared_name:string,default=""; is_stateful=true>; NodeDef: var = Variable[_class=[], container="", shared_name=""]()'.
+	error _  'INVALID_ARGUMENT: NodeDef missing attrs ''shape'', ''dtype'' from Op<name=Variable; signature= -> ref:Ref(dtype); attr=shape:shape; attr=dtype:type; attr=container:string,default=""; attr=shared_name:string,default=""; is_stateful=true>; NodeDef: var = Variable[_class=[], container="", shared_name=""]()'.
 	self
 		should: [graph newOperation: 'Variable' named: 'var']
 		raiseError: error.! !
