@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 27 February 2017 at 11:19:20 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 19 April 2017 at 10:30:21 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 54!
+!provides: 'TensorFlow-Examples' 1 60!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'Protocols-HTTP' 1 25 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -145,7 +145,7 @@ ExampleOLSPlan class
 
 !classDefinition: #L2Loss category: #'TensorFlow-Examples'!
 Object subclass: #L2Loss
-	instanceVariableNames: ''
+	instanceVariableNames: 'graph previous prediction expectedLabel loss'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -245,7 +245,7 @@ OLSExample class
 
 !classDefinition: #RegressionNNExample category: #'TensorFlow-Examples'!
 Object subclass: #RegressionNNExample
-	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 expectedLabel loss session hidden3 learn'
+	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 learnWeights3 learnBiases3 learnWeights2 learnBiases2 learnWeights1 learnBiases1 expectedLabel loss session hidden3 learnWeights4 learnBiases4'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -255,7 +255,7 @@ RegressionNNExample class
 
 !classDefinition: #RegressionUsingLayersExample category: #'TensorFlow-Examples'!
 Object subclass: #RegressionUsingLayersExample
-	instanceVariableNames: 'graph layers'
+	instanceVariableNames: 'graph layers session'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
@@ -421,10 +421,41 @@ testSinglePointRegression
 	self assert: loss first closeTo: 0.
 	! !
 
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 4/19/2017 22:06:32'!
+testSinglePointRegressionLayers
+	| function loss net results rnd x y |
+	net _ RegressionUsingLayersExample new.
+	function _ RegressionNNExample exampleFunction.
+	rnd _ Random new.
+	x _ rnd next.
+	y _ function value: x.
+	100 timesRepeat:[net predict: {{x}} andLearnFrom:{{y}}].
+	results _ net predict: {{x}} andCompareTo: {{y}}.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
+
 !TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:04'!
 testTwoPointsRegression
 	| function loss net results  interval xs ys |
 	net _ RegressionNNExample new.
+	function _ RegressionNNExample exampleFunction.
+	xs _ {{0.1}. {0.6}}.
+	ys _ {{function value: xs first first}. 
+			{function value: xs second first}}.
+	interval _ 1 to: xs size.
+	1000 timesRepeat: [ |index |
+		index _ interval atRandom.
+		net predict: {xs at: index} andLearnFrom:{ys at: index}].
+	results _ net predict: xs andCompareTo: ys.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 4/19/2017 22:17:10'!
+testTwoPointsRegressionLayers
+	| function loss net results  interval xs ys |
+	net _ RegressionUsingLayersExample new.
 	function _ RegressionNNExample exampleFunction.
 	xs _ {{0.1}. {0.6}}.
 	ys _ {{function value: xs first first}. 
@@ -795,55 +826,6 @@ testOLS: ols
 !TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/29/2017 05:16:11'!
 testOLSWithOperations
 	self testOLS: OLSExample new initializeWithOperations! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/26/2017 16:08:31'!
-testRegressionLayersForwardGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| regressor result |
-	regressor _ RegressionUsingLayersExample new.
-	
-	self 
-		shouldnt: [
-			result _ regressor predict: {
-				ByteArray new: regressor inputSize.
-				(ByteArray new: regressor inputSize) + 1.
-			}]
-		raise: Error.
-
-	self assert: {2} equals: result shape.
-	self assert: (result asNumbers first closeTo: 0).
-	self assert: (result asNumbers second closeTo: 0).
-! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/26/2017 16:09:30'!
-testRegressionLayersGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| regressor results |
-	regressor _ RegressionUsingLayersExample new.
-	
-	self 
-		shouldnt: [
-			results _ regressor
-				predict: {
-					ByteArray new: regressor inputSize.
-					(ByteArray new: regressor inputSize) + 1}
-				andCompareTo: #(1 2).
-				]
-		raise: Error.
-
-	self assert: {2} equals: results first shape.
-	self assert: results first asNumbers first equals: 0.
-	self assert: results first asNumbers second equals: 0.
-
-	
-	self assert: #() equals: results second shape.
-	self assert: (results second allFloats sum abs > 0).! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-Regression' stamp: 'JB 2/26/2017 16:07:00'!
 testRegressionLayersItialization
@@ -1314,6 +1296,64 @@ initializeGraphWithOperations
 	outputs _ {prediction output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
+!L2Loss methodsFor: 'backpropagation' stamp: 'JB 4/19/2017 19:52:32'!
+backpropagate: adjustedGradient
+	previous backprop: adjustedGradient! !
+
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 21:58:55'!
+expectedOutput
+	^ expectedLabel! !
+
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:31:50'!
+graph: aGraph
+	graph _ aGraph! !
+
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:48:18'!
+initializeInferenceGraph
+	prediction _ previous output.! !
+
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:51:23'!
+initializeLearningGraph
+	| gradient |
+	graph
+		fromBlock: [ 
+			gradient _ (prediction - expectedLabel)]
+		named: 'learning-L2loss'.
+	self backpropagate: gradient.! !
+
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:50:37'!
+initializeLossGraph
+	loss _ graph
+		fromBlock: [ :expected |
+			expectedLabel _ expected.
+			(prediction - expectedLabel) squared meanOn: #(0) asInt32Tensor ]
+		inputTypes: {TF_Tensor typeFloat}
+		named: 'L2-loss'.! !
+
+!L2Loss methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:41:01'!
+initializeParameters
+	! !
+
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 22:05:03'!
+learningObjects
+	^ {loss output}! !
+
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 22:15:42'!
+loss
+	^ loss output! !
+
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 20:12:12'!
+output
+	^ prediction output! !
+
+!L2Loss methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:32:21'!
+previous: aLayer
+	previous _ aLayer! !
+
+!L2Loss class methodsFor: 'instance creation' stamp: 'JB 4/19/2017 19:31:27'!
+on: graph
+	^ self new graph: graph! !
+
 !MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:44:41'!
 graph
 	^ graph! !
@@ -1782,15 +1822,15 @@ predict: inputs andLearnFrom: label
 backprop: adjustedGradient
 	backprop _ adjustedGradient! !
 
-!NNLayer methodsFor: 'backpropagation' stamp: 'JB 2/26/2017 15:54:23'!
+!NNLayer methodsFor: 'backpropagation' stamp: 'JB 4/19/2017 19:55:28'!
 backpropagate: adjustedGradient
-	previous backprop: adjustedGradient! !
+	previous  ifNotNil: [previous backprop: adjustedGradient]! !
 
 !NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:52:20'!
 graph: aTFGraph
 	graph _ aTFGraph! !
 
-!NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 16:58:41'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:39:08'!
 initializeInferenceGraph
 	| block operations |
 	operations _ [| netInput |
@@ -1798,22 +1838,23 @@ initializeInferenceGraph
 		activation activate: netInput].
 	block _ previous isNil 
 			ifTrue: [[:in| input _ in. operations value]]
-			ifFalse: [[operations value]].
+			ifFalse: [input _ previous output. [operations value]].
 	output _ graph fromBlock: block named: name.
 	^ output! !
 
-!NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 14:58:30'!
+!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 20:15:10'!
 initializeLearningGraph
-	| axis0 batchSize gradient |
+	| axis0 batchSize gradient learningRate |
 	axis0 _ graph const: #(0) asInt32Tensor.
 	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: name, '-batchSize'.
+	learningRate _ 0.1 asTensor.
 	graph
 		fromBlock: [ | meanGradient |
 			gradient _ activation gradientFrom: backprop at: output. 
 			meanGradient _ gradient meanOn: axis0.
 			learnWeights _ weights descent: input \* gradient @/ batchSize rate: learningRate.
 			learnBiases _ biases descent: meanGradient rate: learningRate]
-		named: name, '- learning'.
+		named: name, '-learning'.
 	self backpropagate: gradient *\ weights! !
 
 !NNLayer methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:31:17'!
@@ -1840,6 +1881,10 @@ inputSize
 inputSize: anInteger
 	inputSize _ anInteger! !
 
+!NNLayer methodsFor: 'initialization' stamp: 'JB 4/19/2017 22:04:36'!
+learningObjects
+	^ {learnWeights output. learnBiases output}! !
+
 !NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 15:51:50'!
 name: aString
 	name _ aString! !
@@ -1856,10 +1901,9 @@ outputSize
 outputSize: anInteger
 	outputSize _ anInteger! !
 
-!NNLayer methodsFor: 'accessing' stamp: 'JB 2/26/2017 16:59:17'!
+!NNLayer methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:37:57'!
 previous: aNNLayer
-	previous _ aNNLayer.
-	input _ previous output.! !
+	previous _ aNNLayer.! !
 
 !NNLayer methodsFor: 'activation function' stamp: 'JB 3/2/2017 17:57:21'!
 useIdentity
@@ -1873,7 +1917,7 @@ useRectified
 useSigmoid
 	activation _ SigmoidActivationFunction on: graph! !
 
-!NNLayer class methodsFor: 'as yet unclassified' stamp: 'JB 2/26/2017 15:52:51'!
+!NNLayer class methodsFor: 'instance creation' stamp: 'JB 2/26/2017 15:52:51'!
 on: graph named: name
 	^ self new graph: graph; name: name! !
 
@@ -2237,35 +2281,110 @@ addDimensions
 				outputSize: outputSize.
 		inputSize _ outputSize]! !
 
-!RegressionUsingLayersExample methodsFor: 'layers' stamp: 'JB 2/26/2017 16:42:31'!
+!RegressionUsingLayersExample methodsFor: 'layers' stamp: 'JB 4/19/2017 19:34:42'!
 buildLayers
 	| layer1 layer2 layer3 layer4 output |
 	layer1 _ (NNLayer on: graph named: 'layer1') useRectified.
 	layer2 _ (NNLayer on: graph named:  'layer2') useSigmoid; previous: layer1.
 	layer3 _ (NNLayer on: graph named: 'layer3') useSigmoid; previous: layer2.
 	layer4 _ (NNLayer on: graph named: 'layer4') useIdentity; previous: layer3.
-	output _ L2Loss on: graph; previous: layer4.
-	layers _ {layer1. layer2. layer3. layer4. output}
+	output _ (L2Loss on: graph) previous: layer4.
+	layers _ {layer1. layer2.  layer3. layer4. output}
 	 ! !
 
-!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:37:33'!
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 21:58:23'!
+expectedOutput
+	^ layers last expectedOutput input:0! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:37'!
+hidden1Size
+	^ 20! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:41'!
+hidden2Size
+	^ 20! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:45'!
+hidden3Size
+	^ 20! !
+
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 4/19/2017 20:13:41'!
 initialize
 	super initialize.
-	self initializeGraph.
-	self initializeLayers.! !
+	self
+			initializeGraph;
+			initializeLayers;
+			initializeSession ! !
 
 !RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 15:37:14'!
 initializeGraph
 	graph _ TF_Graph create! !
 
-!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 2/26/2017 16:00:56'!
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 4/19/2017 19:51:51'!
 initializeLayers
 	self buildLayers;
 		addDimensions.
 	layers do:[:layer| layer 
 								initializeParameters;
 								initializeInferenceGraph].
-	layers reversed do:[:layer| layer initializeInferenceGraph]! !
+	layers last initializeLossGraph.
+	layers reversed do:[:layer| layer initializeLearningGraph]! !
+
+!RegressionUsingLayersExample methodsFor: 'initialization' stamp: 'JB 4/19/2017 20:13:13'!
+initializeSession
+	session _ TF_Session on: graph.
+	graph initializeOn: session! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 20:16:19'!
+input
+	^ layers first input input: 0! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:25'!
+inputSize
+	^ 1! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 22:03:36'!
+learningObjects
+	^ layers inject: #() into: [:answer :layer| | objects | 
+		objects _ layer learningObjects.
+		answer, objects].! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 20:16:52'!
+output
+	^ layers last output! !
+
+!RegressionUsingLayersExample methodsFor: 'accessing' stamp: 'JB 4/19/2017 19:33:31'!
+outputSize
+	^ 1! !
+
+!RegressionUsingLayersExample methodsFor: 'running' stamp: 'JB 4/19/2017 20:14:01'!
+predict: inputs
+	| results |
+	results _ session
+		runInputs: {self input}
+		values: {inputs asFloatTensor}
+		outputs: {self output}.
+	^ results first! !
+
+!RegressionUsingLayersExample methodsFor: 'running' stamp: 'JB 4/19/2017 22:15:56'!
+predict: inputs andCompareTo: label
+	| results output outputLayer |
+	outputLayer _ layers last.
+	output _ {outputLayer output. outputLayer loss}.
+	results _ session
+		runInputs: {self input. self expectedOutput}
+		values: {inputs asFloatTensor. label asFloatTensor}
+		outputs: output.
+	^ results! !
+
+!RegressionUsingLayersExample methodsFor: 'running' stamp: 'JB 4/19/2017 22:05:16'!
+predict: inputs andLearnFrom: label
+	| results |
+	results _ session
+		runInputs: {self input. self expectedOutput}
+		values: {inputs asFloatTensor. label asFloatTensor}
+		outputs: self learningObjects.
+	^ results! !
 
 !SimpleNeuralNetworkExample methodsFor: 'accessing' stamp: 'gera 1/30/2017 17:56:57'!
 initialWeights: aCollection
