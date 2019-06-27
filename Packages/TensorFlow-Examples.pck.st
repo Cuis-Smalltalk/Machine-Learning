@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3043] on 27 February 2017 at 11:19:20 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 27 June 2019 at 3:47:07 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 45!
-!requires: 'WebClient' 1 0 nil!
+!provides: 'TensorFlow-Examples' 1 46!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
+!requires: 'WebClient' 1 0 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -236,10 +236,14 @@ testLabels
 	self assert: test count equals: 10000.
 	self assert: training count equals: 60000.! !
 
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:56'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 6/27/2019 15:44:37'!
 testMagic
-	self assert: images magic = MNISTImageFile magic.
-	self assert: labels magic = MNISTLabelFile magic.! !
+	| imageSet labelSet |
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	
+ 	self assert: imageSet magic = MNISTImageFile magic.
+	self assert: labelSet magic = MNISTLabelFile magic.! !
 
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/17/2017 19:45:57'!
 testPrediction
@@ -297,16 +301,12 @@ testPrediction3LayersSigmoid
 	self assert: prediction asNumbers equals: labels.
 ! !
 
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 2/18/2017 17:52:54'!
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 6/27/2019 15:46:21'!
 testPredictionMany
-	| images labels loss plan result prediction n |
-	n _ 200.
+	| loss plan result prediction |
 	
 	plan _ MNISTSoftMaxExamplePlan new.
-	
-	images _ (1 to: n) collect: [:i | imageSet bytesAt: i].
-	labels _ (1 to: n) collect: [:i | labelSet at: i].
-	
+
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) asNumbers.
 	self deny: (loss closeTo: 0).
