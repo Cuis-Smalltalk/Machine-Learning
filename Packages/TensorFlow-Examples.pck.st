@@ -1,10 +1,10 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 27 June 2019 at 3:47:07 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 29 June 2019 at 1:25:26 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 47!
+!provides: 'TensorFlow-Examples' 1 48!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'WebClient' 1 0 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
-TestCase subclass: #TensorFlowExamplesSlowTest
+TensorFlowTestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -14,7 +14,7 @@ TensorFlowExamplesSlowTest class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
-TestCase subclass: #TensorFlowExamplesTest
+TensorFlowTestCase subclass: #TensorFlowExamplesTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''

@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 27 June 2019 at 3:52:43 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 29 June 2019 at 1:25:24 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 406!
+!provides: 'TensorFlow-Kernel' 1 408!
 !requires: 'FFI' 1 18 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
@@ -12,8 +12,18 @@ TestCase subclass: #ExternalWordArrayTest
 ExternalWordArrayTest class
 	instanceVariableNames: ''!
 
+!classDefinition: #TensorFlowTestCase category: #'TensorFlow-Kernel'!
+TestCase subclass: #TensorFlowTestCase
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TensorFlowTestCase class' category: #'TensorFlow-Kernel'!
+TensorFlowTestCase class
+	instanceVariableNames: ''!
+
 !classDefinition: #TensorFlowCAPISlowTests category: #'TensorFlow-Kernel'!
-TestCase subclass: #TensorFlowCAPISlowTests
+TensorFlowTestCase subclass: #TensorFlowCAPISlowTests
 	instanceVariableNames: 'library'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -23,7 +33,7 @@ TensorFlowCAPISlowTests class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
-TestCase subclass: #TensorFlowCAPITest
+TensorFlowTestCase subclass: #TensorFlowCAPITest
 	instanceVariableNames: 'library'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -33,7 +43,7 @@ TensorFlowCAPITest class
 	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowOperationsTest category: #'TensorFlow-Kernel'!
-TestCase subclass: #TensorFlowOperationsTest
+TensorFlowTestCase subclass: #TensorFlowOperationsTest
 	instanceVariableNames: 'library'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -290,14 +300,6 @@ asAsciiZ
 asTensor
 	^ TF_Tensor fromString: self! !
 
-!TestCase methodsFor: '*TensorFlow-Kernel' stamp: 'JB 2/17/2017 19:41:08'!
-assert: expected closeTo: actual
-	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
-
-!TestCase methodsFor: '*TensorFlow-Kernel' stamp: 'gera 6/28/2019 23:09:59'!
-deny: expected closeTo: actual
-	self deny: (expected closeTo: actual)! !
-
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
 	| array size  |
@@ -488,6 +490,44 @@ testUInt64ArrayAtPut
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/27/2016 18:11:59'!
 testUInt64ArrayElementsOfRightClass
 	^ self testArray: Int64Array sampleElement: 1234.! !
+
+!TensorFlowTestCase methodsFor: 'asserting' stamp: 'gera 6/29/2019 13:16:30'!
+assert: aNumber closeTo: anotherNumber
+	^ self
+		assert: (self number: aNumber isCloseTo: anotherNumber)
+		description: (self comparingStringBetween: aNumber and: anotherNumber)
+! !
+
+!TensorFlowTestCase methodsFor: 'asserting' stamp: 'gera 6/29/2019 13:12:25'!
+assertAll: expectedArray closeTo: actualArray
+	expectedArray with: actualArray do: [:expected :actual |
+		self assert: expected closeTo: actual]! !
+
+!TensorFlowTestCase methodsFor: 'asserting' stamp: 'gera 6/29/2019 13:15:53'!
+comparingStringDifferentBetween: expected and: actual
+	^ String streamContents: [:stream |
+		stream
+			nextPutAll: 'Expected something different to ';
+			nextPutAll: (expected printStringLimitedTo: 50);
+			nextPutAll: ' but was ';
+			nextPutAll: (actual printStringLimitedTo: 50);
+			nextPutAll: '.'
+		]! !
+
+!TensorFlowTestCase methodsFor: 'asserting' stamp: 'gera 6/29/2019 13:18:11'!
+deny: aNumber closeTo: anotherNumber
+	^ self
+		deny: (self number: aNumber isCloseTo: anotherNumber)
+		description: (self comparingStringDifferentBetween: aNumber and: anotherNumber)
+! !
+
+!TensorFlowTestCase methodsFor: 'asserting' stamp: 'gera 6/29/2019 13:21:52'!
+number: aNumber isCloseTo: anotherNumber
+ 	"are these two numbers close?"
+	self = 0.0 ifTrue: [^anotherNumber abs < 0.0001].
+	anotherNumber = 0 ifTrue: [^aNumber abs < 0.0001].
+	^aNumber = anotherNumber asFloat
+		or: [(aNumber - anotherNumber) abs / (aNumber abs max: anotherNumber abs) < 0.0001]! !
 
 !TensorFlowCAPISlowTests methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 02:22:17'!
 mulGraphTwoInputsInt64ConstTensorDeleted
@@ -2321,7 +2361,7 @@ testNewVariableInitialValueAutomaticInitialization
 
 	self assert: result allFloats equals: pisTensor allFloats! !
 
-!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:20:42'!
+!TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 6/29/2019 13:13:14'!
 testNewVariableInitialization
 	| graph var assign pi result session |
 	graph _ TF_Graph create.
@@ -2337,7 +2377,7 @@ testNewVariableInitialization
 	session runOutput: (assign output: 0).
 	result _ session runOutput: (var output: 0).
 
-	self assert: (result allFloats first closeTo: 3.14)! !
+	self assert: result allFloats first closeTo: 3.14! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/29/2017 03:18:42'!
 testNewVariableInitializationNodeNotRun
@@ -3475,13 +3515,6 @@ testWriteDefToFileNamed
 
 	self assert: self constantInt64GraphDef size equals: filedata size.! !
 
-!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:01:08'!
-assert: aNumber closeTo: anotherNumber
-	^ self
-		assert: (aNumber closeTo: anotherNumber)
-		description: (self comparingStringBetween: aNumber and: anotherNumber)
-! !
-
 !TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 15:15:39'!
 assert: integers sizeOn: dimension is: expected
 	| graph session const result size |
@@ -3494,11 +3527,6 @@ assert: integers sizeOn: dimension is: expected
 	result _ session runOutput: size output.
 	
 	self assert: expected equals: result asNumbers.! !
-
-!TensorFlowOperationsTest methodsFor: 'initialization' stamp: 'gera 2/3/2017 00:07:26'!
-assertAll: expectedArray closeTo: actualArray
-	expectedArray with: actualArray do: [:expected :actual |
-		self assert: expected closeTo: actual]! !
 
 !TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/19/2017 12:36:46'!
 assertSlice: integers from: begin size: size is: expected
