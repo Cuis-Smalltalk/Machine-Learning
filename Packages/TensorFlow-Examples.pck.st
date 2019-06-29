@@ -1,6 +1,6 @@
 'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 27 June 2019 at 3:47:07 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 46!
+!provides: 'TensorFlow-Examples' 1 47!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'WebClient' 1 0 nil!
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
@@ -251,7 +251,7 @@ testPrediction
 	plan _ MNISTSoftMaxExamplePlan new.
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) asNumbers .
-	self deny: (loss closeTo: 0).
+	self deny: loss closeTo: 0.
 	100 timesRepeat: [
 		plan predict: images andLearnFrom: labels].
 	result _ plan predict: images andCompareTo: labels.
@@ -267,7 +267,7 @@ testPrediction3Layers
 	plan _ MNIST3LayersNNExamplePlan new.
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
-	self deny: (loss first closeTo: 0).
+	self deny: loss first closeTo: 0.
 	100 timesRepeat: [ |interval index im lb|
 		interval _ 1 to: images size.
 		index _ interval collect:[:i| interval atRandom].
@@ -276,7 +276,7 @@ testPrediction3Layers
 		plan predict: im andLearnFrom: lb].
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
-	self assert: (loss first closeTo: 0).
+	self assert: loss first closeTo: 0.
 	prediction _ plan predict: images.
 	self assert: prediction asNumbers first equals: labels first.
 	self assert: prediction asNumbers second equals: labels second! !
@@ -287,7 +287,7 @@ testPrediction3LayersSigmoid
 	plan _ MNIST3LayersNNSigmoid new.
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) allFloats.
-	self deny: (loss first closeTo: 0).
+	self deny: loss first closeTo: 0.
 	100 timesRepeat: [ |interval index im lb|
 		interval _ 1 to: images size.
 		index _ interval collect:[:i| interval atRandom].
@@ -309,13 +309,13 @@ testPredictionMany
 
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) asNumbers.
-	self deny: (loss closeTo: 0).
+	self deny: loss closeTo: 0.
 	100 timesRepeat: [
 		plan predict: images andLearnFrom: labels].
 	
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) asNumbers.
-	self assert: (loss closeTo: 0).
+	self assert: loss closeTo: 0.
 	
 	prediction _ plan predict: images.
 	self assert: prediction asNumbers equals: labels.
@@ -387,8 +387,8 @@ testBackpropagationPlanBackguard
 	
 	
 	self
-		assert: (result first closeTo: first);
-		assert: (result second closeTo: second)! !
+		assert: result first closeTo: first;
+		assert: result second closeTo: second! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:21:39'!
 testBackpropagationPlanBackguardChangesWeights
@@ -433,12 +433,12 @@ testBackpropagationPlanBackguardConverges
 
 	200 timesRepeat: [plan learn: inputs with: target].
 
-	self assert: (plan delta allFloats squared sum closeTo: 0).
+	self assert: plan delta allFloats squared sum closeTo: 0.
 
 	result _ (plan runOn: {inputs}) allFloats.
 	
-	self assert: (result first closeTo: 0.5).
-	self assert: (result second closeTo: 0.5).
+	self assert: result first closeTo: 0.5.
+	self assert: result second closeTo: 0.5.
 ! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:46'!
@@ -466,8 +466,8 @@ testBackpropagationPlanForward
 	
 	
 	self
-		assert: (result first closeTo: first);
-		assert: (result second closeTo: second)! !
+		assert: result first closeTo: first;
+		assert: result second closeTo: second! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:58'!
 testBackpropagationPlantInitializeBackguard
@@ -525,8 +525,8 @@ testForward
 	rawResult _ plan runOn: {inputs. weights}.
 	result _ rawResult allFloats.
 	
-	self assert: (result first closeTo: (1 + 0.5) reciprocal);
-		 assert: (result second closeTo: 0.5)! !
+	self assert: result first closeTo: (1 + 0.5) reciprocal;
+		 assert: result second closeTo: 0.5! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:26:22'!
 testMNIST3LayersNNForwardGraph
@@ -601,8 +601,8 @@ testMNISTSoftMaxForwardGraph
 		raise: Error.
 
 	self assert: {2} equals: result shape.
-	self assert: (result allInt32s first closeTo: 0).
-	self assert: (result allInt32s second closeTo: 0).
+	self assert: result allInt32s first closeTo: 0.
+	self assert: result allInt32s second closeTo: 0.
 ! !
 
 !TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:29:28'!
@@ -699,9 +699,9 @@ testOLS: ols
 	).
 	
 	betas _ ols regress: x on: y.
-	self assert: (betas first closeTo: 1);
-		assert: (betas second closeTo: 2);
-		assert: (betas third closeTo: 3)
+	self assert: betas first closeTo: 1;
+		assert: betas second closeTo: 2;
+		assert: betas third closeTo: 3
 	
 		
 ! !

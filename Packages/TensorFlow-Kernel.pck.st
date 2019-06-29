@@ -294,6 +294,10 @@ asTensor
 assert: expected closeTo: actual
 	self assert: (expected closeTo: actual) description: (self comparingStringBetween: expected and: actual)! !
 
+!TestCase methodsFor: '*TensorFlow-Kernel' stamp: 'gera 6/28/2019 23:09:59'!
+deny: expected closeTo: actual
+	self deny: (expected closeTo: actual)! !
+
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
 	| array size  |
@@ -1115,7 +1119,7 @@ testAsFloatTensor: tensorArray shape: shapeArray
 	index _ 1.
 	floats _ tensor allFloats.
 	TF_Tensor elementsOf: tensorArray do: [:each |
-		self assert: ((floats at: index) closeTo: each).
+		self assert: (floats at: index) closeTo: each.
 		index _ index + 1].
 
 	self assert: tensor shape equals: shapeArray! !
@@ -1330,8 +1334,8 @@ testAttrSetFloat
 			description at: 'max' putFloat: max.
 			description addInput: (in output: 0)].
 	
-	self assert: ((op floatAt: 'min') closeTo: min).
-	self assert: ((op floatAt: 'max') closeTo: max).
+	self assert: (op floatAt: 'min') closeTo: min.
+	self assert: (op floatAt: 'max') closeTo: max.
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing operation' stamp: 'gera 1/11/2017 23:38:13'!
@@ -1641,7 +1645,7 @@ testGet2x2FloatFromGraphDef
 	consts _ self get2x2FloatFromGraphDef allFloats.
 	
 	templates with: consts do: [:temp :const |
-		self assert: (temp closeTo: const)]! !
+		self assert: temp closeTo: const]! !
 
 !TensorFlowCAPITest methodsFor: 'testing library' stamp: 'gera 1/3/2017 09:37:31'!
 testGetAllOps
@@ -1888,7 +1892,7 @@ testGraphFromBlockIdentity
 		values: {TF_Tensor fromFloats: 3.1415}
 		outputs: {output output: 0}.
 		
-	self assert: (results first allFloats first closeTo: 3.1415)! !
+	self assert: results first allFloats first closeTo: 3.1415! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/2/2017 01:58:54'!
 testGraphFromBlockIdentityInstance
@@ -1902,7 +1906,7 @@ testGraphFromBlockIdentityInstance
 		values: {TF_Tensor fromFloats: 3.1415}
 		outputs: {output output: 0}.
 		
-	self assert: (results first allFloats first closeTo: 3.1415)! !
+	self assert: results first allFloats first closeTo: 3.1415! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 12:17:11'!
 testGraphFromBlockSimple
@@ -1917,7 +1921,7 @@ testGraphFromBlockSimple
 		values: {TF_Tensor fromFloats: 3.1415. TF_Tensor fromFloats: 1.2345.}
 		outputs: {output output: 0}.
 		
-	self assert: (results first allFloats first closeTo: 3.1415 + 1.2345)! !
+	self assert: results first allFloats first closeTo: 3.1415 + 1.2345! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 2/2/2017 01:59:23'!
 testGraphFromBlockSimpleInstance
@@ -1931,7 +1935,7 @@ testGraphFromBlockSimpleInstance
 		values: {TF_Tensor fromFloats: 3.1415. TF_Tensor fromFloats: 1.2345.}
 		outputs: {output output: 0}.
 		
-	self assert: (results first allFloats first closeTo: 3.1415 + 1.2345)! !
+	self assert: results first allFloats first closeTo: 3.1415 + 1.2345! !
 
 !TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/20/2017 18:04:24'!
 testGraphNotFinalizedWhenHeldByOperations
@@ -3149,7 +3153,7 @@ testTensorFromDoublesShape
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (tensor size*8).
 	template with: values do: [:templ :actual |
-		self assert: (templ closeTo: actual)]
+		self assert: templ closeTo: actual]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:31:50'!
@@ -3163,7 +3167,7 @@ testTensorFromFloats
 	self assert: tensor size equals: 5.
 	self assert: tensor byteSize equals: (5*4).
 	template @ values do: [:point |
-		self assert: (point x closeTo: point y)]
+		self assert: point x closeTo: point y]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 10:13:47'!
@@ -3181,7 +3185,7 @@ testTensorFromFloats2x2
 	self assert: tensor byteSize equals: (4*4).
 		
 	#(-1.1 -2.1 -1.2 -2.2) with: values do: [:reference :value |
-		self assert: (reference closeTo: value)]
+		self assert: reference closeTo: value]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/19/2017 10:14:00'!
@@ -3198,7 +3202,7 @@ testTensorFromFloats2x2SameElementsOrder
 	consts _ constTensor allFloats.
 	
 	consts with: values do: [:const :value |
-		self assert: (const closeTo: value)].! !
+		self assert: const closeTo: value].! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/17/2017 09:57:18'!
 testTensorFromFloatsOutOfRange
@@ -3230,7 +3234,7 @@ testTensorFromFloatsScalar
 	self assert: tensor size equals: 1.
 	self assert: tensor byteSize equals: (1*4).
 	
-	self assert: (template closeTo: values first).! !
+	self assert: template closeTo: values first.! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/23/2017 15:29:55'!
 testTensorFromFloatsShape
@@ -3243,7 +3247,7 @@ testTensorFromFloatsShape
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (tensor size*4).
 	template with: values do: [:templ :actual |
-		self assert: (templ closeTo: actual)]
+		self assert: templ closeTo: actual]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 1/29/2017 03:00:29'!
@@ -3279,7 +3283,7 @@ testTensorFromInt32Shape
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (tensor size*4).
 	template with: values do: [:templ :actual |
-		self assert: (templ closeTo: actual)]
+		self assert: templ closeTo: actual]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 22:45:47'!
@@ -3306,7 +3310,7 @@ testTensorFromInt64Shape
 	self assert: tensor size equals: 4.
 	self assert: tensor byteSize equals: (tensor size*8).
 	template with: values do: [:templ :actual |
-		self assert: (templ closeTo: actual)]
+		self assert: templ closeTo: actual]
 ! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 22:45:36'!
@@ -3677,7 +3681,7 @@ testOperationAcos
 	
 	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -3795,7 +3799,7 @@ testOperationAsin
 	
 	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -3811,7 +3815,7 @@ testOperationAssignSub
 	graph initializeOn: session.
 	result _ session runOutput: (output output: 0).
 	
-	self assert: (1-Float pi closeTo: result allFloats first)! !
+	self assert: 1-Float pi closeTo: result allFloats first! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:14'!
 testOperationAtan
@@ -3829,7 +3833,7 @@ testOperationAtan
 	
 	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -3863,7 +3867,7 @@ testOperationCos
 	
 	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -3880,7 +3884,7 @@ testOperationDescentRate
 	graph initializeOn: session.
 	result _ session runOutput: (output output: 0).
 	
-	self assert: (1-(Float pi * 0.7) closeTo: result allFloats first)! !
+	self assert: 1-(Float pi * 0.7) closeTo: result allFloats first! !
 
 !TensorFlowOperationsTest methodsFor: 'other operations' stamp: 'gera 2/17/2017 00:41:44'!
 testOperationDescentRateConstants
@@ -3895,7 +3899,7 @@ testOperationDescentRateConstants
 	graph initializeOn: session.
 	result _ session runOutput: (output output: 0).
 	
-	self assert: (1-(Float pi * 0.7) closeTo: result allFloats first)! !
+	self assert: 1-(Float pi * 0.7) closeTo: result allFloats first! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:26:04'!
 testOperationDiv
@@ -3917,7 +3921,7 @@ testOperationDiv
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:26:31'!
 testOperationDivScalar
@@ -3939,7 +3943,7 @@ testOperationDivScalar
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'JB 1/23/2017 10:44:28'!
 testOperationExp
@@ -3958,7 +3962,7 @@ testOperationExp
 	
 	self assert: result shape equals: inputs shape.
 	result allFloats with: template exp do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -4047,7 +4051,7 @@ testOperationMatMul
 
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 02:04:22'!
 testOperationMatMul1x1
@@ -4066,7 +4070,7 @@ testOperationMatMul1x1
 	session _ TF_Session on: graph.
 	result _ session runOutput: (output output: 0).
 
-	self assert: (1.1 * 3.14 closeTo: result allFloats first)! !
+	self assert: 1.1 * 3.14 closeTo: result allFloats first! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/31/2017 02:02:45'!
 testOperationMatMul1x1Wrong
@@ -4112,7 +4116,7 @@ testOperationMatMulABTransposed
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:09'!
 testOperationMatMulATransposed
@@ -4137,7 +4141,7 @@ testOperationMatMulATransposed
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:18'!
 testOperationMatMulBTransposed
@@ -4162,7 +4166,7 @@ testOperationMatMulBTransposed
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:36:27'!
 testOperationMatMulWrongType
@@ -4196,7 +4200,7 @@ testOperationMatrixInverse
 	
 	self assert: result shape equals: template shape.
 	result allFloats with: #(1.0 0.0 0.0 1.0) do: [:real :expected |
-		self assert: (real closeTo: expected)].
+		self assert: real closeTo: expected].
 	
 	identity free.! !
 
@@ -4256,7 +4260,7 @@ testOperationMinus
 
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:26'!
 testOperationMod
@@ -4278,7 +4282,7 @@ testOperationMod
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:46:33'!
 testOperationMul
@@ -4300,7 +4304,7 @@ testOperationMul
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 2/19/2017 15:25:00'!
 testOperationMulScalar
@@ -4322,7 +4326,7 @@ testOperationMulScalar
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:31'!
 testOperationNegated
@@ -4362,7 +4366,7 @@ testOperationPlus
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:47:02'!
 testOperationPlusNegated
@@ -4385,7 +4389,7 @@ testOperationPlusNegated
 
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:47:12'!
 testOperationPlusNegatedNegated
@@ -4407,7 +4411,7 @@ testOperationPlusNegatedNegated
 	
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:47:20'!
 testOperationPlusNegatedNegatedPlus
@@ -4430,10 +4434,10 @@ testOperationPlusNegatedNegatedPlus
 	self assert: result shape equals: a shape.
 	
 	result allFloats with: a allFloats negated do: [:r :t |
-		self assert: (r closeTo: t)].
+		self assert: r closeTo: t].
 	
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/31/2017 01:37:28'!
 testOperationRelu
@@ -4519,7 +4523,7 @@ testOperationSigmoid
 	transformed _ template collect:[:x| (x negated exp + 1) reciprocal].
 	self assert: result shape equals: inputs shape.
 	result allFloats with: transformed do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -4539,7 +4543,7 @@ testOperationSin
 	
 	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -4662,7 +4666,7 @@ testOperationSquared
 	
 	self assert: result shape equals: template shape.
 	result allFloats with: template allFloats squared do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
@@ -4687,7 +4691,7 @@ testOperationSub
 
 	self assert: result shape equals: a shape.
 	result allFloats with: template do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/21/2017 21:56:35'!
 testOperationSum
@@ -4720,7 +4724,7 @@ testOperationSum
 	
 	self assert: result shape equals: #(2).
 	result allFloats with: sumOn0 do: [:r :t |
-		self assert: (r closeTo: t)].
+		self assert: r closeTo: t].
 	
 	result _ session
 		runOperation: output1
@@ -4728,7 +4732,7 @@ testOperationSum
 	
 	self assert: result shape equals: #(3).
 	result allFloats with: sumOn1 do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'binary operations' stamp: 'gera 1/22/2017 16:48:36'!
 testOperationSumOnOutputs
@@ -4761,11 +4765,11 @@ testOperationSumOnOutputs
 	
 	self assert: first shape equals: #(2).
 	first allFloats with: sumOn0 do: [:r :t |
-		self assert: (r closeTo: t)].
+		self assert: r closeTo: t].
 	
 	self assert: second shape equals: #(3).
 	second allFloats with: sumOn1 do: [:r :t |
-		self assert: (r closeTo: t)].! !
+		self assert: r closeTo: t].! !
 
 !TensorFlowOperationsTest methodsFor: 'unary operations' stamp: 'gera 1/22/2017 16:21:47'!
 testOperationTan
@@ -4783,7 +4787,7 @@ testOperationTan
 	
 	self assert: result shape equals: intput shape.
 	result allFloats with: template do: [:res :temp |
-		self assert: (res closeTo: temp)].
+		self assert: res closeTo: temp].
 	
 	output free.! !
 
