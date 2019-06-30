@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 29 June 2019 at 11:48:15 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 30 June 2019 at 12:46:22 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 49!
+!provides: 'TensorFlow-Examples' 1 50!
 !requires: 'WebClient' 1 0 nil!
-!requires: 'TensorFlow-Kernel' 1 409 nil!
+!requires: 'TensorFlow-Kernel' 1 411 nil!
 SystemOrganization addCategory: #'TensorFlow-Examples'!
 
 
@@ -355,7 +355,7 @@ testTwoPointsRegression
 	self assert: loss first closeTo: 0.
 	! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'JB 1/18/2017 23:03:42'!
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 6/30/2019 00:45:27'!
 tensorFrom: points
 	| rank transposed |
 	rank _ points first size.
@@ -365,7 +365,7 @@ tensorFrom: points
 	points do: [ :point |
 		point withIndexDo: [ :value :coordinate |
 			(transposed at: coordinate) add: value ]].
-	^ TF_Tensor fromFloats: transposed.! !
+	^ TFTensor fromFloats: transposed.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
 testNearesNeighbor
@@ -406,12 +406,12 @@ testNearesNeighborWithOperations
 	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations initializeSession.
 	self testNearesNeighbor: plan.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:30'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:28'!
 testBackpropagationPlanBackguard
 	| plan inputs rawResult result const graph weights first second sigmoid |
 	plan _ BackpropagationPlan new.
 	
-	inputs _ TF_Tensor fromFloats: {
+	inputs _ TFTensor fromFloats: {
 		{0}.
 		{2 ln}
 	}.
@@ -432,14 +432,14 @@ testBackpropagationPlanBackguard
 		assert: result first closeTo: first;
 		assert: result second closeTo: second! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 11:21:39'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
 testBackpropagationPlanBackguardChangesWeights
 	| plan const graph w0 weights inputs result target |
 	plan _ BackpropagationPlan new.
 	graph _ plan graph.
 	
-	inputs _ TF_Tensor fromFloats: {{1}. {2 ln}}.
-	target _ TF_Tensor fromFloats: #((0.5) (0.5)).
+	inputs _ TFTensor fromFloats: {{1}. {2 ln}}.
+	target _ TFTensor fromFloats: #((0.5) (0.5)).
 	
 	const _ graph operationNamed: 'weights_initialValue'.
 	w0 _ const tensorAt: 'value'.
@@ -456,14 +456,14 @@ testBackpropagationPlanBackguardChangesWeights
 	self deny: weights allFloats = w0 allFloats
 ! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 14:53:31'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
 testBackpropagationPlanBackguardConverges
 	| plan const graph w0 weights inputs target result |
 	plan _ BackpropagationPlan new.
 	graph _ plan graph.
 	
-	inputs _ TF_Tensor fromFloats: {{1}. {2 ln}}.
-	target _ TF_Tensor fromFloats: #((0.5) (0.5)).
+	inputs _ TFTensor fromFloats: {{1}. {2 ln}}.
+	target _ TFTensor fromFloats: #((0.5) (0.5)).
 	
 	const _ graph operationNamed: 'weights_initialValue'.
 	w0 _ const tensorAt: 'value'.
@@ -483,14 +483,14 @@ testBackpropagationPlanBackguardConverges
 	self assert: result second closeTo: 0.5.
 ! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:46'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:28'!
 testBackpropagationPlanForward
 	| plan inputs rawResult result const graph weights first second sigmoid |
 	plan _ BackpropagationPlan basicNew.
 	plan initializeGraph.
 	plan initializeSession.
 	
-	inputs _ TF_Tensor fromFloats: {
+	inputs _ TFTensor fromFloats: {
 		{0}.
 		{2 ln}
 	}.
@@ -552,15 +552,15 @@ testBackpropagationPlantInitializeVariables
 	weights allFloats do: [:each |
 		self assert: (each between: 0 and: 1)].! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 02:01:59'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
 testForward
 	| inputs plan rawResult result weights |
 	plan _ BackpropagationForwardPlan new.
-	inputs _ TF_Tensor fromFloats: {
+	inputs _ TFTensor fromFloats: {
 		{0}.
 		{2 ln}
 	}.
-	weights _ TF_Tensor fromFloats: #(
+	weights _ TFTensor fromFloats: #(
 		(1 1)
 		(1 0)
 	).
@@ -682,10 +682,10 @@ testMNISTSoftMaxnitialization
 testOLS
 	self testOLS: OLSExample new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:17'!
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 6/30/2019 00:45:25'!
 testOLS: ols
 	| x y betas |
-	x _ TF_Tensor fromFloats: #(
+	x _ TFTensor fromFloats: #(
 		(1  2   3)
 		(6  7   8)
 		(4  5   6)
@@ -693,7 +693,7 @@ testOLS: ols
 		(1 10  2)
 	).
 
-	y _ TF_Tensor fromFloats: #(
+	y _ TFTensor fromFloats: #(
 		(14)
 		(44)
 		(32)
@@ -713,15 +713,15 @@ testOLS: ols
 testOLSWithOperations
 	self testOLS: OLSExample new initializeWithOperations! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NeuralNetwork' stamp: 'gera 1/29/2017 02:04:33'!
+!TensorFlowExamplesTest methodsFor: 'testing-NeuralNetwork' stamp: 'gera 6/30/2019 00:45:27'!
 testSimpleNeuralNetwork
 	| inputs weights nn prediction target targetValues |
-	inputs _ TF_Tensor fromFloats: {
+	inputs _ TFTensor fromFloats: {
 		{1}.
 		{2 ln}
 		}.
 	targetValues _ #(0.5 0.5).
-	target _ TF_Tensor fromFloats: targetValues.
+	target _ TFTensor fromFloats: targetValues.
 	weights _ #(
 		(1 1)
 		(1 0)
@@ -822,14 +822,14 @@ runOn: inputValues
 	^ results first
 	! !
 
-!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'gera 1/30/2017 17:55:11'!
+!BackpropagationBackwardPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:25'!
 initializeGraph
 	| inputVariable weights actual delta learningRate newWeights target one |
 	super initializeGraph.
-	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
-	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
-	actual _ graph placeholder: 'actual' type: TF_Tensor typeFloat.
-	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
+	inputVariable _ graph placeholder: 'Input' type: TFTensor typeFloat.
+	target _ graph placeholder: 'target' type: TFTensor typeFloat.
+	actual _ graph placeholder: 'actual' type: TFTensor typeFloat.
+	weights _ graph placeholder: 'weights' type: TFTensor typeFloat.
 	learningRate _ graph const: 'learningRate' value: 0.9 asTensor.
 	one _ graph const: 'one' value: 1.0 asTensor.
 	delta _ (target - actual) negated @* actual @* (one - actual) @* inputVariable.
@@ -837,12 +837,12 @@ initializeGraph
 	outputs _ {newWeights output: 0}.
 	inputs _ {inputVariable input: 0. weights input: 0. target input:0. actual input: 0}! !
 
-!BackpropagationForwardPlan methodsFor: 'initialization' stamp: 'JB 1/25/2017 11:40:47'!
+!BackpropagationForwardPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
 initializeGraph
 	| activation inputVariable netInput weights |
 	super initializeGraph.
-	inputVariable _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
-	weights _ graph placeholder: 'weights' type: TF_Tensor typeFloat.
+	inputVariable _ graph placeholder: 'Input' type: TFTensor typeFloat.
+	weights _ graph placeholder: 'weights' type: TFTensor typeFloat.
 	netInput _ weights * inputVariable.
 	activation _ netInput sigmoid.
 	outputs _ {activation output: 0}.
@@ -860,7 +860,7 @@ graph
 weights
 	^ session runOutput: (weights output: 0)! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:27:26'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
 initializeBackwardGraph
 	| actual learningRate learningRateValue one input |
 	actual _ activation.
@@ -871,7 +871,7 @@ initializeBackwardGraph
 
 	input _ inputs first operationOn: graph.
 	
-	target _ graph placeholder: 'target' type: TF_Tensor typeFloat.
+	target _ graph placeholder: 'target' type: TFTensor typeFloat.
 	
 	delta _ (target - actual) negated @* actual @* (one - actual) @* input.
 	
@@ -879,10 +879,10 @@ initializeBackwardGraph
 	"learn _ weights -= learningRate @* delta."
 	learn _ weights descent: delta rate: learningRate.! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/30/2017 00:37:21'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:25'!
 initializeForwardGraph
 	| input |
-	input _ graph placeholder: 'Input' type: TF_Tensor typeFloat.
+	input _ graph placeholder: 'Input' type: TFTensor typeFloat.
 	
 	activation _ (weights * input) sigmoid.
 	
@@ -897,12 +897,12 @@ initializeGraph
 		initializeForwardGraph;
 		initializeBackwardGraph.! !
 
-!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 04:05:17'!
+!BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
 initializeVariables
 	| initialWeights |
 	Random withDefaultDo: [:random |
 		initialWeights _ (1 to: 4) collect: [:unused | random next]].
-	initialWeights _ TF_Tensor fromFloats: initialWeights shape: #(2 2).
+	initialWeights _ TFTensor fromFloats: initialWeights shape: #(2 2).
 	
 	weights _ graph variable: 'weights' initialValue: initialWeights.! !
 
@@ -918,14 +918,14 @@ learn: sample with: expected
 	^ results first
 	! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:49'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:25'!
 initializeGraph
 	| neg add abs axis axisValue distance testing training prediction |
 	super initializeGraph.
 	
-	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
-	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
-	axisValue _ TF_Tensor fromInt32: 0.
+	training _ graph placeholder: 'training' type: TFTensor typeFloat.
+	testing _ graph placeholder: 'testing' type: TFTensor typeFloat.
+	axisValue _ TFTensor fromInt32: 0.
 	axis _ graph const: 'axis' value: axisValue.
 	neg _ graph newOperation: 'Neg' named: 'neg' described: [:description |
 		description addInput: (testing output: 0)].
@@ -946,13 +946,13 @@ initializeGraph
 	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:48:53'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
 initializeGraphWithOperations
 	| axis distance testing training prediction |
 	graph _ TF_Graph create.
 	
-	training _ graph placeholder: 'training' type: TF_Tensor typeFloat.
-	testing _ graph placeholder: 'testing' type: TF_Tensor typeFloat.
+	training _ graph placeholder: 'training' type: TFTensor typeFloat.
+	testing _ graph placeholder: 'testing' type: TFTensor typeFloat.
 	axis _ 0 asInt32Tensor.
 	
 	distance _ (testing - training) abs sumOn: axis.
@@ -969,13 +969,13 @@ predict: covariatesTesting from: covariatesTraining
  	result _ self runOn: {covariatesTraining. covariatesTesting}.
 	^ result allInt64s + 1! !
 
-!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:16:45'!
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:27'!
 initializeGraph
 	| x xtx y xty inverse result |
 	super initializeGraph.
 	
-	x _ graph placeholder: 'x' type: TF_Tensor typeFloat.
-	y _ graph placeholder: 'y' type: TF_Tensor typeFloat.
+	x _ graph placeholder: 'x' type: TFTensor typeFloat.
+	y _ graph placeholder: 'y' type: TFTensor typeFloat.
 	
 	xtx _ graph newOperation: 'MatMul' named:'xTx' described:[:description|
 		description addInput: (x output: 0).
@@ -1000,13 +1000,13 @@ initializeGraph
 	outputs _ {result output: 0}.
 	inputs _ {x input: 0. y input: 0}.! !
 
-!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:48:34'!
+!ExampleOLSPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
 initializeGraphWithOperations
 	| x y prediction |
 	super initializeGraph.
 	
-	x _ graph placeholder: 'x' type: TF_Tensor typeFloat.
-	y _ graph placeholder: 'y' type: TF_Tensor typeFloat.
+	x _ graph placeholder: 'x' type: TFTensor typeFloat.
+	y _ graph placeholder: 'y' type: TFTensor typeFloat.
 	
 	prediction _ (x \* x) inverse * (x \* y).
 	
@@ -1070,12 +1070,12 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/26/2017 15:12:50'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:27'!
 initializeLearningGraph
 	|  axis0 backprop learningRate batchSize learnBiases1 learnBiases2 learnBiases3 learnWeights1 learnWeights2 learnWeights3 |
 	
 	learningRate _ graph const: 0.1 asTensor.
-	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TFTensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	graph
 		fromBlock: [
@@ -1113,14 +1113,14 @@ initializeLearningGraph
 			addControlInput: learnBiases3 output].
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'JB 2/15/2017 21:25:29'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:28'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
 			activation _ netInput sparseSoftmaxCrossEntropyWithLogits: expected.
 			activation meanOn: #(0) asInt32Tensor]
-		inputTypes: {TF_Tensor typeInt32}
+		inputTypes: {TFTensor typeInt32}
 		named: 'loss'.! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/16/2017 09:35:09'!
@@ -1192,12 +1192,12 @@ initializeInferenceGraph
 		named: 'layer3'.
 ! !
 
-!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 2/26/2017 15:13:07'!
+!MNIST3LayersNNSigmoid methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:28'!
 initializeLearningGraph
 	| axis0 activationGradient gradient1 gradient2 learningRate biasGradient one batchSize learnBiases1 learnBiases2 learnBiases3 learnWeights1 learnWeights2 learnWeights3 |
 	
 	learningRate _ graph const: 0.1 asTensor.
-	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TFTensor typeFloat] named: 'batchSize'.
 	axis0 _ #(0) asInt32Tensor. 
 	graph
 		fromBlock: [
@@ -1303,9 +1303,9 @@ testName
 trainName
 	^ self subclassResponsibility ! !
 
-!MNISTImageFile methodsFor: 'converting' stamp: 'gera 2/6/2017 20:17:27'!
+!MNISTImageFile methodsFor: 'converting' stamp: 'gera 6/30/2019 00:45:26'!
 asTensor
-	^  TF_Tensor fromFloats:  items shape: {count. rows * columns}.! !
+	^  TFTensor fromFloats:  items shape: {count. rows * columns}.! !
 
 !MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/10/2017 00:50:56'!
 at: imageIndex
@@ -1405,7 +1405,7 @@ initializeInferenceGraph
 			netInput softmax findMaxOn: 1 asInt32Tensor]
 		named: 'inference'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'JB 2/19/2017 16:28:46'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
 initializeLearningGraph
 	| learningRate activationGradient biasGradient |
 	graph
@@ -1413,19 +1413,19 @@ initializeLearningGraph
 			learningRate _ 0.9 asTensor.
 			activationGradient _ activation useOutput: 1.
 			biasGradient _ activationGradient meanOn: #(0) asInt32Tensor.
-			batchSize _ (input sizeOn: 0) castTo: TF_Tensor typeFloat.
+			batchSize _ (input sizeOn: 0) castTo: TFTensor typeFloat.
 			learnWeights _ weights descent: input \* activationGradient @/ batchSize rate: learningRate.
 			learnBiases _ biases descent: biasGradient rate: learningRate]
 		named: 'learning'! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:09:05'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:27'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [:expected |
 			expectedLabel _ expected.
 			activation _ netInput sparseSoftmaxCrossEntropyWithLogits: expected.
 			activation meanOn: #(0) asInt32Tensor]
-		inputTypes: {TF_Tensor typeInt32}
+		inputTypes: {TFTensor typeInt32}
 		named: 'loss'
 ! !
 
@@ -1477,14 +1477,14 @@ predict: inputs andLearnFrom: label
 		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 2/19/2017 16:22:46'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 6/30/2019 00:45:28'!
 decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
 		
 	graph _ self decodeCSVGraphDefaults: description.
 	records _ (graph operationNamed: 'records') input: 0.
 	output _ graph operationNamed: 'output'.
-	values _ TF_Tensor fromStringArray: csvLines.
+	values _ TFTensor fromStringArray: csvLines.
 	
 	session _ TF_Session on: graph.
 	results _ session
@@ -1504,15 +1504,15 @@ decodeCSV: csvLines graphRun: description
 		(results at: i) allFloats].
 	^ answer add: (results at: 5) allInt64s; yourself.! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'jb 1/15/2017 17:19:41'!
-decodeCSVGraphDefaults: anArrayOfTF_Tensors
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 6/30/2019 00:45:28'!
+decodeCSVGraphDefaults: anArrayOfTFTensors
 	| graph records defaults |
 	
 	graph _ TF_Graph create.
-	records _ (graph placeholder: 'records' type: TF_Tensor typeString) output: 0.
-	defaults _ Array new: anArrayOfTF_Tensors size.
+	records _ (graph placeholder: 'records' type: TFTensor typeString) output: 0.
+	defaults _ Array new: anArrayOfTFTensors size.
 	
-	anArrayOfTF_Tensors withIndexDo: [:each :index |
+	anArrayOfTFTensors withIndexDo: [:each :index |
 		| one |
 		one _ (graph const: 'default',index printString value: each) output: 0.
 		defaults at: index put: one].
@@ -1522,13 +1522,13 @@ decodeCSVGraphDefaults: anArrayOfTF_Tensors
 	
 	^ graph! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 2/15/2017 22:40:27'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 6/30/2019 00:45:26'!
 irisDescription
-	^{TF_Tensor fromFloats: #(-1.0).
-		TF_Tensor fromFloats: #(-1.0).
-		TF_Tensor fromFloats: #(-1.0).
-		TF_Tensor fromFloats: #(-1.0).
-		TF_Tensor fromInt64s: #(-1)}! !
+	^{TFTensor fromFloats: #(-1.0).
+		TFTensor fromFloats: #(-1.0).
+		TFTensor fromFloats: #(-1.0).
+		TFTensor fromFloats: #(-1.0).
+		TFTensor fromInt64s: #(-1)}! !
 
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/16/2017 23:00:14'!
 irisFile
@@ -1662,12 +1662,12 @@ initializeInferenceGraph
 	prediction _ graph fromBlock: [hidden3 * weights4 + biases4] named: 'layer4'.
 ! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 19:26:39'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:28'!
 initializeLearningGraph
 	|  axis0 learningRate batchSize biasGradient one backprop learnBiases1 learnBiases2 learnBiases3 learnBiases4 learnWeights1 learnWeights2 learnWeights3 learnWeights4 |
 	
 	learningRate _ 0.1 asTensor.
-	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TF_Tensor typeFloat] named: 'batchSize'.
+	batchSize _ graph fromBlock: [(input sizeOn: 0) castTo: TFTensor typeFloat] named: 'batchSize'.
 	axis0 _ graph const: #(0) asInt32Tensor. 
 	one _ 1.0 asTensor asOperationOn: graph.
 	graph
@@ -1714,13 +1714,13 @@ initializeLearningGraph
 			addControlInput: learnBiases4 output].
 ! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/23/2017 11:03:56'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
 initializeLossGraph
 	loss _ graph
 		fromBlock: [ :expected |
 			expectedLabel _ expected.
 			(prediction - expectedLabel) squared meanOn: #(0) asInt32Tensor ]
-		inputTypes: {TF_Tensor typeFloat}
+		inputTypes: {TFTensor typeFloat}
 		named: 'loss'.! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 17:45:31'!
