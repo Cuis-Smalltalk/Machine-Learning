@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 29 June 2019 at 7:40:16 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 30 June 2019 at 12:16:26 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 409!
+!provides: 'TensorFlow-Kernel' 1 410!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -66,18 +66,18 @@ ExternalLibrary subclass: #TensorFlowCAPI
 TensorFlowCAPI class
 	instanceVariableNames: 'current'!
 
-!classDefinition: #TF_Structure category: #'TensorFlow-Kernel'!
-ExternalStructure subclass: #TF_Structure
+!classDefinition: #TFStructure category: #'TensorFlow-Kernel'!
+ExternalStructure subclass: #TFStructure
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_Structure class' category: #'TensorFlow-Kernel'!
-TF_Structure class
+!classDefinition: 'TFStructure class' category: #'TensorFlow-Kernel'!
+TFStructure class
 	instanceVariableNames: ''!
 
 !classDefinition: #ExternalWordArray category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #ExternalWordArray
+TFStructure subclass: #ExternalWordArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -127,7 +127,7 @@ TF_TensorPtrArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_AttrMetadata category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_AttrMetadata
+TFStructure subclass: #TF_AttrMetadata
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -137,7 +137,7 @@ TF_AttrMetadata class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_Buffer
+TFStructure subclass: #TF_Buffer
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -147,7 +147,7 @@ TF_Buffer class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Graph category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_Graph
+TFStructure subclass: #TF_Graph
 	instanceVariableNames: 'context'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -157,7 +157,7 @@ TF_Graph class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_ImportGraphDefOptions category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_ImportGraphDefOptions
+TFStructure subclass: #TF_ImportGraphDefOptions
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -167,7 +167,7 @@ TF_ImportGraphDefOptions class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Operation category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_Operation
+TFStructure subclass: #TF_Operation
 	instanceVariableNames: 'graph output'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -177,7 +177,7 @@ TF_Operation class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OperationDescription category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_OperationDescription
+TFStructure subclass: #TF_OperationDescription
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -187,7 +187,7 @@ TF_OperationDescription class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Output category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_Output
+TFStructure subclass: #TF_Output
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -207,7 +207,7 @@ TF_Input class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Session category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_Session
+TFStructure subclass: #TF_Session
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -217,7 +217,7 @@ TF_Session class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_SessionOptions category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_SessionOptions
+TFStructure subclass: #TF_SessionOptions
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -227,7 +227,7 @@ TF_SessionOptions class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Status category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_Status
+TFStructure subclass: #TF_Status
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -237,7 +237,7 @@ TF_Status class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Tensor category: #'TensorFlow-Kernel'!
-TF_Structure subclass: #TF_Tensor
+TFStructure subclass: #TF_Tensor
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -247,7 +247,7 @@ TF_Tensor class
 	instanceVariableNames: ''!
 
 
-!TF_Structure methodsFor: 'printing' stamp: 'gera 1/3/2017 10:26:05'!
+!TFStructure methodsFor: 'printing' stamp: 'gera 1/3/2017 10:26:05'!
 printOn: strm
 	super printOn: strm.
 	strm space; print: handle.! !
@@ -5298,30 +5298,30 @@ current
 moduleName
 	^ 'libtensorflow'! !
 
-!TF_Structure methodsFor: 'testing' stamp: 'gera 1/29/2017 03:39:43'!
+!TFStructure methodsFor: 'testing' stamp: 'gera 1/29/2017 03:39:43'!
 = aTF_Structure
 	^ self class = aTF_Structure class
 		and: [handle = aTF_Structure getHandle]! !
 
-!TF_Structure methodsFor: 'private' stamp: 'gera 12/21/2016 02:52:42'!
+!TFStructure methodsFor: 'private' stamp: 'gera 12/21/2016 02:52:42'!
 library
 	^ TensorFlowCAPI current! !
 
-!TF_Structure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:24:05'!
+!TFStructure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:24:05'!
 fields
 	"self initialize"
 	^#()! !
 
-!TF_Structure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:33:15'!
+!TFStructure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:33:15'!
 pointerSize
 	" Fixed for 64 bit platforms. TensorFlow is only available in 64 bit platforms "
 	self assert: 8 == Smalltalk wordSize.
 	^ Smalltalk wordSize! !
 
-!TF_Structure class methodsFor: 'class initialization' stamp: 'gera 1/19/2017 19:06:52'!
+!TFStructure class methodsFor: 'class initialization' stamp: 'gera 6/30/2019 00:14:46'!
 initialize
 	super initialize.
-	self == TF_Structure ifTrue: [
+	self == TFStructure ifTrue: [
 		self allSubclassesDo: [:cls | cls initialize].
 		self allSubclassesDo: [:cls | cls initialize].
 	]! !
@@ -7500,4 +7500,4 @@ asAsciiZ
 !String methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/31/2017 00:46:29'!
 asTensor
 	^ TF_Tensor fromString: self! !
-TF_Structure initialize!
+TFStructure initialize!
