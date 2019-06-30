@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 29 June 2019 at 7:40:19 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 29 June 2019 at 11:48:15 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 48!
-!requires: 'TensorFlow-Kernel' 1 348 nil!
+!provides: 'TensorFlow-Examples' 1 49!
 !requires: 'WebClient' 1 0 nil!
+!requires: 'TensorFlow-Kernel' 1 409 nil!
 SystemOrganization addCategory: #'TensorFlow-Examples'!
 
 
