@@ -1,8 +1,11 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 29 June 2019 at 1:25:26 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 29 June 2019 at 7:40:19 pm'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Examples' 1 48!
 !requires: 'TensorFlow-Kernel' 1 348 nil!
 !requires: 'WebClient' 1 0 nil!
+SystemOrganization addCategory: #'TensorFlow-Examples'!
+
+
 !classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
 TensorFlowTestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
@@ -261,6 +264,26 @@ testPrediction
 	self assert: prediction asNumbers first equals: labels first.
 	self assert: prediction asNumbers second equals: labels second! !
 
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 6/27/2019 15:46:21'!
+testPredictionMany
+	| loss plan result prediction |
+	
+	plan _ MNISTSoftMaxExamplePlan new.
+
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self deny: loss closeTo: 0.
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: loss closeTo: 0.
+	
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers equals: labels.
+! !
+
 !TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/17/2017 22:00:17'!
 testPrediction3Layers
 	|   loss plan result prediction |
@@ -297,26 +320,6 @@ testPrediction3LayersSigmoid
 	result _ plan predict: images andCompareTo: labels.
 	loss _ (result at:2) asNumbers.
 	self assert: (loss < 1).
-	prediction _ plan predict: images.
-	self assert: prediction asNumbers equals: labels.
-! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 6/27/2019 15:46:21'!
-testPredictionMany
-	| loss plan result prediction |
-	
-	plan _ MNISTSoftMaxExamplePlan new.
-
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) asNumbers.
-	self deny: loss closeTo: 0.
-	100 timesRepeat: [
-		plan predict: images andLearnFrom: labels].
-	
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) asNumbers.
-	self assert: loss closeTo: 0.
-	
 	prediction _ plan predict: images.
 	self assert: prediction asNumbers equals: labels.
 ! !
@@ -363,6 +366,45 @@ tensorFrom: points
 		point withIndexDo: [ :value :coordinate |
 			(transposed at: coordinate) add: value ]].
 	^ TF_Tensor fromFloats: transposed.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
+testNearesNeighbor
+	| plan |
+	plan _ ExampleNearestNeighborPlan new.
+	self testNearesNeighbor: plan.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:09:49'!
+testNearesNeighbor: plan
+	| first second third closest references tensorReference tensors predictor |
+	first _ #(0 0 0 0 0).
+	second _ #(1 1 3 4 2).
+	third _ #(8 1 3 4 2).
+	references _{
+		first.
+		second.
+		third}.
+	tensorReference _ self tensorFrom: references.
+	tensors _ references collect: [ :point |
+		self tensorFrom: {point} ].
+	
+	predictor _ [:unknown | | result | 
+		result _ plan predict: unknown from: tensorReference.
+		result first].
+	
+	closest _ predictor value: tensors first.
+	self assert: closest equals: 1.
+	
+	closest _ predictor value:  tensors second.
+	self assert: closest equals: 2.
+	
+	closest _ predictor value:  tensors third.
+	self assert: closest equals: 3.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/29/2017 05:15:13'!
+testNearesNeighborWithOperations
+	| plan |
+	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations initializeSession.
+	self testNearesNeighbor: plan.! !
 
 !TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:32:30'!
 testBackpropagationPlanBackguard
@@ -636,45 +678,6 @@ testMNISTSoftMaxLossGraph
 testMNISTSoftMaxnitialization
 	MNISTSoftMaxExamplePlan new.! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
-testNearesNeighbor
-	| plan |
-	plan _ ExampleNearestNeighborPlan new.
-	self testNearesNeighbor: plan.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:09:49'!
-testNearesNeighbor: plan
-	| first second third closest references tensorReference tensors predictor |
-	first _ #(0 0 0 0 0).
-	second _ #(1 1 3 4 2).
-	third _ #(8 1 3 4 2).
-	references _{
-		first.
-		second.
-		third}.
-	tensorReference _ self tensorFrom: references.
-	tensors _ references collect: [ :point |
-		self tensorFrom: {point} ].
-	
-	predictor _ [:unknown | | result | 
-		result _ plan predict: unknown from: tensorReference.
-		result first].
-	
-	closest _ predictor value: tensors first.
-	self assert: closest equals: 1.
-	
-	closest _ predictor value:  tensors second.
-	self assert: closest equals: 2.
-	
-	closest _ predictor value:  tensors third.
-	self assert: closest equals: 3.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/29/2017 05:15:13'!
-testNearesNeighborWithOperations
-	| plan |
-	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations initializeSession.
-	self testNearesNeighbor: plan.! !
-
 !TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:41'!
 testOLS
 	self testOLS: OLSExample new.! !
@@ -741,6 +744,18 @@ initialize
 	self use3Layers.
 ! !
 
+!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:28:05'!
+use3Layers
+	plan _ MNIST3LayersNNExamplePlan new.! !
+
+!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/19/2017 17:09:45'!
+use3LayersSigmoid
+	plan _ MNIST3LayersNNSigmoid new.! !
+
+!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:28:22'!
+useSoftmax
+	plan _ MNISTSoftMaxExamplePlan new.! !
+
 !BatchTrainer methodsFor: 'private' stamp: 'JB 2/18/2017 20:23:39'!
 predict: images andCompareTo: labels
 	| equals result |
@@ -748,6 +763,18 @@ predict: images andCompareTo: labels
 	equals _ result with: labels collect:[:x :y| (x = y) ifTrue:[1] ifFalse:[0]].
 	^ equals mean asFloat.
 ! !
+
+!BatchTrainer methodsFor: 'private' stamp: 'JB 2/18/2017 20:21:23'!
+trainAt: index
+	| images labels loss report result |
+	images _ imageSet bytesAt: index take: batchSize.
+	labels _ labelSet at: index take: batchSize.
+	result _ plan predict: images andLearnFrom: labels.
+	loss _ result at: 2.
+	report _ index asString, ': ', loss asNumbers asString.
+	Transcript show: report;
+					newLine
+	! !
 
 !BatchTrainer methodsFor: 'running' stamp: 'JB 2/18/2017 20:27:19'!
 predictOnTesting
@@ -766,30 +793,6 @@ predictOnTraining
 !BatchTrainer methodsFor: 'running' stamp: 'JB 2/18/2017 20:22:07'!
 train
 	(1 to: labelSet count -1 by: batchSize) do: [:index| self trainAt: index].! !
-
-!BatchTrainer methodsFor: 'private' stamp: 'JB 2/18/2017 20:21:23'!
-trainAt: index
-	| images labels loss report result |
-	images _ imageSet bytesAt: index take: batchSize.
-	labels _ labelSet at: index take: batchSize.
-	result _ plan predict: images andLearnFrom: labels.
-	loss _ result at: 2.
-	report _ index asString, ': ', loss asNumbers asString.
-	Transcript show: report;
-					newLine
-	! !
-
-!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:28:05'!
-use3Layers
-	plan _ MNIST3LayersNNExamplePlan new.! !
-
-!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/19/2017 17:09:45'!
-use3LayersSigmoid
-	plan _ MNIST3LayersNNSigmoid new.! !
-
-!BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:28:22'!
-useSoftmax
-	plan _ MNISTSoftMaxExamplePlan new.! !
 
 !ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/29/2017 05:12:34'!
 initialize
@@ -853,6 +856,10 @@ delta
 graph
 	^ graph! !
 
+!BackpropagationPlan methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:40:28'!
+weights
+	^ session runOutput: (weights output: 0)! !
+
 !BackpropagationPlan methodsFor: 'initialization' stamp: 'gera 2/17/2017 00:27:26'!
 initializeBackwardGraph
 	| actual learningRate learningRateValue one input |
@@ -910,10 +917,6 @@ learn: sample with: expected
 	lastDelta _ results at: 2.
 	^ results first
 	! !
-
-!BackpropagationPlan methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:40:28'!
-weights
-	^ session runOutput: (weights output: 0)! !
 
 !ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 1/22/2017 17:47:49'!
 initializeGraph
@@ -1021,6 +1024,22 @@ hidden1Size
 !MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:18'!
 hidden2Size
 	^ 32! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
+inputSize
+	^ 28*28! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:47:08'!
+intput
+	^ input! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:27:05'!
+lossGradient
+	^ (loss output: 1)! !
+
+!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:30'!
+outputSize
+	^ 10! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 09:56:01'!
 initialize
@@ -1130,22 +1149,6 @@ initializeParameters
 initializeSession
 	session _ TF_Session on: graph.
 	graph initializeOn: session.! !
-
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:34:12'!
-inputSize
-	^ 28*28! !
-
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 01:47:08'!
-intput
-	^ input! !
-
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:27:05'!
-lossGradient
-	^ (loss output: 1)! !
-
-!MNIST3LayersNNExamplePlan methodsFor: 'accessing' stamp: 'gera 1/31/2017 14:41:30'!
-outputSize
-	^ 10! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/22/2017 00:10:30'!
 predict: inputs
@@ -1278,6 +1281,16 @@ fromStream: aStream
 	answer _ self new.
 	^ answer parse: aStream! !
 
+!MNISTFile class methodsFor: 'instance creation' stamp: 'JB 2/5/2017 15:28:39'!
+testSet
+	^self fromFile: self testName
+	! !
+
+!MNISTFile class methodsFor: 'instance creation' stamp: 'JB 2/5/2017 15:28:58'!
+trainingSet
+	^self fromFile: self trainName
+	! !
+
 !MNISTFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:07:25'!
 magic
 	^ self subclassResponsibility ! !
@@ -1286,19 +1299,9 @@ magic
 testName
 	^ self subclassResponsibility ! !
 
-!MNISTFile class methodsFor: 'instance creation' stamp: 'JB 2/5/2017 15:28:39'!
-testSet
-	^self fromFile: self testName
-	! !
-
 !MNISTFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:16:03'!
 trainName
 	^ self subclassResponsibility ! !
-
-!MNISTFile class methodsFor: 'instance creation' stamp: 'JB 2/5/2017 15:28:58'!
-trainingSet
-	^self fromFile: self trainName
-	! !
 
 !MNISTImageFile methodsFor: 'converting' stamp: 'gera 2/6/2017 20:17:27'!
 asTensor
@@ -1325,16 +1328,16 @@ bytesAt: base take: batchSize
 columns
 	^ columns! !
 
+!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:26'!
+rows
+	^ rows! !
+
 !MNISTImageFile methodsFor: 'initialization' stamp: 'JB 2/5/2017 15:10:42'!
 parse: aStream
 	super parse: aStream.
 	rows _ aStream nextUnsignedInt32BigEndian: true.
 	columns _ aStream nextUnsignedInt32BigEndian: true.
 	items _ aStream upToEnd.! !
-
-!MNISTImageFile methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:58:26'!
-rows
-	^ rows! !
 
 !MNISTImageFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:09:23'!
 magic
@@ -1519,10 +1522,6 @@ decodeCSVGraphDefaults: anArrayOfTF_Tensors
 	
 	^ graph! !
 
-!NearestNeighbor methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:46:56'!
-initialize
-	plan _ ExampleNearestNeighborPlan new.! !
-
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 2/15/2017 22:40:27'!
 irisDescription
 	^{TF_Tensor fromFloats: #(-1.0).
@@ -1534,6 +1533,10 @@ irisDescription
 !NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 1/16/2017 23:00:14'!
 irisFile
 	^ self class irisFile! !
+
+!NearestNeighbor methodsFor: 'initialization' stamp: 'JB 1/19/2017 10:46:56'!
+initialize
+	plan _ ExampleNearestNeighborPlan new.! !
 
 !NearestNeighbor methodsFor: 'initialization' stamp: 'jb 1/15/2017 23:28:54'!
 loadDataSet
@@ -1620,6 +1623,18 @@ hidden2Size
 !RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:54'!
 hidden3Size
 	^ 20! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:59'!
+inputSize
+	^ 1! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:34:03'!
+intput
+	^ input! !
+
+!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:34:23'!
+outputSize
+	^ 1! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:33:07'!
 initialize
@@ -1741,18 +1756,6 @@ initializeParameters
 initializeSession
 	session _ TF_Session on: graph.
 	graph initializeOn: session! !
-
-!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:33:59'!
-inputSize
-	^ 1! !
-
-!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:34:03'!
-intput
-	^ input! !
-
-!RegressionNNExample methodsFor: 'accessing' stamp: 'JB 2/22/2017 22:34:23'!
-outputSize
-	^ 1! !
 
 !RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 22:33:07'!
 predict: inputs
