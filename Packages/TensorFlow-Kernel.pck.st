@@ -1,60 +1,10 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 30 June 2019 at 12:16:26 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 30 June 2019 at 10:07:59 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Kernel' 1 410!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
 
-
-!classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
-TestCase subclass: #ExternalWordArrayTest
-	instanceVariableNames: 'library'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'ExternalWordArrayTest class' category: #'TensorFlow-Kernel'!
-ExternalWordArrayTest class
-	instanceVariableNames: ''!
-
-!classDefinition: #TensorFlowTestCase category: #'TensorFlow-Kernel'!
-TestCase subclass: #TensorFlowTestCase
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TensorFlowTestCase class' category: #'TensorFlow-Kernel'!
-TensorFlowTestCase class
-	instanceVariableNames: ''!
-
-!classDefinition: #TensorFlowCAPISlowTests category: #'TensorFlow-Kernel'!
-TensorFlowTestCase subclass: #TensorFlowCAPISlowTests
-	instanceVariableNames: 'library'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TensorFlowCAPISlowTests class' category: #'TensorFlow-Kernel'!
-TensorFlowCAPISlowTests class
-	instanceVariableNames: ''!
-
-!classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
-TensorFlowTestCase subclass: #TensorFlowCAPITest
-	instanceVariableNames: 'library'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TensorFlowCAPITest class' category: #'TensorFlow-Kernel'!
-TensorFlowCAPITest class
-	instanceVariableNames: ''!
-
-!classDefinition: #TensorFlowOperationsTest category: #'TensorFlow-Kernel'!
-TensorFlowTestCase subclass: #TensorFlowOperationsTest
-	instanceVariableNames: 'library'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TensorFlowOperationsTest class' category: #'TensorFlow-Kernel'!
-TensorFlowOperationsTest class
-	instanceVariableNames: ''!
 
 !classDefinition: #TensorFlowCAPI category: #'TensorFlow-Kernel'!
 ExternalLibrary subclass: #TensorFlowCAPI
@@ -246,6 +196,56 @@ TFStructure subclass: #TF_Tensor
 TF_Tensor class
 	instanceVariableNames: ''!
 
+!classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
+TestCase subclass: #ExternalWordArrayTest
+	instanceVariableNames: 'library'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'ExternalWordArrayTest class' category: #'TensorFlow-Kernel'!
+ExternalWordArrayTest class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowTestCase category: #'TensorFlow-Kernel'!
+TestCase subclass: #TensorFlowTestCase
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TensorFlowTestCase class' category: #'TensorFlow-Kernel'!
+TensorFlowTestCase class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowCAPISlowTests category: #'TensorFlow-Kernel'!
+TensorFlowTestCase subclass: #TensorFlowCAPISlowTests
+	instanceVariableNames: 'library'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TensorFlowCAPISlowTests class' category: #'TensorFlow-Kernel'!
+TensorFlowCAPISlowTests class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowCAPITest category: #'TensorFlow-Kernel'!
+TensorFlowTestCase subclass: #TensorFlowCAPITest
+	instanceVariableNames: 'library'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TensorFlowCAPITest class' category: #'TensorFlow-Kernel'!
+TensorFlowCAPITest class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowOperationsTest category: #'TensorFlow-Kernel'!
+TensorFlowTestCase subclass: #TensorFlowOperationsTest
+	instanceVariableNames: 'library'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TensorFlowOperationsTest class' category: #'TensorFlow-Kernel'!
+TensorFlowOperationsTest class
+	instanceVariableNames: ''!
+
 
 !TFStructure methodsFor: 'printing' stamp: 'gera 1/3/2017 10:26:05'!
 printOn: strm
@@ -288,6 +288,2618 @@ printOn: strm
 !TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:32:07'!
 elementSize
 	^ self class sizeForType: self type! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
+allocateTensorType: anInteger shape: aLonnLongArray rank: dimCount length: len
+	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:17'!
+deleteTensor: aTF_Tensor
+	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
+tensor: aTF_Tensor sizeOn: dimension
+	<cdecl: longlong 'TF_Dim' (TF_Tensor* ulonglong)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 1/5/2017 23:36:32'!
+tensorByteSize: aTF_Tensor
+	<cdecl: ulonglong 'TF_TensorByteSize' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 09:17:49'!
+tensorData: aTF_Tensor
+	<cdecl: void* 'TF_TensorData' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:04:40'!
+tensorRank: aTF_Tensor
+	<cdecl: longlong 'TF_NumDims' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:40'!
+tensorType: aTF_Tensor
+	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:26:55'!
+closeSession: aTF_Session status: aTF_Status
+	<cdecl: void 'TF_CloseSession' (TF_Session* TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:23:33'!
+deleteSession: aTF_Session status: aTF_Status
+	<cdecl: void 'TF_DeleteSession' (TF_Session* TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:21:09'!
+newSession: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
+	<cdecl: TF_Session* 'TF_NewSession' (TF_Graph* TF_SessionOptions* TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/29/2016 18:19:01'!
+runSession: aTF_Session
+	options: opsTF_Buffer
+	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
+	outputs: outTF_OutputArray values: outTF_TensorArrayPtr count: outCount
+	targets: aTF_OperationArray count: targetCount
+	metadata: metaTF_Buffer
+	status: aTF_Status
+	
+	<cdecl: void 'TF_SessionRun' (
+		TF_Session*
+		TF_Buffer*				"RunOptions, may be nil"
+		TF_OutputArray*			"inputs"
+		TF_TensorPtrArray*		"inputs' values"
+		long						"inputs count"
+		TF_OutputArray*			"outputs"
+		TF_TensorPtrArray*		"outputs values (results)"
+		long						"outputs count"
+		TF_OperationPtrArray*	"target operations array, may be nil"
+		long						"taret operations count"
+		TF_Buffer*				"RunMetadata"
+		TF_Status*)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'buffer' stamp: 'gera 12/22/2016 00:38:51'!
+deleteBuffer: aTF_Buffer
+	<cdecl: void 'TF_DeleteBuffer' (TF_Buffer*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'buffer' stamp: 'gera 12/22/2016 00:38:18'!
+newBufferFromString: aString size: anInteger
+	<cdecl: TF_Buffer* 'TF_NewBufferFromString' (char* ulong)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/21/2016 22:32:51'!
+deleteGraph: aTF_Graph
+	<cdecl: void 'TF_DeleteGraph' (TF_Graph*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:27:15'!
+graph: aTF_Graph getOperationNamed: aString
+	| answer |
+	answer _ self graph: aTF_Graph getOperationNamedAsVoid: aString.
+	answer _ TF_Operation fromHandle: answer getHandle.
+	answer graph: aTF_Graph.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:12:26'!
+graph: aTF_Graph getOperationNamedAsVoid: aString
+	<cdecl: void* 'TF_GraphOperationByName' (TF_Graph* char*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:31:00'!
+graph: aTF_Graph getRankOf:  aTF_OutputOrInput status: status
+	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:23:19'!
+graph: aTF_Graph getShapeOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
+	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 15:12:33'!
+graph: aTF_Graph setShapeOf:  aTF_OutputOrInput to: anInt64Array size: anInteger status: status
+	<cdecl: void 'TF_GraphSetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/5/2017 20:47:43'!
+graph: aTF_Graph toGraphDef: aTF_Buffer status: aTF_Status
+	<cdecl: void 'TF_GraphToGraphDef' (TF_Graph* TF_Buffer* TF_Status*)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
+importGraphDefInto: aTF_Graph from: aTF_Buffer options: aTF_ImportGraphDefOptions status: aTF_Status
+	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TF_Buffer* TF_ImportGraphDefOptions* TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:59:21'!
+newGraph
+	| answer |
+	answer _ self newGraphAsVoid.
+	answer _ TF_Graph fromHandle: answer getHandle.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:58:18'!
+newGraphAsVoid
+	<cdecl: void* 'TF_NewGraph' (void)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:16:37'!
+deleteImportGraphDefOptions: aTF_ImportGraphDefOptions
+	<cdecl: void 'TF_DeleteImportGraphDefOptions' (TF_ImportGraphDefOptions*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:41'!
+deleteSessionOptions: aTF_SessionOptions
+	<cdecl: void 'TF_DeleteSessionOptions' (TF_SessionOptions*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:17:45'!
+newImportGraphDefOptions
+	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:35'!
+newSessionOptions
+	<cdecl: TF_SessionOptions* 'TF_NewSessionOptions' (void)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/21/2016 23:47:01'!
+sessionOptions: aTF_SessionOptions setConfig: aString configSize: anInteger status: aTF_Status
+	" not sure how to use this. Best information found in http://devdocs.io/tensorflow~python/contrib.learn#RunConfig"
+	<cdecl: void 'TF_SetConfig' (TF_SessionOptions* void* ulong TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/19/2016 10:58'!
+sessionOptions: aTF_SessionOptions setTarget: aString
+	<cdecl: void 'TF_SetTarget' (TF_SessionOptions* char*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 02:57:15'!
+deleteStatus: aTF_Status
+	<cdecl: void 'TF_DeleteStatus' (TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:59:30'!
+getCode: aTF_Status
+	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 10:14:23'!
+message: aTF_Status
+	<cdecl: char* 'TF_Message' (TF_Status*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 02:56:25'!
+newStatus
+	<cdecl: TF_Status* 'TF_NewStatus' (void)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:54:03'!
+setStatus: aTF_Status code: anInteger message: anExternalString
+	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/22/2017 20:32:21'!
+description: aTF_OperationDescription addControlInput: aTF_Output
+	<cdecl: void 'TF_AddControlInput' (TF_OperationDescription* TF_Output)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:59:08'!
+description: aTF_OperationDescription addInput: aTF_Output
+	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/2/2017 12:36:00'!
+description: aTF_OperationDescription addInputs: aTF_OutputArray size: anInteger
+	<cdecl: void 'TF_AddInputList' (TF_OperationDescription* TF_OutputArray* longlong)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/9/2017 19:53:21'!
+description: aTF_OperationDescription set: aString toBool: anInt
+	<cdecl: void 'TF_SetAttrBool' (TF_OperationDescription* char* byte)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 10:32:25'!
+description: aTF_OperationDescription set: aString toFloat: valueFloat
+	<cdecl: void 'TF_SetAttrFloat' (TF_OperationDescription* char* float)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/30/2016 12:52:47'!
+description: aTF_OperationDescription set: aString toInt64: anInt
+	<cdecl: void 'TF_SetAttrInt' (TF_OperationDescription* char* ulonglong)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 20:51:14'!
+description: aTF_OperationDescription set: aString toShape: anInt64Array size: size
+	<cdecl: void 'TF_SetAttrShape' (TF_OperationDescription* char* Int64Array* ulonglong)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/23/2017 17:18:33'!
+description: aTF_OperationDescription set: nameString toString: valueString size: size
+	<cdecl: void 'TF_SetAttrString' (TF_OperationDescription* char* char* ulonglong)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/24/2017 01:24:05'!
+description: aTF_OperationDescription set: aString toStrings: anArrayOfString sizes: sizes count: count
+	<cdecl: void 'TF_SetAttrStringList' (TF_OperationDescription* char* void* Int64Array* longlong)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
+description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
+	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 00:44:16'!
+description: aTF_OperationDescription set: aString toType: anInt
+	<cdecl: void 'TF_SetAttrType' (TF_OperationDescription* char* ulonglong)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/22/2017 17:57:36'!
+description: aTF_OperationDescription setDevice: aString
+	<cdecl: void 'TF_SetDevice' (TF_OperationDescription* char*)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/19/2017 23:32:25'!
+finishOperation: aTF_OperationDescription status: aTF_Status
+	| answer |
+	answer _ self finishOperationAsVoid: aTF_OperationDescription status: aTF_Status.
+	^ TF_Operation fromHandle: answer getHandle.! !
+
+!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/19/2017 10:33:08'!
+finishOperationAsVoid: aTF_OperationDescription status: aTF_Status
+	<cdecl: void* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
+externalizeString: aString
+	| answer |
+	answer := ExternalAddress allocate: aString size + 1.
+	answer byteAt: aString size + 1 put: 0.
+	aString withIndexDo: [:char :index |
+		answer byteAt:  index put: char asciiValue].
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/29/2016 23:03:34'!
+getAllOps
+	<cdecl: TF_Buffer* 'TF_GetAllOpList' (void)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'utils' stamp: 'jb 12/26/2016 11:48:09'!
+version
+	<cdecl: char* 'TF_Version' (void)>
+	^ self externalCallFailed.! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/26/2016 13:13:55'!
+forGraph: aTF_Graph outputDims: aTF_Output status: aTF_Status
+	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:29:16'!
+graph: aTF_Graph operationAt: contextULongLongPtr
+	| answer |
+	answer _ self graph: aTF_Graph operationAtAsVoid: contextULongLongPtr.
+	answer _ TF_Operation fromHandle: answer getHandle.
+	answer graph: aTF_Graph.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:28:23'!
+graph: aTF_Graph operationAtAsVoid: contextULongLongPtr
+	<cdecl: void* 'TF_GraphNextOperation' (TF_Graph* ulonglong*)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/29/2017 02:33:28'!
+newOperationDescriptionOn: graph type: type named: name
+	<cdecl: TF_OperationDescription* 'TF_NewOperation' (TF_Graph* char* char*)>
+	^ self externalCallFailed
+	! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/9/2017 19:45:05'!
+operation: aTF_Operation attr: nameZString getBool: valueBoolPtr status: status
+	<cdecl: void 'TF_OperationGetAttrBool' (TF_Operation* char* ulonglong* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 10:21:45'!
+operation: aTF_Operation attr: nameZString getFloat: valueFloatPtr status: status
+	<cdecl: void 'TF_OperationGetAttrFloat' (TF_Operation* char* float* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:24:06'!
+operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
+	<cdecl: void 'TF_OperationGetAttrInt' (TF_Operation* char* ulonglong* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 16:39:17'!
+operation: aTF_Operation attr: nameZString getShape: int64array size: maxSize status: status
+	<cdecl: void 'TF_OperationGetAttrShape' (TF_Operation* char* Int64Array* ulonglong TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 09:00:54'!
+operation: aTF_Operation attr: nameZString getString: valueString size: maxSize status: status
+	<cdecl: void 'TF_OperationGetAttrString' (TF_Operation* char* void* ulonglong TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/26/2017 22:36:48'!
+operation: aTF_Operation attr: nameZString getStrings: valueStringArray sizes: sizesArray maxCount: maxCount storage: aBytaArray size: storageSize status: status
+	<cdecl: void 'TF_OperationGetAttrStringList' (TF_Operation* char* void* Int64Array* ulonglong void* size_t TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:59:08'!
+operation: aTF_Operation attr: nameZString getTensor: valueLongPtr status: status
+	<cdecl: void 'TF_OperationGetAttrTensor' (TF_Operation* char* void* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:54:15'!
+operation: aTF_Operation attr: nameZString getType: valueLongPtr status: status
+	<cdecl: void 'TF_OperationGetAttrType' (TF_Operation* char* ulonglong* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/11/2017 22:34:01'!
+operation: aTF_Operation getMetadataFor: nameZString status: status
+	<cdecl: TF_AttrMetadata 'TF_OperationGetAttrMetadata' (TF_Operation* char* TF_Status*)>
+	^ self externalCallFailed
+
+! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:06'!
+operationDevice: aTF_Operation
+	<cdecl: char* 'TF_OperationDevice' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:53:36'!
+operationName: aTF_Operation
+	<cdecl: char* 'TF_OperationName' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:55:39'!
+operationNumInputs: aTF_Operation
+	<cdecl: long 'TF_OperationNumInputs' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:41'!
+operationNumOutputs: aTF_Operation
+	<cdecl: long 'TF_OperationNumOutputs' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:53:56'!
+operationOpType: aTF_Operation
+	<cdecl: char* 'TF_OperationOpType' (TF_Operation*)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/23/2016 10:45:09'!
+operationOutputType: aTF_Output
+	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
+	^ self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:43:38'!
+primStringEncodedSize: anInteger
+	<cdecl: ulonglong 'TF_StringEncodedSize' (ulonglong)>
+	^self externalCallFailed! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/5/2017 03:14:02'!
+stringDecode: src
+	| destination status answer dstSize |
+	destination _ ByteArray new: 8.
+	dstSize _ ByteArray new: 8.
+	status _ TF_Status create.
+	answer _ self stringDecode: src len: src size destination: destination len: dstSize status: status.
+	status check.
+	dstSize _ dstSize unsignedLongLongAt: 1.
+	destination _ destination pointerAt: 1.
+	answer _ (destination structAt: 1 length: dstSize) asString.
+	^ answer! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/5/2017 03:11:10'!
+stringDecode: srcString len: srcLen destination: dstPointer len: dstLenPointer status: status
+	<cdecl: ulonglong 'TF_StringDecode' (char* ulonglong char* ulonglong* TF_Status)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/4/2017 19:02:15'!
+stringEncode: srcString len: srcLen destination: dstString len: dstLen status: status
+	<cdecl: ulonglong 'TF_StringEncode' (char* ulonglong char* ulonglong TF_Status)>
+	^ self externalCallFailed
+! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/13/2017 01:50:35'!
+stringEncode: src to: dst
+	^ self stringEncode: src to: dst size: dst size
+
+! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/13/2017 01:50:12'!
+stringEncode: src to: dst size: dstSize
+	| status answer |
+	status _ TF_Status create.
+	answer _ self stringEncode: src len: src size destination: dst len: dstSize status: status.
+	status check.
+	^ answer
+! !
+
+!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:40:22'!
+stringEncodedSize: aString
+	^self primStringEncodedSize: aString size! !
+
+!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'jb 12/26/2016 10:19:17'!
+current
+	^ current ifNil: [current _ self new forceLoading].
+! !
+
+!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'GerardoRicharte 12/18/2016 12:18'!
+moduleName
+	^ 'libtensorflow'! !
+
+!TFStructure methodsFor: 'testing' stamp: 'gera 1/29/2017 03:39:43'!
+= aTF_Structure
+	^ self class = aTF_Structure class
+		and: [handle = aTF_Structure getHandle]! !
+
+!TFStructure methodsFor: 'private' stamp: 'gera 12/21/2016 02:52:42'!
+library
+	^ TensorFlowCAPI current! !
+
+!TFStructure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:24:05'!
+fields
+	"self initialize"
+	^#()! !
+
+!TFStructure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:33:15'!
+pointerSize
+	" Fixed for 64 bit platforms. TensorFlow is only available in 64 bit platforms "
+	self assert: 8 == Smalltalk wordSize.
+	^ Smalltalk wordSize! !
+
+!TFStructure class methodsFor: 'class initialization' stamp: 'gera 6/30/2019 00:14:46'!
+initialize
+	super initialize.
+	self == TFStructure ifTrue: [
+		self allSubclassesDo: [:cls | cls initialize].
+		self allSubclassesDo: [:cls | cls initialize].
+	]! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:45:27'!
+at: index
+	"This method was automatically generated. See PointerArray class>>fields."
+	^ self elementAtOffset: index  - 1 * self class byteSize + 1
+	! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 14:10:50'!
+at: index put: anExternalStructure
+	"This method was automatically generated. See PointerArray class>>fields."
+	^ self elementAtOffset: index  - 1 * self class byteSize + 1 put: anExternalStructure
+	! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:09:17'!
+elementClass
+	^self subclassResponsibility! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
+first
+	^ self at: 1! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:29'!
+first: anExternalStructure
+	self at: 1 put: anExternalStructure
+! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:59'!
+fourth
+	^ self at: 4! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:49'!
+second
+	^ self at: 2! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+template
+	"This method was automatically generated. See PointerArray class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
+template: anObject
+	"This method was automatically generated. See PointerArray class>>fields."
+	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:53'!
+third
+	^ self at: 3! !
+
+!ExternalWordArray methodsFor: 'private' stamp: 'gera 12/25/2016 13:44:02'!
+elementAtOffset: byteOffset
+	^self elementClass fromHandle: (handle longPointerAt: byteOffset)
+	! !
+
+!ExternalWordArray methodsFor: 'private' stamp: 'gera 12/25/2016 14:14:46'!
+elementAtOffset: byteOffset put: anExternalStructure
+	handle longPointerAt: byteOffset put: anExternalStructure getHandle.! !
+
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 18:35:06'!
+externalFromArray: anArray
+	| answer |
+	answer _ self externalNew: anArray size.
+	anArray withIndexDo: [:each :index |
+		answer at: index put: each].
+	^ answer! !
+
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
+externalNew
+	^ self shouldNotImplement! !
+
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 13:11:46'!
+externalNew: count
+	| address answer |
+	address _ ExternalAddress gcallocate: self byteSize * count.
+	answer _ self fromHandle: address.
+	^ answer! !
+
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:45'!
+new
+	^ self shouldNotImplement! !
+
+!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
+new: count
+	^self fromHandle: (ByteArray new: self byteSize * count)! !
+
+!ExternalWordArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
+fields
+	"self initialize."
+	^#((template 'void*'))! !
+
+!Int64Array methodsFor: 'accessing' stamp: 'gera 12/27/2016 18:11:32'!
+elementAtOffset: offset
+	^handle signedLongLongAt: offset
+	! !
+
+!Int64Array methodsFor: 'accessing' stamp: 'gera 12/27/2016 18:11:36'!
+elementAtOffset: offset put: anInteger
+	handle signedLongLongAt: offset put: anInteger! !
+
+!Int64Array class methodsFor: 'instance creation' stamp: 'jb 12/26/2016 09:43:53'!
+byteSize
+	^ 8! !
+
+!TF_OperationPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:55'!
+elementClass
+	^TF_Operation! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:44:00'!
+elementAtOffset: byteOffset
+	^self elementClass fromHandle: (handle + (byteOffset - 1))
+	
+! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:11:25'!
+elementAtOffset: byteOffset put: anExternalStructure
+	handle structAt: byteOffset put: anExternalStructure getHandle length: TF_Output byteSize.! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:50:48'!
+elementClass
+	^TF_Output! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
+template
+	"This method was automatically generated. See TF_OutputArray class>>fields."
+	^TF_Output fromHandle: (handle structAt: 1 length: 16)! !
+
+!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
+template: anObject
+	"This method was automatically generated. See TF_OutputArray class>>fields."
+	handle structAt: 1 put: anObject getHandle length: 16.! !
+
+!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:03'!
+fields
+	"self initialize"
+	^#((template 'TF_Output'))! !
+
+!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:40'!
+new: unused
+	^ self shouldNotImplement! !
+
+!TF_TensorPtrArray methodsFor: 'accessing' stamp: 'gera 12/27/2016 09:09:07'!
+elementClass
+	^TF_Tensor! !
+
+!TF_TensorPtrArray methodsFor: 'accessing' stamp: 'JB 2/23/2017 11:14:36'!
+numbersAt: index
+	| tensor |
+	tensor _ self at: index.
+	^ tensor asNumbers! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:07'!
+isBoolean
+	^ self type = 3! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:55'!
+isFloat
+	^ self type = 2! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:15:35'!
+isFunc
+	^ self type = 8! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:31'!
+isInt
+	^ self type = 1! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:54'!
+isPlaceholder
+	^ self type = 7! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:27'!
+isShape
+	^ self type = 5! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:09'!
+isString
+	^ self type = 0
+! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:41'!
+isTensor
+	^ self type = 6! !
+
+!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:17'!
+isType
+	^ self type = 4! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:41:49'!
+isList
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^self _isList \\ 256 ~= 0.! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:36'!
+listSize
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle signedLongLongAt: 9! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:40'!
+totalSize
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle signedLongLongAt: 25! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:42:04'!
+type
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^self _type \\ 256! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
+_isList
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle unsignedLongLongAt: 1! !
+
+!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
+_type
+	"This method was automatically generated. See TF_AttrMetadata class>>fields."
+	^handle unsignedLongLongAt: 17! !
+
+!TF_AttrMetadata class methodsFor: 'field definition' stamp: 'gera 1/11/2017 22:43:56'!
+fields
+	"self initialize"
+	^#(
+		(_isList 'ulonglong')
+		(listSize 'longlong')
+		(_type 'ulonglong')
+		(totalSize 'longlong'))
+	! !
+
+!TF_Buffer methodsFor: 'accessing' stamp: 'JB 1/18/2017 23:01:10'!
+data
+	"This method was automatically generated. See TF_Buffer class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
+
+!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:33:21'!
+data: anObject
+	"This method was automatically generated. See TF_Buffer class>>fields."
+	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!TF_Buffer methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:43:10'!
+dataBytes
+	^ self data getHandle structAt: 1 length: self length! !
+
+!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+deallocator
+	"This method was automatically generated. See TF_Buffer class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 17) type: ExternalType void asPointerType! !
+
+!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+deallocator: anObject
+	"This method was automatically generated. See TF_Buffer class>>fields."
+	handle longPointerAt: 17 put: anObject getHandle.! !
+
+!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+length
+	"This method was automatically generated. See TF_Buffer class>>fields."
+	^handle unsignedLongLongAt: 9! !
+
+!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+length: anObject
+	"This method was automatically generated. See TF_Buffer class>>fields."
+	handle unsignedLongLongAt: 9 put: anObject! !
+
+!TF_Buffer methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:20'!
+delete
+	self isNull ifFalse: [
+		self library deleteBuffer: self].
+	handle _ nil! !
+
+!TF_Buffer class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:45:49'!
+fields
+	"self initialize.
+	self defineFields"
+	^#(
+		(data 'void*')
+		(length 'ulonglong')
+		(deallocator 'void*'))
+	! !
+
+!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:05:44'!
+fromFileNamed: aString
+	| fileContents |
+	fileContents _ aString asFileEntry readStream contents.
+	^ self fromString: fileContents! !
+
+!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 1/10/2017 21:00:42'!
+fromString: aString
+	| answer |
+	answer _ TensorFlowCAPI current newBufferFromString: aString size: aString size.
+	^ answer! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:15:34'!
+allInitializers
+	^ self operationsSelect: [:op | op type = 'Assign' and: [op name endsWith: '_initializer']]! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:30:15'!
+allInputs
+	^ self operationsSelect: [:op | op type = 'Placeholder']! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 05:03:52'!
+allOperations
+	^ self operationsSelect: [:op | true]! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:34:38'!
+allVariables
+	^ self operationsSelect: [:op | op type = 'Variable']! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:20:02'!
+newOperationIteratorContext
+	^ ByteArray new: 8! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:09:21'!
+operationAt: contextULongLongPtr
+	^ self library graph: self operationAt: contextULongLongPtr! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/19/2017 23:27:23'!
+operationNamed: aString
+	| answer |
+	answer _ self library graph: self getOperationNamed: aString asAsciiZ.
+	answer isNull ifTrue: [self error: 'Operation not found'].
+	^ answer
+! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/19/2017 11:10:01'!
+operationsCount
+	| answer |
+	answer _ 0.
+	self operationsDo: [:each | answer _ answer + 1].
+	^ answer! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 2/25/2017 11:46:38'!
+operationsDo: oneArgBlock
+	| iterator operation |
+	iterator _ self newOperationIteratorContext.
+	[operation _ self operationAt: iterator.
+		operation isNull] whileFalse: [oneArgBlock value: operation].
+! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:33:53'!
+operationsSelect: oneArgBlock
+	| answer |
+	answer _ OrderedCollection new.
+	
+	self operationsSelect: oneArgBlock thenDo: [:op | answer add: op].
+	
+	^ answer asArray! !
+
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:33:20'!
+operationsSelect: conditionBlock thenDo: actionBlock
+	| answer |
+	answer _ OrderedCollection new.
+	
+	self operationsDo: [:op |
+		(conditionBlock value: op)
+			ifTrue: [actionBlock value: op]].
+	
+	^ answer asArray! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 05:21:30'!
+add: nameString described: aBlock
+	^self newOperation: 'Add' named: nameString described: aBlock! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 23:55:21'!
+asString: nameString described: aBlock
+	^self newOperation: 'AsString' named: nameString described: aBlock! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/30/2016 12:16:54'!
+concat: nameString described: aBlock
+	^self newOperation: 'Concat' named: nameString described: aBlock! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
+mul: nameString described: aBlock
+	^self newOperation: 'Mul' named: nameString described: aBlock! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:35:44'!
+newOperation: typeString named: aString
+	^ self newOperation: typeString named: aString described: [:unused | ]! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:32:14'!
+newOperation: typeString named: aString described: aBlock
+	| description answer |
+	description _ self newOperationDescription: typeString named: aString.
+	aBlock value: description.
+	answer _ description finish.
+	answer graph: self.
+	^ answer! !
+
+!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:33:39'!
+newOperationDescription: typeString named: aString
+	^ self library newOperationDescriptionOn: self type: typeString named: aString
+! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 15:07:44'!
+const: aTF_Tensor
+	| name |
+	name _ self nameFor: 'constant'.
+	^ self const: name value: aTF_Tensor! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 12/28/2016 02:07:25'!
+const: nameString value: aTF_Tensor
+	^ self
+		newOperation: 'Const'
+		named: nameString
+		described: [:description |
+			description at: 'dtype' putType: aTF_Tensor type.
+			description at: 'value' putTensor: aTF_Tensor]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/2/2017 19:45:59'!
+inputType: typeInteger
+	^ self
+		newOperation: 'Placeholder'
+		named: (self nameFor: 'input')
+		described: [:description |
+			description at: 'dtype' putType: typeInteger]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/10/2017 11:28:09'!
+nameFor: namePrefix
+	^ context, namePrefix,'_',self operationsCount printString.! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/6/2017 17:21:53'!
+placeholder: nameString type: typeInteger
+	^ self
+		newOperation: 'Placeholder'
+		named: nameString
+		described: [:description |
+			description at: 'dtype' putType: typeInteger]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:43:13'!
+truncatedNormalRandomShaped: shapeArray
+	| shape |
+	shape _ self const: shapeArray asInt32Tensor.
+	^ shape unaryOp: 'TruncatedNormal' described: [:description |
+		description at: 'dtype' putType: TF_Tensor typeFloat]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:44:21'!
+truncatedNormalRandomShaped: shapeArray stddev: aNumber
+	| random |
+	random _ self truncatedNormalRandomShaped: shapeArray.
+	^ random @* (self const: aNumber asTensor)! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
+variable: nameString forTensor: aTF_Tensor
+	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor shape! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:02:23'!
+variable: nameString initialValue: aTF_Tensor
+	| const var |
+	var _ self variable: nameString forTensor: aTF_Tensor.
+	const _ self const: nameString, '_initialValue' value: aTF_Tensor.
+	var assign: const.
+	^ var! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:22:52'!
+variable: nameString initialValueFrom: aTF_Operation
+	| output var shape |
+	output _ aTF_Operation output: 0.
+	shape _ self shapeOf: output.
+	var _ self variable: nameString type: output type shape: shape..
+	var assign: aTF_Operation.
+	^ var! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:04:54'!
+variable: nameString type: typeInteger shape: anArray
+	^ self
+		newOperation: 'Variable'
+		named: nameString
+		described: [:description |
+			description
+				at: 'dtype' putType: typeInteger;
+				at: 'shape' putShape: anArray]! !
+
+!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/17/2017 00:47:45'!
+zerosShaped: shapeArray
+	| shape |
+	shape _ self const: shapeArray asInt32Tensor.
+	^ shape binaryOp: 'Fill' with: 0.0 asTensor! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:45:55'!
+delete
+	self ignoreFinalization.
+	self isNull ifFalse: [
+		self library deleteGraph: self].
+	handle _ nil! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
+finalize
+	self delete! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 02:14:06'!
+fromBlock: aBlockClosure
+	| types |
+	types _ Array new: aBlockClosure argumentCount.
+	types atAllPut: TF_Tensor typeFloat.
+	^ self fromBlock: aBlockClosure inputTypes: types! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 19:46:21'!
+fromBlock: aBlockClosure inputTypes: anArray
+	| inputs index |
+	index _ 0.
+	inputs _ (1 to: aBlockClosure argumentCount) collect: [:each |
+		index _ index + 1.
+		self inputType: (anArray at: index)].
+	^ aBlockClosure valueWithArguments: inputs.
+! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:26:14'!
+fromBlock: aBlockClosure inputTypes: anArray named: nameString
+	| previousContext answer |
+	previousContext _ context.
+	context _ context, nameString, '/'.
+	answer _ self fromBlock: aBlockClosure inputTypes: anArray.
+	context _ previousContext.
+	^ answer! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:32:38'!
+fromBlock: aBlockClosure named: nameString
+	| types |
+	types _ Array new: aBlockClosure argumentCount.
+	types atAllPut: TF_Tensor typeFloat.
+	^ self fromBlock: aBlockClosure inputTypes: types named: nameString! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
+import: aTF_Buffer
+	| options status |
+	
+	status _ TF_Status create.
+	options _ TF_ImportGraphDefOptions create.
+	
+	self library importGraphDefInto: self from: aTF_Buffer options: options status: status.
+	
+	options delete.
+	status check.! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:27:24'!
+importFileNamed: aString
+	| buffer |
+	buffer _ TF_Buffer fromFileNamed: aString.
+	[self import: buffer] ensure: [buffer delete].! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:26:59'!
+importString: aString
+	| buffer |
+	buffer _ TF_Buffer fromString: aString.
+	[self import: buffer] ensure: [buffer delete].! !
+
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 11:26:27'!
+initialize
+	context _ ''.! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 1/29/2017 04:32:04'!
+initializeOn: aTF_Session
+	| initializers |
+	initializers _ self allInitializers collect: [:each | each output: 0].
+	initializers size > 0 ifTrue: [
+		aTF_Session runOutputs: initializers]
+! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:09:28'!
+runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+	| session |
+	session _ TF_Session on: self.
+	self initializeOn: session.
+	^ session runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:07:15'!
+runOutput: aTF_Output
+	| session |
+	session _ TF_Session on: self.
+	self initializeOn: session.
+	^ session runOutput: aTF_Output! !
+
+!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:08:50'!
+runOutputs: anArrayOfTF_Outputs
+	| session |
+	session _ TF_Session on: self.
+	self initializeOn: session.
+	^ session runOutputs: anArrayOfTF_Outputs! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/3/2017 17:20:21'!
+outputDimenssionsCount: aTF_Output
+	| status answer |
+	status _ TF_Status create.
+	answer _ self library forGraph: self outputDims: aTF_Output status: status.
+	status check.
+	^answer! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:31:07'!
+rankOf: aTF_OutputOrInput
+	| status answer |
+	status _ TF_Status create.
+	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
+	status check.
+	^ answer! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
+shapeOf: aTF_OutputOrInput
+	| status value size answer |
+	size _ self rankOf: aTF_OutputOrInput.
+	value _ Int64Array externalNew: size.
+	status _ TF_Status create.
+	
+	self library
+		graph: self
+		getShapeOf: aTF_OutputOrInput
+		into: value
+		size: size
+		status: status.
+	status check.
+	
+	answer _ (1 to: size) collect: [:i | value at: i].
+	^ answer! !
+
+!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 15:08:37'!
+shapeOf: aTF_OutputOrInput set: shape
+	| status value |
+	value _ Int64Array externalFromArray: shape.
+	status _ TF_Status create.
+	
+	self library
+		graph: self
+		setShapeOf: aTF_OutputOrInput
+		to: value
+		size: shape size
+		status: status.
+	status check.! !
+
+!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 09:39:58'!
+writeDefTo: strm
+	strm nextPutAll: self definition! !
+
+!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 10:50:05'!
+writeDefToFileNamed: filename
+	filename asFileEntry writeStreamDo: [:strm |
+		self writeDefTo: strm]! !
+
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/10/2017 11:26:01'!
+create
+	^ TensorFlowCAPI current newGraph initialize useFinalization! !
+
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/2/2017 01:55:59'!
+fromBlock: aBlockClosure
+	| output graph |
+	graph _ self create.
+	output _ graph fromBlock: aBlockClosure .
+	output alias: 'output'.
+	^ graph! !
+
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:26'!
+fromFileNamed: aString
+	^ self create importFileNamed: aString! !
+
+!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:33'!
+fromString: aString
+	^ self create importString: aString! !
+
+!TF_ImportGraphDefOptions methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:56'!
+delete
+	self isNull ifFalse: [
+		self library deleteImportGraphDefOptions: self].
+	handle _ nil! !
+
+!TF_ImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
+create
+	^ TensorFlowCAPI current newImportGraphDefOptions! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
+InputsCount
+	^ self library operationNumInputs: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
+device
+	^ self library operationDevice: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:35:20'!
+graph
+	^ graph! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:35:14'!
+graph: aTF_Graph
+	graph _ aTF_Graph! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
+input: indexInteger
+	^ TF_Input onOperation: self index: indexInteger! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
+output: indexInteger
+	^ TF_Output onOperation: self index: indexInteger! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:48'!
+outputsCount
+	^ self library operationNumOutputs: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
+type
+	^ self library operationOpType: self! !
+
+!TF_Operation methodsFor: 'accessing' stamp: 'JB 2/9/2017 20:22:33'!
+useOutput: anInteger
+	output _ anInteger! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:22:38'!
+* aTF_Operation
+	^ self binaryOp: 'MatMul' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:26:09'!
+*\ aTF_Operation
+	^ self
+		binaryOp: 'MatMul'
+		with: aTF_Operation
+		described: [:description |
+			description at: 'transpose_b' putBoolean: true]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:19:11'!
++ aTF_Operation
+	^ self binaryOp: 'Add' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 19:47:10'!
+- aTF_Operation
+	^ self binaryOp: 'Sub' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:21:14'!
+-= aTF_Operation
+	^ self binaryOp: 'AssignSub' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/15/2017 23:27:00'!
+> aTF_Operation
+	^ self binaryOp: 'Greater' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
+@* aTF_Operation
+	^ self binaryOp: 'Mul' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:19:17'!
+@/ aTF_Operation
+	^ self binaryOp: 'Div' with: aTF_Operation
+	! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:26:18'!
+\* aTF_Operation
+	^ self
+		binaryOp: 'MatMul'
+		with: aTF_Operation
+		described: [:description |
+			description at: 'transpose_a' putBoolean: true]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 20:01:18'!
+\*\ aTF_Operation
+	^ self
+		binaryOp: 'MatMul'
+		with: aTF_Operation
+		described: [:description |
+			description at: 'transpose_a' putBoolean: true.
+			description at: 'transpose_b' putBoolean: true]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 12:52:43'!
+\\ aTF_Operation
+	^ self binaryOp: 'Mod' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/1/2017 01:02:16'!
+assign: aTF_Operation
+	^ self
+		binaryOp: 'Assign'
+		with: aTF_Operation
+		named: self name, '_initializer'! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:22:49'!
+binaryOp: aString with: aTF_Operation
+	^ self binaryOp: aString with: aTF_Operation described: [:nothing]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:14:52'!
+binaryOp: aString with: aTF_Operation described: oneArgBlock
+	| name |
+	name _ self nameFor: aString.
+	^ self binaryOp: aString with: aTF_Operation named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:54:08'!
+binaryOp: aString with: aTF_Operation named: name
+	^ self binaryOp: aString with: aTF_Operation named: name described: [:nothing]
+! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 11:26:18'!
+binaryOp: aString with: aTF_Operation named: name described: oneArgBlock
+	^ self op: aString withAll: {aTF_Operation} named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:40:22'!
+castTo: typeInteger
+	^ self unaryOp: 'Cast' described: [:description |
+		description at: 'DstT' putType: typeInteger]! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/11/2017 13:23:34'!
+findMaxOn: aTF_Operation
+	^ self binaryOp: 'ArgMax' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:37:51'!
+findMinOn: aTF_Operation
+	^ self binaryOp: 'ArgMin' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/17/2017 00:45:25'!
+meanOn:  shapeTensorOrOperation
+	^ self binaryOp: 'Mean' with: shapeTensorOrOperation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:14:55'!
+sizeOn: dimensionInteger
+	^ self shape sliceFrom: {dimensionInteger} asInt32Tensor size: #(1) asInt32Tensor.! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 02:09:13'!
+sparseSoftmaxCrossEntropyWithLogits: aTF_Operation
+	^ self
+		binaryOp: 'SparseSoftmaxCrossEntropyWithLogits'
+		with: aTF_Operation
+		named: (self nameFor: 'SparseSoftmaxCrossEntropyWithLogits')! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:30:55'!
+sumOn: aTF_Operation
+	^ self binaryOp: 'Sum' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 11:38:27'!
+timesRectifiedGradOf: aTF_Operation
+	^ self binaryOp: 'ReluGrad' with: aTF_Operation! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 12:55:41'!
+abs
+	^ self unaryOp: 'Abs'! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 11:59:40'!
+alias: nameString
+	^ self unaryOp: 'Identity' named: nameString! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 12:58:32'!
+arcCos
+	^ self unaryOp: 'Acos'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:03:06'!
+arcSin
+	^ self unaryOp: 'Asin'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:04:36'!
+arcTan
+	^ self unaryOp: 'Atan'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:18'!
+cos
+	^ self unaryOp: 'Cos'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/23/2017 10:39:24'!
+exp
+	^ self unaryOp: 'Exp'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/23/2017 09:52:07'!
+identity
+	^ self unaryOp: 'Identity'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/21/2017 05:15:34'!
+inverse
+	^ self unaryOp: 'MatrixInverse'! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
+negated
+	^ self unaryOp: 'Neg'! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 01:33:48'!
+rectified
+	^ self unaryOp: 'Relu'! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 2/18/2017 19:14:52'!
+shape
+	^ self unaryOp: 'Shape'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'Javier Burroni 1/24/2017 21:36:48'!
+sigmoid
+	^ self unaryOp: 'Sigmoid'! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:09'!
+sin
+	^ self unaryOp: 'Sin'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/7/2017 11:32:45'!
+softmax
+	^ self unaryOp: 'Softmax'
+! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/25/2017 11:50:16'!
+squared
+	^ self @* self
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:05'!
+tan
+	^ self unaryOp: 'Tan'
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 15:14:27'!
+unaryOp: aString
+	| name |
+	name _ self nameFor: aString.
+	^ self unaryOp: aString named: name! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:53:48'!
+unaryOp: aString described: oneArgBlock
+	| name |
+	name _ self nameFor: aString.
+	^ self unaryOp: aString named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:06'!
+unaryOp: aString named: name
+	^ self unaryOp: aString named: name described: [:description | ].
+	! !
+
+!TF_Operation methodsFor: 'ops unary' stamp: 'gera 2/19/2017 11:26:59'!
+unaryOp: aString named: name described: oneArgBlock
+	^ self op: aString withAll: {} named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'converting' stamp: 'gera 2/16/2017 22:57:20'!
+asOperationOn: aTF_Graph
+	graph == aTF_Graph
+		ifTrue: [^ self]
+		ifFalse: [^ self error: 'Can''t move an operation to another Graph']! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
+attrMetadata: nameString
+	| status answer |
+	status _ TF_Status create.
+	answer _ self library operation: self getMetadataFor: nameString asAsciiZ status: status.
+	status check.
+	^ answer! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:44:59'!
+boolAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: 1.
+	self library operation: self attr: nameString asAsciiZ getBool: value status: status.
+	status check.
+	^ (value booleanAt: 1) 
+! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 10:22:29'!
+floatAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: 8.
+	self library operation: self attr: nameString asAsciiZ getFloat: value status: status.
+	status check.
+	^ value floatAt: 1
+! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 04:49:04'!
+intAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: 8.
+	self library operation: self attr: nameString asAsciiZ getInt64: value status: status.
+	status check.
+	^ value unsignedLongLongAt: 1
+! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/23/2017 09:47:55'!
+shapeAt: nameString
+	| value status size answer |
+	size _ (self attrMetadata: nameString) totalSize.
+	status _ TF_Status create.
+	value _ Int64Array externalNew: size.
+	
+	self library
+		operation: self
+		attr: nameString asAsciiZ
+		getShape: value
+		size: size
+		status: status.
+	status check.
+
+	answer _ (1 to: size) collect: [:i | value at: i].
+	^ answer! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:59:40'!
+stringAt: nameString
+	| metadata value status |
+	metadata _ self attrMetadata: nameString.
+	status _ TF_Status create.
+	value _ ByteArray new: metadata totalSize .
+	self library
+		operation: self
+		attr: nameString asAsciiZ
+		getString: value
+		size: metadata totalSize 
+		status: status.
+	status check.
+	^ (value upTo: 0) asString
+! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/28/2017 01:11:05'!
+stringsAt: nameString
+	| status pointers sizes spaceRequired storage metadata valuesCount |
+	metadata _ self attrMetadata: nameString.
+	spaceRequired _ metadata totalSize.
+	valuesCount _ metadata listSize.
+	pointers _ ByteArray new: Smalltalk wordSize * valuesCount.
+	sizes _ (Int64Array externalNew: valuesCount) useFinalization.
+	storage _ ExternalAddress gcallocate: spaceRequired.
+	status _ TF_Status create.
+	self library
+		operation: self
+		attr: nameString asAsciiZ 
+		getStrings: pointers
+		sizes: sizes
+		maxCount: valuesCount
+		storage: storage
+		size: spaceRequired
+		status: status.
+	status check.
+	^ (1 to: valuesCount) collect: [:i |
+		| one |
+		one _ pointers pointerAt: i-1*Smalltalk wordSize+1.
+		one _ one structAt: 1 length: (sizes at: i).
+		one asString]! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:00:29'!
+tensorAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: ExternalAddress wordSize.
+	self library operation: self attr: nameString asAsciiZ getTensor: value status: status.
+	status check.
+	^ TF_Tensor fromHandle: (value pointerAt: 1)
+! !
+
+!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 04:54:37'!
+typeAt: nameString
+	| value status |
+	status _ TF_Status create.
+	value _ ByteArray new: 8.
+	self library operation: self attr: nameString asAsciiZ getType: value status: status.
+	status check.
+	^ value unsignedLongLongAt: 1
+! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:37:15'!
+descent: delta rate: learningRate
+	^ self op: 'ApplyGradientDescent' withAll: {learningRate. delta}! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/30/2017 23:39:24'!
+nameFor: namePrefix
+	^ graph nameFor: namePrefix! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:50'!
+op: aString withAll: aTF_OperationArray
+	^ self op: aString withAll: aTF_OperationArray described: [:nothing]
+! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:46'!
+op: aString withAll: aTF_OperationArray described: oneArgBlock
+	| name |
+	name _ self nameFor: aString.
+	^ self op: aString withAll: aTF_OperationArray named: name described: oneArgBlock! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:33:17'!
+op: aString withAll: aTF_OperationArray named: name
+	^ self op: aString withAll: aTF_OperationArray named: name described: [:nothing]
+! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/25/2017 11:47:40'!
+op: aString withAll: aTF_OperationArray named: name described: oneArgBlock
+	^ graph newOperation: aString named: name described: [:description |
+		description addInput: self output.
+		aTF_OperationArray do: [:each |
+			| input |
+			input _ (each asOperationOn: graph) output.
+			description addInput: input].
+		oneArgBlock value: description].
+	! !
+
+!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:39:00'!
+sliceFrom: begin size: size
+	^ self op: 'Slice' withAll: {begin. size}! !
+
+!TF_Operation methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:10:23'!
+output
+	output ifNil: [output _ 0].
+	^ self output: output	! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
+add: input
+	self library description: self add: input.! !
+
+!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/19/2017 23:33:39'!
+finish
+	| answer status |
+	status _ TF_Status create.
+	answer _ self library
+		finishOperation: self
+		status: status.
+	handle _ nil.
+	status check.
+	^ answer.! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/22/2017 20:37:18'!
+addControlInput: aTF_OutputOrInput
+	^self library
+		description: self
+		addControlInput: aTF_OutputOrInput! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:32:31'!
+addInput: aTF_OutputOrInput
+	^self library
+		description: self
+		addInput: aTF_OutputOrInput! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:40:51'!
+addInputFromOutput: indexInteger of: aTF_Operation
+	| input |
+	input _ aTF_Operation input: indexInteger.
+	[self library
+		description: self
+		addInput: input
+	] ensure: [input free]! !
+
+!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/13/2017 13:08:59'!
+addInputs: anArrayOfTF_Output
+	| inputs |
+	inputs _ TF_OutputArray externalFromArray: anArrayOfTF_Output.
+	self library
+		description: self
+		addInputs: inputs
+		size: anArrayOfTF_Output size.! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:53:37'!
+at: attribute putBoolean: value
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toBool: value
+		! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 10:35:19'!
+at: attribute putFloat: value
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toFloat: value asFloat
+		! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:11:24'!
+at: attribute putInt: value
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toInt64: value! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/13/2017 13:09:06'!
+at: attribute putShape: anIntegerArray
+	| status value |
+	value _ Int64Array externalFromArray: anIntegerArray.
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toShape: value
+		size: anIntegerArray size.
+	status check.! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 20:57:22'!
+at: attribute putString: aString
+	| status |
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toString: aString
+		size: aString size.
+	status check
+	! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/24/2017 23:40:04'!
+at: attribute putStrings: anArrayOfStrings
+	| status sizes strings pointers |
+	sizes _ anArrayOfStrings collect: [:str | str size].
+	sizes _ Int64Array externalFromArray: sizes.
+	sizes useFinalization.
+	strings _ anArrayOfStrings collect: [:each | (self library externalizeString: each) useFinalization].
+	pointers _ ByteArray new: Smalltalk wordSize * strings size.
+	strings withIndexDo: [:each :index |
+		pointers pointerAt: index-1*Smalltalk wordSize+1 put: each].
+	 
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toStrings: pointers
+		sizes: sizes
+		count: anArrayOfStrings size.
+	status check
+	! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:02'!
+at: attribute putTensor: aTF_Tensor
+	| status |
+	status _ TF_Status create.
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toTensor: aTF_Tensor
+		status: status.
+	status check
+	! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:20'!
+at: attribute putType: value
+	self library
+		description: self
+		set: attribute asAsciiZ
+		toType: value! !
+
+!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/22/2017 17:58:17'!
+device: aString
+	^self library description: self setDevice: aString! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 20:13:17'!
+index
+	"This method was automatically generated. See TF_Output class>>fields."
+	^handle signedLongAt: 9! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 19:55:17'!
+index: anObject
+	"This method was automatically generated. See TF_Output class>>fields."
+	handle signedLongAt: 9 put: anObject! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+operation
+	"This method was automatically generated. See TF_Output class>>fields."
+	^TF_Operation fromHandle: (handle longPointerAt: 1)! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
+operation: anObject
+	"This method was automatically generated. See TF_Output class>>fields."
+	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 2/17/2017 00:27:15'!
+operationOn: aTF_Graph
+	| answer |
+	answer _ TF_Operation fromHandle: (handle longPointerAt: 1).
+	answer graph: aTF_Graph.
+	^ answer! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
+pad
+	"This method was automatically generated. See TF_Output class>>fields."
+	^handle signedLongAt: 13! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
+pad: anObject
+	"This method was automatically generated. See TF_Output class>>fields."
+	handle signedLongAt: 13 put: anObject! !
+
+!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:26:22'!
+type
+	^ self library operationOutputType: self! !
+
+!TF_Output class methodsFor: 'field definition' stamp: 'JB 4/18/2018 21:58:22'!
+fields
+	"self initialize.
+	self defineFields"
+	^#(
+		(operation 'TF_Operation*')
+		(index 'long')
+		(pad 'long'))
+	! !
+
+!TF_Output class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 10:40:36'!
+onOperation: aTF_Operation index: anInteger
+	^ self externalNew
+		operation: aTF_Operation;
+		index: anInteger! !
+
+!TF_Session methodsFor: 'release' stamp: 'gera 1/3/2017 17:20:55'!
+close
+	| status |
+	status _ TF_Status create.
+	self library closeSession: self status: status.
+	status check! !
+
+!TF_Session methodsFor: 'release' stamp: 'gera 1/21/2017 17:08:08'!
+delete
+	| status |
+	self ignoreFinalization.
+	self isNull ifFalse: [
+		self close.
+		status _ TF_Status create.
+		self library
+			deleteSession: self
+			status: status.
+		status check.
+	].
+	handle _ nil.
+! !
+
+!TF_Session methodsFor: 'release' stamp: 'gera 1/21/2017 17:08:40'!
+finalize
+	[self delete] on: Error do: [
+		Transcript
+			newLine;
+			print: 'Error finalizing ';
+			show: self
+	].! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
+run
+	| status |
+	status _ TF_Status create.
+	
+	self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: nil values: nil count: 0
+		targets: nil count: 0 metadata: nil status: status.
+	
+	status check! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:45:33'!
+runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+	| inputs invalues outputs outvalues status |
+	status _ TF_Status create.
+	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
+	invalues _ TF_TensorPtrArray externalFromArray: inArrayOfTF_Tensor.
+	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
+	outvalues _ TF_TensorPtrArray new: outArrayOfTF_Outputs size.
+	
+	self library
+		runSession: self options: nil
+		inputs: inputs values: invalues count: inArrayOfTF_Outputs size
+		outputs: outputs values: outvalues count: outArrayOfTF_Outputs size
+		targets: nil count: 0
+		metadata: nil status: status.
+		
+	status check.
+	^ outvalues
+! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:03:48'!
+runOperation: aTF_Operation
+	^self runOperations: (Array with: aTF_Operation)! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:09:21'!
+runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output: outTF_Output
+	| inputs invalues operations outputs outvalues tensor |
+	inputs _ Array with: inTF_OutputOrInput.
+	invalues _ Array with: inTF_Tensor.
+	outputs _ Array with: outTF_Output.
+	operations _ Array with: aTF_Operation.
+	
+	outvalues _ self runOperations: operations inputs: inputs values: invalues outputs: outputs.
+	tensor _ outvalues first.
+	^ tensor
+! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:56:52'!
+runOperation: aTF_Operation output: aTF_Output
+	| operations  answer outputs |
+	operations _ TF_OperationPtrArray externalNew: 1.
+	outputs _ TF_OutputArray externalNew: 1.
+	outputs first: aTF_Output.
+	
+	operations first: aTF_Operation.	
+	answer _ self runOperations: operations outputs: outputs size: 1.
+
+	^ answer first! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:00'!
+runOperations: anArrayOfTF_Operations
+	| status operations |
+	status _ TF_Status create.
+	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTF_Operations.
+	
+	self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: nil values: nil count: 0
+		targets: operations count: anArrayOfTF_Operations size
+		metadata: nil status: status.
+	status check
+	! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:39'!
+runOperations: anArrayOfTF_Operations inputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+	| operations inputs invalues outputs outvalues status |
+	status _ TF_Status create.
+	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTF_Operations.
+	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
+	invalues _ TF_TensorPtrArray externalFromArray: inArrayOfTF_Tensor.
+	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
+	outvalues _ TF_TensorPtrArray new: outArrayOfTF_Outputs size.
+	
+	self library
+		runSession: self options: nil
+		inputs: inputs values: invalues count: inArrayOfTF_Outputs size
+		outputs: outputs values: outvalues count: outArrayOfTF_Outputs size
+		targets: operations count: anArrayOfTF_Operations size
+		metadata: nil status: status.
+		
+	status check.
+	^ outvalues
+! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:54:28'!
+runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
+	| status outvalues |
+	status _ TF_Status create.
+	outvalues _ TF_TensorPtrArray new: anInteger.
+	
+	self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: aTF_OutputArray values: outvalues count: anInteger
+		targets: aTF_OperationArray count: 1
+		metadata: nil status: status.
+		
+	status check.
+	^ outvalues! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 22:00:03'!
+runOutput: aTF_Output
+	| results |
+	results _ self runOutputs: {aTF_Output}.
+	^ results first! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:44:06'!
+runOutputs: anArrayOfTF_Outputs
+	| outputs |
+	outputs _ TF_OutputArray externalFromArray: anArrayOfTF_Outputs .
+	
+	^ self runOutputs: outputs size: anArrayOfTF_Outputs size! !
+
+!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:57:43'!
+runOutputs: aTF_OutputArray size: anInteger
+	| status outvalues |
+	status _ TF_Status create.
+	outvalues _ TF_TensorPtrArray new: anInteger.
+	
+	self library
+		runSession: self options: nil
+		inputs: nil values: nil count: 0
+		outputs: aTF_OutputArray values: outvalues count: anInteger
+		targets: nil count: 0
+		metadata: nil status: status.
+		
+	status check.
+	^ outvalues! !
+
+!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
+on: aTF_Graph
+	| options status answer |
+	options _ TF_SessionOptions create.
+	status _ TF_Status create.
+	answer _ TensorFlowCAPI current newSession: aTF_Graph options: options status: status.
+	status check.
+	answer useFinalization.
+	^ answer! !
+
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:33:06'!
+config: aString
+	| status |
+	status _ TF_Status create.
+	self library sessionOptions: self setConfig: aString configSize: aString size status: status.
+	status check.! !
+
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:12:10'!
+delete
+	self ignoreFinalization.
+	self isNull ifFalse: [
+		self library deleteSessionOptions: self].
+	handle _ nil! !
+
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:12:20'!
+finalize
+	self delete! !
+
+!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:37:00'!
+target: aString
+	" 'local' 'google.com:1234' '192.168.1.1:1234' 'local,example.com:1234' etc.
+	are all valid target strings"
+	self library sessionOptions: self setTarget: (self library externalizeString: aString).
+! !
+
+!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:12:26'!
+create
+	^ TensorFlowCAPI current newSessionOptions useFinalization! !
+
+!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:32:21'!
+fromProtoBuf: aString
+	| answer |
+	answer _ self create.
+	answer config: aString.
+	^ answer! !
+
+!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:47:47'!
+onTarget: aString
+	^ self create target: aString! !
+
+!TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 11:05:49'!
+check
+	self isOk ifFalse: [
+		Error signal: (self codeText, ': ', self message)]! !
+
+!TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 10:48:36'!
+isOk
+	^self code == 0! !
+
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 09:59:56'!
+code
+	^self library getCode: self! !
+
+!TF_Status methodsFor: 'accessing' stamp: 'jb 12/26/2016 10:29:57'!
+code: aTF_Code message: aString
+	| externalized |
+	self assert: aTF_Code ~= 0.
+	externalized _ self library externalizeString: aString.
+	self library setStatus: self code: aTF_Code message: externalized
+! !
+
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 11:03:40'!
+codeText
+	^ self codeTexts at: self code + 1! !
+
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 11:02:44'!
+codeTexts
+	"self new codeTexts"
+	^ #(  
+  'OK' "0"
+  'CANCELLED' "1"
+  'UNKNOWN' "2"
+  'INVALID_ARGUMENT' "3"
+  'DEADLINE_EXCEEDED' "4"
+  'NOT_FOUND' "5"
+  'ALREADY_EXISTS' "6"
+  'PERMISSION_DENIED' "7"
+  'RESOURCE_EXHAUSTED' "8"
+  'FAILED_PRECONDITION' "9"
+  'ABORTED' "10"
+  'OUT_OF_RANGE' "11"
+  'UNIMPLEMENTED' "12"
+  'INTERNALt' "13"
+  'UNAVAILABLE' "14"
+  'DATA_LOSS' "15"
+  'UNAUTHENTICATED' "16"
+)! !
+
+!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:50:21'!
+message
+	^ self library message: self! !
+
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:47:23'!
+delete
+	self ignoreFinalization.
+	self isNull ifFalse: [
+		self library deleteStatus: self].
+	handle _ nil.! !
+
+!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:09:37'!
+finalize
+	self delete! !
+
+!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:20:47'!
+create
+	|answer |
+	answer _ self persistent.
+	answer useFinalization.
+	^ answer! !
+
+!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 09:53:25'!
+persistent
+	^ TensorFlowCAPI current newStatus! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:13'!
+byteSize
+	^ self library tensorByteSize: self! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/27/2016 09:18:01'!
+data
+	^self library tensorData: self.! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:30'!
+dataBytes
+	^self data getHandle structAt: 1 length: self byteSize! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
+rank
+	^self library tensorRank: self.! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 12:41:46'!
+shape
+	| answer count |
+	count _ self rank.
+	answer _ WriteStream on: (Array new: count).
+	1 to: count do: [:i |
+		answer nextPut: (self sizeOn: i-1)].
+	^ answer contents! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 14:37:36'!
+size
+	^ self shape inject: 1 into: [:prev :next | prev * next].! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:10:24'!
+sizeOn: dimension
+	^self library tensor: self sizeOn: dimension.! !
+
+!TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/26/2016 10:50:33'!
+type
+	^self library tensorType: self.! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/14/2017 16:12:18'!
+allElements
+	^ self asStream contents! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:20'!
+allFloats
+	^ self allElements! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:27'!
+allInt32s
+	^ self allElements! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:32'!
+allInt64s
+	^ self allElements! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 14:56:06'!
+allStrings
+	| total answer bytes data |
+	total _ self size.
+	answer _ WriteStream on: (Array new: total).
+	bytes _ self dataBytes.
+	data _ self data getHandle + (8 * total).
+	1 to: total do: [:i |
+		| offset str |
+		offset _ bytes unsignedLongLongAt: i - 1 * 8 + 1.
+		str _ self library stringDecode: data + offset.
+		answer nextPut: str].
+	
+	^ answer contents! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 08:03:16'!
+arrayFromStream: strm shape: shape
+	^ shape isEmpty
+		ifTrue: [strm next]
+		ifFalse: [
+			| first tail |
+			first _ shape first.
+			tail _ shape allButFirst.
+			Array
+				streamContents: [:answer |
+					first timesRepeat: [
+						| next |
+						next _ self arrayFromStream: strm shape: tail.
+						answer nextPut: next]]
+				estimatedSize: first]
+				
+! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 08:04:19'!
+asNumbers
+	^ self arrayFromStream: self asStream shape: self shape! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/17/2017 00:29:42'!
+asOperationOn: aTF_Graph
+	^ aTF_Graph const: self! !
+
+!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:29:29'!
+asStream
+	| answer |
+	answer _ ReadWriteStream on: (Array new: self size).
+	self elementsDo: [:each | answer nextPut: each].
+	^ answer reset! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:35:27'!
+dataAndOffsetsCollect: twoArgsBlock thenDo: oneArgBlock
+	| data elementSize |
+	elementSize _ self elementSize.
+	data _ self data getHandle.
+	1 to: self size do: [:i |
+		| value |
+		value _ twoArgsBlock value: data value: i-1*elementSize+1.
+		oneArgBlock value: value].
+! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/15/2017 17:01:13'!
+elementsDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: self getterBlock
+		thenDo: oneArgBlock.
+! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 18:53:45'!
+floatsDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: [:data :offset | data floatAt: offset]
+		thenDo: oneArgBlock.
+! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/15/2017 17:01:04'!
+getterBlock
+	^ self class getterBlockFor: self type! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 18:54:54'!
+int32sDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: [:data :offset | data signedLongAt: offset]
+		thenDo: oneArgBlock.
+! !
+
+!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:36:22'!
+int64sDo: oneArgBlock
+	self
+		dataAndOffsetsCollect: [:data :offset | data signedLongLongAt: offset]
+		thenDo: oneArgBlock.
+! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/19/2017 09:45:31'!
+delete
+	self ignoreFinalization.
+	self isNull ifFalse: [
+		self library deleteTensor: self].
+	handle _ nil! !
+
+!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 11:15:56'!
+finalize
+	self delete! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 21:15:40'!
+array: values type: type into: anExternalAddressOrByteArray
+	| size index setter |
+	size _ self sizeForType: type.
+	setter _ self setterBlockFor: type.
+	index _ 0.
+	self elementsOf: values do: [:value |
+		setter value: anExternalAddressOrByteArray value: index*size + 1 value: value.
+		index _ index + 1].
+! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/18/2017 17:01:13'!
+elementsOf: aMultidimensionalTensor
+	| answer |
+	answer _ (Array new: (self sizeOf: aMultidimensionalTensor)) writeStream.
+	self elementsOf: aMultidimensionalTensor do: [:each | answer nextPut: each].
+	^ answer contents! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/18/2017 16:55:42'!
+elementsOf: tensorArray do: oneArgBlock
+	^ (tensorArray isCollection and: [tensorArray isString not])
+		ifTrue: [tensorArray do: [:each |
+				self elementsOf: each do: oneArgBlock]]
+		ifFalse: [oneArgBlock value: tensorArray]! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 22:29:58'!
+int64Array: values into: anExternalAddressOrByteArray
+	self array: values type: self typeInt64 into: anExternalAddressOrByteArray.
+! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:45:52'!
+rankOf: aMultidimensionalTensor
+	^ aMultidimensionalTensor isCollection
+		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
+		ifFalse: [0].! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
+shapeOf: aMultidimensionalTensor
+	^ aMultidimensionalTensor isCollection
+		ifTrue: [aMultidimensionalTensor isEmpty
+			ifTrue: [#(0)]
+			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
+		ifFalse: [#()].! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:06:44'!
+sizeOf: aMultidimensionalTensor
+	^ aMultidimensionalTensor isCollection
+		ifTrue: [
+			aMultidimensionalTensor isEmpty
+				ifTrue: [0]
+				ifFalse: [aMultidimensionalTensor sum: [:each | self sizeOf: each]]]
+		ifFalse: [1].! !
+
+!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 03:17:43'!
+sizeOfString: aString.
+	^ TensorFlowCAPI current stringEncodedSize: aString.! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:36'!
+fromBooleans: values
+	^ self fromNumbers: values type: self typeBoolean
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:38'!
+fromBools: values shape: shape
+	^ self fromNumbers: values type: self typeBoolean shape: shape
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:45:34'!
+fromDoubles: values
+	^ self fromNumbers: values type: self typeDouble
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:27:42'!
+fromDoubles: values shape: shape
+	^ self fromNumbers: values type: self typeDouble shape: shape
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:35:31'!
+fromFloats: values
+	^ self fromNumbers: values type: self typeFloat
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:38:57'!
+fromFloats: values shape: shape
+	^ self fromNumbers: values type: self typeFloat shape: shape
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
+fromInt32: value
+	| answer |
+	answer _ self type: self typeInt32 shape: #().
+	answer data getHandle signedLongAt: 1 put: value.
+	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:37:53'!
+fromInt32s: values
+	^ self fromNumbers: values type: self typeInt32.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:39:40'!
+fromInt32s: values shape: shape
+	^ self fromNumbers: values type: self typeInt32 shape: shape
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
+fromInt64: value
+	| answer |
+	answer _ self type: self typeInt64 shape: #().
+	answer data getHandle signedLongLongAt: 1 put: value.
+	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:41:15'!
+fromInt64s: values
+	^ self fromNumbers: values type: self typeInt64! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:44:54'!
+fromInt64s: values shape: shape
+	^ self fromNumbers: values type: self typeInt64 shape: shape
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:36:51'!
+fromNumbers: values type: type
+	| shape |
+	shape _ self shapeOf: values.
+	^ self fromNumbers: values type: type shape: shape! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:36:20'!
+fromNumbers: values type: type shape: shape
+	| answer size count |
+	size _ self sizeOf: values.
+	count _ shape inject: 1 into: [:a :b | a * b].
+	count = size ifFalse: [
+		self error: 'Inferred size and real size don''t match.'].
+		
+	answer _ self type: type shape: shape.
+	self array: values type: type into: answer data getHandle.
+	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:57:18'!
+fromString: aString
+	| answer bytesize |
+	bytesize _ TensorFlowCAPI current stringEncodedSize: aString.
+	bytesize _ bytesize.
+	answer _ self type: self typeString shape: #() bytesize: bytesize.
+	
+	TensorFlowCAPI current
+		stringEncode: aString
+		to: answer data getHandle
+		size: bytesize.
+	^ answer! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 17:23:33'!
+fromStringArray: aStringArray
+	^ self fromStrings: aStringArray shape: {aStringArray size}! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 16:51:06'!
+fromStringArray: aStringArray shape: shape
+	| answer sizes offsets offsetSize bytesize |
+	sizes _ aStringArray collect: [:each | self sizeOfString: each].
+	offsetSize _ self sizeForType: self typeInt64.
+	bytesize _ offsetSize * aStringArray size + sizes sum.
+	offsets _ OrderedCollection new: sizes size.
+	
+	sizes inject: 0 into: [:prev :each |
+		offsets add: prev.
+		each + prev].
+	
+	answer _ self
+		type: self typeString
+		shape: shape
+		bytesize: bytesize.
+		
+	self int64Array: offsets into: answer data getHandle.	
+	
+	aStringArray withIndexDo: [:each :index |
+		| offset |
+		offset _ offsetSize * aStringArray size + (offsets at: index).
+		TensorFlowCAPI current
+			stringEncode: each
+			to: answer data getHandle + offset
+			size: bytesize - offset].
+	^ answer
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 16:44:22'!
+fromStrings: aStringArray
+	^ self fromStrings: aStringArray shape: (TF_Tensor shapeOf: aStringArray) allButLast.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 17:20:48'!
+fromStrings: strings shape: shape
+	| flatten |
+	flatten _ self elementsOf: strings.
+	^ self fromStringArray:  flatten shape: shape.
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 23:22:39'!
+pi
+	^ Float pi asTensor! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:51'!
+type: anInteger shape: anIntegerArray
+	" I understand dimenssions are:
+		#()		-> Scalar
+		#(7)		-> Unidimensional array of 7 elements
+		#(7 4)		-> 7x4 elements matrix
+		#(2 5 9)	-> 2x5x9 elements cube
+		etc.
+	"
+		
+	| bytesize elementSize |
+	elementSize _ self sizeForType: anInteger.
+	bytesize _ anIntegerArray inject: elementSize into: [:prev :each | prev * each].
+	^self type: anInteger shape: anIntegerArray bytesize: bytesize
+! !
+
+!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 13:10:55'!
+type: anInteger shape: anIntegerArray bytesize: bytesizeInteger
+	" I understand dimenssions are:
+		#()		-> Scalar
+		#(7)		-> Unidimensional array of 7 elements
+		#(7 4)		-> 7x4 elements matrix
+		#(2 5 9)	-> 2x5x9 elements cube
+		etc.
+	"
+		
+	| externalized answer |
+	externalized _ Int64Array externalFromArray: anIntegerArray.
+		
+	answer _ TensorFlowCAPI current
+		allocateTensorType: anInteger
+		shape: externalized
+		rank: anIntegerArray size
+		length: bytesizeInteger.
+	
+	answer useFinalization.
+	^ answer
+! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:41'!
+getterBlockFor: type
+	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset | data signedLongAt: offset]].
+	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset | data signedLongLongAt: offset]].
+	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset | data floatAt: offset]].
+	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset | data doubleAt: offset]].
+	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset | data booleanAt: offset]].
+	^ self shouldBeImplemented ! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:44'!
+setterBlockFor: type
+	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset :value | data signedLongAt: offset put: value]].
+	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset :value | data signedLongLongAt: offset put: value]].
+	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset :value | data floatAt: offset put: value]].
+	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset :value | data doubleAt: offset put: value]].
+	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset :value | data booleanAt: offset put: value]].
+	^ self shouldBeImplemented ! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:47'!
+sizeForType: anInteger
+	self typeFloat = anInteger ifTrue: [^4].
+	self typeInt64 = anInteger ifTrue: [^8].
+	self typeInt32 = anInteger ifTrue: [^4].
+	self typeDouble = anInteger ifTrue: [^8].
+	self typeBoolean = anInteger ifTrue: [^1].
+
+"
+8
+		UInt8 4
+		Int8 6
+		QInt8 11
+		QUInt8 12
+
+16
+		Int16 5
+		BFloat16 14
+		QInt16 15
+		QUInt16 16
+		UInt16 17
+		Half 19
+
+32
+		Float 1
+		Int32 3
+		QInt32 13
+
+64
+		Double 2
+		Complex64 8
+		Int64 9
+
+128
+		Complex128 18
+
+		String 7
+		Resource 20).
+
+		Bool 10
+"
+
+
+	^ self shouldBeImplemented.! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:54'!
+typeBFloat16
+	^14! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:24'!
+typeBoolean
+	^10! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:37'!
+typeComplex128
+	^18! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:31'!
+typeComplex64
+	^8! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:29'!
+typeDouble
+	^2! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:41:58'!
+typeFloat
+	^1! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:35'!
+typeHalf
+	^19! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:54'!
+typeInt16
+	^5! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 11:14:05'!
+typeInt32
+	^3! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:42:07'!
+typeInt64
+	^9! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:06'!
+typeInt8
+	^6! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:14'!
+typeQInt16
+	^15! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:30'!
+typeQInt32
+	^13! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:00'!
+typeQInt8
+	^11! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:08'!
+typeQUInt16
+	^16! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:50:48'!
+typeQUInt8
+	^12! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:40'!
+typeResource
+	^20! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:12'!
+typeString
+	^7! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:19'!
+typeUInt16
+	^17! !
+
+!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:40'!
+typeUInt8
+	^4! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -4832,2618 +7444,6 @@ testSoftmax
 	output free.
 ! !
 
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 11:56:22'!
-allocateTensorType: anInteger shape: aLonnLongArray rank: dimCount length: len
-	<cdecl: TF_Tensor* 'TF_AllocateTensor' (ulong UInt64Array* ulonglong ulonglong)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:17'!
-deleteTensor: aTF_Tensor
-	<cdecl: void 'TF_DeleteTensor' (TF_Tensor*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
-tensor: aTF_Tensor sizeOn: dimension
-	<cdecl: longlong 'TF_Dim' (TF_Tensor* ulonglong)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 1/5/2017 23:36:32'!
-tensorByteSize: aTF_Tensor
-	<cdecl: ulonglong 'TF_TensorByteSize' (TF_Tensor*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 09:17:49'!
-tensorData: aTF_Tensor
-	<cdecl: void* 'TF_TensorData' (TF_Tensor*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:04:40'!
-tensorRank: aTF_Tensor
-	<cdecl: longlong 'TF_NumDims' (TF_Tensor*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:40'!
-tensorType: aTF_Tensor
-	<cdecl: ulonglong 'TF_TensorType' (TF_Tensor*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:26:55'!
-closeSession: aTF_Session status: aTF_Status
-	<cdecl: void 'TF_CloseSession' (TF_Session* TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:23:33'!
-deleteSession: aTF_Session status: aTF_Status
-	<cdecl: void 'TF_DeleteSession' (TF_Session* TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/21/2016 23:21:09'!
-newSession: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
-	<cdecl: TF_Session* 'TF_NewSession' (TF_Graph* TF_SessionOptions* TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/29/2016 18:19:01'!
-runSession: aTF_Session
-	options: opsTF_Buffer
-	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
-	outputs: outTF_OutputArray values: outTF_TensorArrayPtr count: outCount
-	targets: aTF_OperationArray count: targetCount
-	metadata: metaTF_Buffer
-	status: aTF_Status
-	
-	<cdecl: void 'TF_SessionRun' (
-		TF_Session*
-		TF_Buffer*				"RunOptions, may be nil"
-		TF_OutputArray*			"inputs"
-		TF_TensorPtrArray*		"inputs' values"
-		long						"inputs count"
-		TF_OutputArray*			"outputs"
-		TF_TensorPtrArray*		"outputs values (results)"
-		long						"outputs count"
-		TF_OperationPtrArray*	"target operations array, may be nil"
-		long						"taret operations count"
-		TF_Buffer*				"RunMetadata"
-		TF_Status*)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'buffer' stamp: 'gera 12/22/2016 00:38:51'!
-deleteBuffer: aTF_Buffer
-	<cdecl: void 'TF_DeleteBuffer' (TF_Buffer*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'buffer' stamp: 'gera 12/22/2016 00:38:18'!
-newBufferFromString: aString size: anInteger
-	<cdecl: TF_Buffer* 'TF_NewBufferFromString' (char* ulong)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/21/2016 22:32:51'!
-deleteGraph: aTF_Graph
-	<cdecl: void 'TF_DeleteGraph' (TF_Graph*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:27:15'!
-graph: aTF_Graph getOperationNamed: aString
-	| answer |
-	answer _ self graph: aTF_Graph getOperationNamedAsVoid: aString.
-	answer _ TF_Operation fromHandle: answer getHandle.
-	answer graph: aTF_Graph.
-	^ answer! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:12:26'!
-graph: aTF_Graph getOperationNamedAsVoid: aString
-	<cdecl: void* 'TF_GraphOperationByName' (TF_Graph* char*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:31:00'!
-graph: aTF_Graph getRankOf:  aTF_OutputOrInput status: status
-	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:23:19'!
-graph: aTF_Graph getShapeOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
-	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 15:12:33'!
-graph: aTF_Graph setShapeOf:  aTF_OutputOrInput to: anInt64Array size: anInteger status: status
-	<cdecl: void 'TF_GraphSetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/5/2017 20:47:43'!
-graph: aTF_Graph toGraphDef: aTF_Buffer status: aTF_Status
-	<cdecl: void 'TF_GraphToGraphDef' (TF_Graph* TF_Buffer* TF_Status*)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
-importGraphDefInto: aTF_Graph from: aTF_Buffer options: aTF_ImportGraphDefOptions status: aTF_Status
-	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TF_Buffer* TF_ImportGraphDefOptions* TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:59:21'!
-newGraph
-	| answer |
-	answer _ self newGraphAsVoid.
-	answer _ TF_Graph fromHandle: answer getHandle.
-	^ answer! !
-
-!TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:58:18'!
-newGraphAsVoid
-	<cdecl: void* 'TF_NewGraph' (void)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:16:37'!
-deleteImportGraphDefOptions: aTF_ImportGraphDefOptions
-	<cdecl: void 'TF_DeleteImportGraphDefOptions' (TF_ImportGraphDefOptions*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:41'!
-deleteSessionOptions: aTF_SessionOptions
-	<cdecl: void 'TF_DeleteSessionOptions' (TF_SessionOptions*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:17:45'!
-newImportGraphDefOptions
-	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:35'!
-newSessionOptions
-	<cdecl: TF_SessionOptions* 'TF_NewSessionOptions' (void)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/21/2016 23:47:01'!
-sessionOptions: aTF_SessionOptions setConfig: aString configSize: anInteger status: aTF_Status
-	" not sure how to use this. Best information found in http://devdocs.io/tensorflow~python/contrib.learn#RunConfig"
-	<cdecl: void 'TF_SetConfig' (TF_SessionOptions* void* ulong TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/19/2016 10:58'!
-sessionOptions: aTF_SessionOptions setTarget: aString
-	<cdecl: void 'TF_SetTarget' (TF_SessionOptions* char*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 02:57:15'!
-deleteStatus: aTF_Status
-	<cdecl: void 'TF_DeleteStatus' (TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:59:30'!
-getCode: aTF_Status
-	<cdecl: ulong 'TF_GetCode' (TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 10:14:23'!
-message: aTF_Status
-	<cdecl: char* 'TF_Message' (TF_Status*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 02:56:25'!
-newStatus
-	<cdecl: TF_Status* 'TF_NewStatus' (void)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'status' stamp: 'gera 12/21/2016 09:54:03'!
-setStatus: aTF_Status code: anInteger message: anExternalString
-	<cdecl: void 'TF_SetStatus' (TF_Status* ulong char*)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/22/2017 20:32:21'!
-description: aTF_OperationDescription addControlInput: aTF_Output
-	<cdecl: void 'TF_AddControlInput' (TF_OperationDescription* TF_Output)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:59:08'!
-description: aTF_OperationDescription addInput: aTF_Output
-	<cdecl: void 'TF_AddInput' (TF_OperationDescription* TF_Output)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/2/2017 12:36:00'!
-description: aTF_OperationDescription addInputs: aTF_OutputArray size: anInteger
-	<cdecl: void 'TF_AddInputList' (TF_OperationDescription* TF_OutputArray* longlong)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/9/2017 19:53:21'!
-description: aTF_OperationDescription set: aString toBool: anInt
-	<cdecl: void 'TF_SetAttrBool' (TF_OperationDescription* char* byte)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 10:32:25'!
-description: aTF_OperationDescription set: aString toFloat: valueFloat
-	<cdecl: void 'TF_SetAttrFloat' (TF_OperationDescription* char* float)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/30/2016 12:52:47'!
-description: aTF_OperationDescription set: aString toInt64: anInt
-	<cdecl: void 'TF_SetAttrInt' (TF_OperationDescription* char* ulonglong)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/10/2017 20:51:14'!
-description: aTF_OperationDescription set: aString toShape: anInt64Array size: size
-	<cdecl: void 'TF_SetAttrShape' (TF_OperationDescription* char* Int64Array* ulonglong)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/23/2017 17:18:33'!
-description: aTF_OperationDescription set: nameString toString: valueString size: size
-	<cdecl: void 'TF_SetAttrString' (TF_OperationDescription* char* char* ulonglong)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/24/2017 01:24:05'!
-description: aTF_OperationDescription set: aString toStrings: anArrayOfString sizes: sizes count: count
-	<cdecl: void 'TF_SetAttrStringList' (TF_OperationDescription* char* void* Int64Array* longlong)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
-description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
-	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TF_Tensor* TF_Status*)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 00:44:16'!
-description: aTF_OperationDescription set: aString toType: anInt
-	<cdecl: void 'TF_SetAttrType' (TF_OperationDescription* char* ulonglong)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/22/2017 17:57:36'!
-description: aTF_OperationDescription setDevice: aString
-	<cdecl: void 'TF_SetDevice' (TF_OperationDescription* char*)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/19/2017 23:32:25'!
-finishOperation: aTF_OperationDescription status: aTF_Status
-	| answer |
-	answer _ self finishOperationAsVoid: aTF_OperationDescription status: aTF_Status.
-	^ TF_Operation fromHandle: answer getHandle.! !
-
-!TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/19/2017 10:33:08'!
-finishOperationAsVoid: aTF_OperationDescription status: aTF_Status
-	<cdecl: void* 'TF_FinishOperation' (TF_OperationDescription* TF_Status*)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
-externalizeString: aString
-	| answer |
-	answer := ExternalAddress allocate: aString size + 1.
-	answer byteAt: aString size + 1 put: 0.
-	aString withIndexDo: [:char :index |
-		answer byteAt:  index put: char asciiValue].
-	^ answer! !
-
-!TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/29/2016 23:03:34'!
-getAllOps
-	<cdecl: TF_Buffer* 'TF_GetAllOpList' (void)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'utils' stamp: 'jb 12/26/2016 11:48:09'!
-version
-	<cdecl: char* 'TF_Version' (void)>
-	^ self externalCallFailed.! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/26/2016 13:13:55'!
-forGraph: aTF_Graph outputDims: aTF_Output status: aTF_Status
-	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:29:16'!
-graph: aTF_Graph operationAt: contextULongLongPtr
-	| answer |
-	answer _ self graph: aTF_Graph operationAtAsVoid: contextULongLongPtr.
-	answer _ TF_Operation fromHandle: answer getHandle.
-	answer graph: aTF_Graph.
-	^ answer! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:28:23'!
-graph: aTF_Graph operationAtAsVoid: contextULongLongPtr
-	<cdecl: void* 'TF_GraphNextOperation' (TF_Graph* ulonglong*)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/29/2017 02:33:28'!
-newOperationDescriptionOn: graph type: type named: name
-	<cdecl: TF_OperationDescription* 'TF_NewOperation' (TF_Graph* char* char*)>
-	^ self externalCallFailed
-	! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/9/2017 19:45:05'!
-operation: aTF_Operation attr: nameZString getBool: valueBoolPtr status: status
-	<cdecl: void 'TF_OperationGetAttrBool' (TF_Operation* char* ulonglong* TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 10:21:45'!
-operation: aTF_Operation attr: nameZString getFloat: valueFloatPtr status: status
-	<cdecl: void 'TF_OperationGetAttrFloat' (TF_Operation* char* float* TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:24:06'!
-operation: aTF_Operation attr: nameZString getInt64: valueLongPtr status: status
-	<cdecl: void 'TF_OperationGetAttrInt' (TF_Operation* char* ulonglong* TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 16:39:17'!
-operation: aTF_Operation attr: nameZString getShape: int64array size: maxSize status: status
-	<cdecl: void 'TF_OperationGetAttrShape' (TF_Operation* char* Int64Array* ulonglong TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/10/2017 09:00:54'!
-operation: aTF_Operation attr: nameZString getString: valueString size: maxSize status: status
-	<cdecl: void 'TF_OperationGetAttrString' (TF_Operation* char* void* ulonglong TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/26/2017 22:36:48'!
-operation: aTF_Operation attr: nameZString getStrings: valueStringArray sizes: sizesArray maxCount: maxCount storage: aBytaArray size: storageSize status: status
-	<cdecl: void 'TF_OperationGetAttrStringList' (TF_Operation* char* void* Int64Array* ulonglong void* size_t TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:59:08'!
-operation: aTF_Operation attr: nameZString getTensor: valueLongPtr status: status
-	<cdecl: void 'TF_OperationGetAttrTensor' (TF_Operation* char* void* TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/7/2017 04:54:15'!
-operation: aTF_Operation attr: nameZString getType: valueLongPtr status: status
-	<cdecl: void 'TF_OperationGetAttrType' (TF_Operation* char* ulonglong* TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/11/2017 22:34:01'!
-operation: aTF_Operation getMetadataFor: nameZString status: status
-	<cdecl: TF_AttrMetadata 'TF_OperationGetAttrMetadata' (TF_Operation* char* TF_Status*)>
-	^ self externalCallFailed
-
-! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:06'!
-operationDevice: aTF_Operation
-	<cdecl: char* 'TF_OperationDevice' (TF_Operation*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:53:36'!
-operationName: aTF_Operation
-	<cdecl: char* 'TF_OperationName' (TF_Operation*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:55:39'!
-operationNumInputs: aTF_Operation
-	<cdecl: long 'TF_OperationNumInputs' (TF_Operation*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:54:41'!
-operationNumOutputs: aTF_Operation
-	<cdecl: long 'TF_OperationNumOutputs' (TF_Operation*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/22/2016 03:53:56'!
-operationOpType: aTF_Operation
-	<cdecl: char* 'TF_OperationOpType' (TF_Operation*)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/23/2016 10:45:09'!
-operationOutputType: aTF_Output
-	<cdecl: ulonglong 'TF_OperationOutputType' (TF_Output)>
-	^ self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:43:38'!
-primStringEncodedSize: anInteger
-	<cdecl: ulonglong 'TF_StringEncodedSize' (ulonglong)>
-	^self externalCallFailed! !
-
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/5/2017 03:14:02'!
-stringDecode: src
-	| destination status answer dstSize |
-	destination _ ByteArray new: 8.
-	dstSize _ ByteArray new: 8.
-	status _ TF_Status create.
-	answer _ self stringDecode: src len: src size destination: destination len: dstSize status: status.
-	status check.
-	dstSize _ dstSize unsignedLongLongAt: 1.
-	destination _ destination pointerAt: 1.
-	answer _ (destination structAt: 1 length: dstSize) asString.
-	^ answer! !
-
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/5/2017 03:11:10'!
-stringDecode: srcString len: srcLen destination: dstPointer len: dstLenPointer status: status
-	<cdecl: ulonglong 'TF_StringDecode' (char* ulonglong char* ulonglong* TF_Status)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/4/2017 19:02:15'!
-stringEncode: srcString len: srcLen destination: dstString len: dstLen status: status
-	<cdecl: ulonglong 'TF_StringEncode' (char* ulonglong char* ulonglong TF_Status)>
-	^ self externalCallFailed
-! !
-
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/13/2017 01:50:35'!
-stringEncode: src to: dst
-	^ self stringEncode: src to: dst size: dst size
-
-! !
-
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/13/2017 01:50:12'!
-stringEncode: src to: dst size: dstSize
-	| status answer |
-	status _ TF_Status create.
-	answer _ self stringEncode: src len: src size destination: dst len: dstSize status: status.
-	status check.
-	^ answer
-! !
-
-!TensorFlowCAPI methodsFor: 'strings' stamp: 'gera 1/3/2017 09:40:22'!
-stringEncodedSize: aString
-	^self primStringEncodedSize: aString size! !
-
-!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'jb 12/26/2016 10:19:17'!
-current
-	^ current ifNil: [current _ self new forceLoading].
-! !
-
-!TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'GerardoRicharte 12/18/2016 12:18'!
-moduleName
-	^ 'libtensorflow'! !
-
-!TFStructure methodsFor: 'testing' stamp: 'gera 1/29/2017 03:39:43'!
-= aTF_Structure
-	^ self class = aTF_Structure class
-		and: [handle = aTF_Structure getHandle]! !
-
-!TFStructure methodsFor: 'private' stamp: 'gera 12/21/2016 02:52:42'!
-library
-	^ TensorFlowCAPI current! !
-
-!TFStructure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:24:05'!
-fields
-	"self initialize"
-	^#()! !
-
-!TFStructure class methodsFor: 'field definition' stamp: 'gera 12/22/2016 00:33:15'!
-pointerSize
-	" Fixed for 64 bit platforms. TensorFlow is only available in 64 bit platforms "
-	self assert: 8 == Smalltalk wordSize.
-	^ Smalltalk wordSize! !
-
-!TFStructure class methodsFor: 'class initialization' stamp: 'gera 6/30/2019 00:14:46'!
-initialize
-	super initialize.
-	self == TFStructure ifTrue: [
-		self allSubclassesDo: [:cls | cls initialize].
-		self allSubclassesDo: [:cls | cls initialize].
-	]! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:45:27'!
-at: index
-	"This method was automatically generated. See PointerArray class>>fields."
-	^ self elementAtOffset: index  - 1 * self class byteSize + 1
-	! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 14:10:50'!
-at: index put: anExternalStructure
-	"This method was automatically generated. See PointerArray class>>fields."
-	^ self elementAtOffset: index  - 1 * self class byteSize + 1 put: anExternalStructure
-	! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 13:09:17'!
-elementClass
-	^self subclassResponsibility! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:52'!
-first
-	^ self at: 1! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:11:29'!
-first: anExternalStructure
-	self at: 1 put: anExternalStructure
-! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:59'!
-fourth
-	^ self at: 4! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:49'!
-second
-	^ self at: 2! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
-template
-	"This method was automatically generated. See PointerArray class>>fields."
-	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 12/23/2016 11:10:15'!
-template: anObject
-	"This method was automatically generated. See PointerArray class>>fields."
-	handle longPointerAt: 1 put: anObject getHandle.! !
-
-!ExternalWordArray methodsFor: 'accessing' stamp: 'gera 2/2/2017 02:25:53'!
-third
-	^ self at: 3! !
-
-!ExternalWordArray methodsFor: 'private' stamp: 'gera 12/25/2016 13:44:02'!
-elementAtOffset: byteOffset
-	^self elementClass fromHandle: (handle longPointerAt: byteOffset)
-	! !
-
-!ExternalWordArray methodsFor: 'private' stamp: 'gera 12/25/2016 14:14:46'!
-elementAtOffset: byteOffset put: anExternalStructure
-	handle longPointerAt: byteOffset put: anExternalStructure getHandle.! !
-
-!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 18:35:06'!
-externalFromArray: anArray
-	| answer |
-	answer _ self externalNew: anArray size.
-	anArray withIndexDo: [:each :index |
-		answer at: index put: each].
-	^ answer! !
-
-!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:15:00'!
-externalNew
-	^ self shouldNotImplement! !
-
-!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 13:11:46'!
-externalNew: count
-	| address answer |
-	address _ ExternalAddress gcallocate: self byteSize * count.
-	answer _ self fromHandle: address.
-	^ answer! !
-
-!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 11:14:45'!
-new
-	^ self shouldNotImplement! !
-
-!ExternalWordArray class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 20:34:52'!
-new: count
-	^self fromHandle: (ByteArray new: self byteSize * count)! !
-
-!ExternalWordArray class methodsFor: 'field definition' stamp: 'gera 12/23/2016 11:10:13'!
-fields
-	"self initialize."
-	^#((template 'void*'))! !
-
-!Int64Array methodsFor: 'accessing' stamp: 'gera 12/27/2016 18:11:32'!
-elementAtOffset: offset
-	^handle signedLongLongAt: offset
-	! !
-
-!Int64Array methodsFor: 'accessing' stamp: 'gera 12/27/2016 18:11:36'!
-elementAtOffset: offset put: anInteger
-	handle signedLongLongAt: offset put: anInteger! !
-
-!Int64Array class methodsFor: 'instance creation' stamp: 'jb 12/26/2016 09:43:53'!
-byteSize
-	^ 8! !
-
-!TF_OperationPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 12/25/2016 03:50:55'!
-elementClass
-	^TF_Operation! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:44:00'!
-elementAtOffset: byteOffset
-	^self elementClass fromHandle: (handle + (byteOffset - 1))
-	
-! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:11:25'!
-elementAtOffset: byteOffset put: anExternalStructure
-	handle structAt: byteOffset put: anExternalStructure getHandle length: TF_Output byteSize.! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/25/2016 03:50:48'!
-elementClass
-	^TF_Output! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
-template
-	"This method was automatically generated. See TF_OutputArray class>>fields."
-	^TF_Output fromHandle: (handle structAt: 1 length: 16)! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
-template: anObject
-	"This method was automatically generated. See TF_OutputArray class>>fields."
-	handle structAt: 1 put: anObject getHandle length: 16.! !
-
-!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:03'!
-fields
-	"self initialize"
-	^#((template 'TF_Output'))! !
-
-!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:40'!
-new: unused
-	^ self shouldNotImplement! !
-
-!TF_TensorPtrArray methodsFor: 'accessing' stamp: 'gera 12/27/2016 09:09:07'!
-elementClass
-	^TF_Tensor! !
-
-!TF_TensorPtrArray methodsFor: 'accessing' stamp: 'JB 2/23/2017 11:14:36'!
-numbersAt: index
-	| tensor |
-	tensor _ self at: index.
-	^ tensor asNumbers! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:07'!
-isBoolean
-	^ self type = 3! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:55'!
-isFloat
-	^ self type = 2! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:15:35'!
-isFunc
-	^ self type = 8! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:31'!
-isInt
-	^ self type = 1! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:54'!
-isPlaceholder
-	^ self type = 7! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:27'!
-isShape
-	^ self type = 5! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:09'!
-isString
-	^ self type = 0
-! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:41'!
-isTensor
-	^ self type = 6! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:17'!
-isType
-	^ self type = 4! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:41:49'!
-isList
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^self _isList \\ 256 ~= 0.! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:36'!
-listSize
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle signedLongLongAt: 9! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:40'!
-totalSize
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle signedLongLongAt: 25! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:42:04'!
-type
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^self _type \\ 256! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
-_isList
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle unsignedLongLongAt: 1! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
-_type
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle unsignedLongLongAt: 17! !
-
-!TF_AttrMetadata class methodsFor: 'field definition' stamp: 'gera 1/11/2017 22:43:56'!
-fields
-	"self initialize"
-	^#(
-		(_isList 'ulonglong')
-		(listSize 'longlong')
-		(_type 'ulonglong')
-		(totalSize 'longlong'))
-	! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'JB 1/18/2017 23:01:10'!
-data
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:33:21'!
-data: anObject
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	handle longPointerAt: 1 put: anObject getHandle.! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:43:10'!
-dataBytes
-	^ self data getHandle structAt: 1 length: self length! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-deallocator
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	^ExternalData fromHandle: (handle longPointerAt: 17) type: ExternalType void asPointerType! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-deallocator: anObject
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	handle longPointerAt: 17 put: anObject getHandle.! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-length
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	^handle unsignedLongLongAt: 9! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-length: anObject
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	handle unsignedLongLongAt: 9 put: anObject! !
-
-!TF_Buffer methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:20'!
-delete
-	self isNull ifFalse: [
-		self library deleteBuffer: self].
-	handle _ nil! !
-
-!TF_Buffer class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:45:49'!
-fields
-	"self initialize.
-	self defineFields"
-	^#(
-		(data 'void*')
-		(length 'ulonglong')
-		(deallocator 'void*'))
-	! !
-
-!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:05:44'!
-fromFileNamed: aString
-	| fileContents |
-	fileContents _ aString asFileEntry readStream contents.
-	^ self fromString: fileContents! !
-
-!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 1/10/2017 21:00:42'!
-fromString: aString
-	| answer |
-	answer _ TensorFlowCAPI current newBufferFromString: aString size: aString size.
-	^ answer! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 05:21:30'!
-add: nameString described: aBlock
-	^self newOperation: 'Add' named: nameString described: aBlock! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/5/2017 23:55:21'!
-asString: nameString described: aBlock
-	^self newOperation: 'AsString' named: nameString described: aBlock! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/30/2016 12:16:54'!
-concat: nameString described: aBlock
-	^self newOperation: 'Concat' named: nameString described: aBlock! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 12/28/2016 02:11:44'!
-mul: nameString described: aBlock
-	^self newOperation: 'Mul' named: nameString described: aBlock! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:35:44'!
-newOperation: typeString named: aString
-	^ self newOperation: typeString named: aString described: [:unused | ]! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:32:14'!
-newOperation: typeString named: aString described: aBlock
-	| description answer |
-	description _ self newOperationDescription: typeString named: aString.
-	aBlock value: description.
-	answer _ description finish.
-	answer graph: self.
-	^ answer! !
-
-!TF_Graph methodsFor: 'operations' stamp: 'gera 1/29/2017 02:33:39'!
-newOperationDescription: typeString named: aString
-	^ self library newOperationDescriptionOn: self type: typeString named: aString
-! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:15:34'!
-allInitializers
-	^ self operationsSelect: [:op | op type = 'Assign' and: [op name endsWith: '_initializer']]! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:30:15'!
-allInputs
-	^ self operationsSelect: [:op | op type = 'Placeholder']! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 05:03:52'!
-allOperations
-	^ self operationsSelect: [:op | true]! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:34:38'!
-allVariables
-	^ self operationsSelect: [:op | op type = 'Variable']! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:20:02'!
-newOperationIteratorContext
-	^ ByteArray new: 8! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:09:21'!
-operationAt: contextULongLongPtr
-	^ self library graph: self operationAt: contextULongLongPtr! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/19/2017 23:27:23'!
-operationNamed: aString
-	| answer |
-	answer _ self library graph: self getOperationNamed: aString asAsciiZ.
-	answer isNull ifTrue: [self error: 'Operation not found'].
-	^ answer
-! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/19/2017 11:10:01'!
-operationsCount
-	| answer |
-	answer _ 0.
-	self operationsDo: [:each | answer _ answer + 1].
-	^ answer! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 2/25/2017 11:46:38'!
-operationsDo: oneArgBlock
-	| iterator operation |
-	iterator _ self newOperationIteratorContext.
-	[operation _ self operationAt: iterator.
-		operation isNull] whileFalse: [oneArgBlock value: operation].
-! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:33:53'!
-operationsSelect: oneArgBlock
-	| answer |
-	answer _ OrderedCollection new.
-	
-	self operationsSelect: oneArgBlock thenDo: [:op | answer add: op].
-	
-	^ answer asArray! !
-
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:33:20'!
-operationsSelect: conditionBlock thenDo: actionBlock
-	| answer |
-	answer _ OrderedCollection new.
-	
-	self operationsDo: [:op |
-		(conditionBlock value: op)
-			ifTrue: [actionBlock value: op]].
-	
-	^ answer asArray! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 15:07:44'!
-const: aTF_Tensor
-	| name |
-	name _ self nameFor: 'constant'.
-	^ self const: name value: aTF_Tensor! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 12/28/2016 02:07:25'!
-const: nameString value: aTF_Tensor
-	^ self
-		newOperation: 'Const'
-		named: nameString
-		described: [:description |
-			description at: 'dtype' putType: aTF_Tensor type.
-			description at: 'value' putTensor: aTF_Tensor]! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/2/2017 19:45:59'!
-inputType: typeInteger
-	^ self
-		newOperation: 'Placeholder'
-		named: (self nameFor: 'input')
-		described: [:description |
-			description at: 'dtype' putType: typeInteger]! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/10/2017 11:28:09'!
-nameFor: namePrefix
-	^ context, namePrefix,'_',self operationsCount printString.! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/6/2017 17:21:53'!
-placeholder: nameString type: typeInteger
-	^ self
-		newOperation: 'Placeholder'
-		named: nameString
-		described: [:description |
-			description at: 'dtype' putType: typeInteger]! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:43:13'!
-truncatedNormalRandomShaped: shapeArray
-	| shape |
-	shape _ self const: shapeArray asInt32Tensor.
-	^ shape unaryOp: 'TruncatedNormal' described: [:description |
-		description at: 'dtype' putType: TF_Tensor typeFloat]! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/31/2017 17:44:21'!
-truncatedNormalRandomShaped: shapeArray stddev: aNumber
-	| random |
-	random _ self truncatedNormalRandomShaped: shapeArray.
-	^ random @* (self const: aNumber asTensor)! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
-variable: nameString forTensor: aTF_Tensor
-	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor shape! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:02:23'!
-variable: nameString initialValue: aTF_Tensor
-	| const var |
-	var _ self variable: nameString forTensor: aTF_Tensor.
-	const _ self const: nameString, '_initialValue' value: aTF_Tensor.
-	var assign: const.
-	^ var! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:22:52'!
-variable: nameString initialValueFrom: aTF_Operation
-	| output var shape |
-	output _ aTF_Operation output: 0.
-	shape _ self shapeOf: output.
-	var _ self variable: nameString type: output type shape: shape..
-	var assign: aTF_Operation.
-	^ var! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:04:54'!
-variable: nameString type: typeInteger shape: anArray
-	^ self
-		newOperation: 'Variable'
-		named: nameString
-		described: [:description |
-			description
-				at: 'dtype' putType: typeInteger;
-				at: 'shape' putShape: anArray]! !
-
-!TF_Graph methodsFor: 'root operations' stamp: 'gera 2/17/2017 00:47:45'!
-zerosShaped: shapeArray
-	| shape |
-	shape _ self const: shapeArray asInt32Tensor.
-	^ shape binaryOp: 'Fill' with: 0.0 asTensor! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:45:55'!
-delete
-	self ignoreFinalization.
-	self isNull ifFalse: [
-		self library deleteGraph: self].
-	handle _ nil! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/13/2017 10:32:27'!
-finalize
-	self delete! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 02:14:06'!
-fromBlock: aBlockClosure
-	| types |
-	types _ Array new: aBlockClosure argumentCount.
-	types atAllPut: TF_Tensor typeFloat.
-	^ self fromBlock: aBlockClosure inputTypes: types! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/2/2017 19:46:21'!
-fromBlock: aBlockClosure inputTypes: anArray
-	| inputs index |
-	index _ 0.
-	inputs _ (1 to: aBlockClosure argumentCount) collect: [:each |
-		index _ index + 1.
-		self inputType: (anArray at: index)].
-	^ aBlockClosure valueWithArguments: inputs.
-! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:26:14'!
-fromBlock: aBlockClosure inputTypes: anArray named: nameString
-	| previousContext answer |
-	previousContext _ context.
-	context _ context, nameString, '/'.
-	answer _ self fromBlock: aBlockClosure inputTypes: anArray.
-	context _ previousContext.
-	^ answer! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 15:32:38'!
-fromBlock: aBlockClosure named: nameString
-	| types |
-	types _ Array new: aBlockClosure argumentCount.
-	types atAllPut: TF_Tensor typeFloat.
-	^ self fromBlock: aBlockClosure inputTypes: types named: nameString! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
-import: aTF_Buffer
-	| options status |
-	
-	status _ TF_Status create.
-	options _ TF_ImportGraphDefOptions create.
-	
-	self library importGraphDefInto: self from: aTF_Buffer options: options status: status.
-	
-	options delete.
-	status check.! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:27:24'!
-importFileNamed: aString
-	| buffer |
-	buffer _ TF_Buffer fromFileNamed: aString.
-	[self import: buffer] ensure: [buffer delete].! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:26:59'!
-importString: aString
-	| buffer |
-	buffer _ TF_Buffer fromString: aString.
-	[self import: buffer] ensure: [buffer delete].! !
-
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 11:26:27'!
-initialize
-	context _ ''.! !
-
-!TF_Graph methodsFor: 'running' stamp: 'gera 1/29/2017 04:32:04'!
-initializeOn: aTF_Session
-	| initializers |
-	initializers _ self allInitializers collect: [:each | each output: 0].
-	initializers size > 0 ifTrue: [
-		aTF_Session runOutputs: initializers]
-! !
-
-!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:09:28'!
-runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
-	| session |
-	session _ TF_Session on: self.
-	self initializeOn: session.
-	^ session runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
-! !
-
-!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:07:15'!
-runOutput: aTF_Output
-	| session |
-	session _ TF_Session on: self.
-	self initializeOn: session.
-	^ session runOutput: aTF_Output! !
-
-!TF_Graph methodsFor: 'running' stamp: 'gera 2/19/2017 16:08:50'!
-runOutputs: anArrayOfTF_Outputs
-	| session |
-	session _ TF_Session on: self.
-	self initializeOn: session.
-	^ session runOutputs: anArrayOfTF_Outputs! !
-
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/3/2017 17:20:21'!
-outputDimenssionsCount: aTF_Output
-	| status answer |
-	status _ TF_Status create.
-	answer _ self library forGraph: self outputDims: aTF_Output status: status.
-	status check.
-	^answer! !
-
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:31:07'!
-rankOf: aTF_OutputOrInput
-	| status answer |
-	status _ TF_Status create.
-	answer _ self library graph: self getRankOf:  aTF_OutputOrInput status: status.
-	status check.
-	^ answer! !
-
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 11:23:35'!
-shapeOf: aTF_OutputOrInput
-	| status value size answer |
-	size _ self rankOf: aTF_OutputOrInput.
-	value _ Int64Array externalNew: size.
-	status _ TF_Status create.
-	
-	self library
-		graph: self
-		getShapeOf: aTF_OutputOrInput
-		into: value
-		size: size
-		status: status.
-	status check.
-	
-	answer _ (1 to: size) collect: [:i | value at: i].
-	^ answer! !
-
-!TF_Graph methodsFor: 'outputs' stamp: 'gera 1/23/2017 15:08:37'!
-shapeOf: aTF_OutputOrInput set: shape
-	| status value |
-	value _ Int64Array externalFromArray: shape.
-	status _ TF_Status create.
-	
-	self library
-		graph: self
-		setShapeOf: aTF_OutputOrInput
-		to: value
-		size: shape size
-		status: status.
-	status check.! !
-
-!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 09:39:58'!
-writeDefTo: strm
-	strm nextPutAll: self definition! !
-
-!TF_Graph methodsFor: 'debugging' stamp: 'gera 2/9/2017 10:50:05'!
-writeDefToFileNamed: filename
-	filename asFileEntry writeStreamDo: [:strm |
-		self writeDefTo: strm]! !
-
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/10/2017 11:26:01'!
-create
-	^ TensorFlowCAPI current newGraph initialize useFinalization! !
-
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 2/2/2017 01:55:59'!
-fromBlock: aBlockClosure
-	| output graph |
-	graph _ self create.
-	output _ graph fromBlock: aBlockClosure .
-	output alias: 'output'.
-	^ graph! !
-
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:26'!
-fromFileNamed: aString
-	^ self create importFileNamed: aString! !
-
-!TF_Graph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:33'!
-fromString: aString
-	^ self create importString: aString! !
-
-!TF_ImportGraphDefOptions methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:56'!
-delete
-	self isNull ifFalse: [
-		self library deleteImportGraphDefOptions: self].
-	handle _ nil! !
-
-!TF_ImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
-create
-	^ TensorFlowCAPI current newImportGraphDefOptions! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:22:38'!
-* aTF_Operation
-	^ self binaryOp: 'MatMul' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:26:09'!
-*\ aTF_Operation
-	^ self
-		binaryOp: 'MatMul'
-		with: aTF_Operation
-		described: [:description |
-			description at: 'transpose_b' putBoolean: true]
-! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 11:19:11'!
-+ aTF_Operation
-	^ self binaryOp: 'Add' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 19:47:10'!
-- aTF_Operation
-	^ self binaryOp: 'Sub' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:21:14'!
--= aTF_Operation
-	^ self binaryOp: 'AssignSub' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/15/2017 23:27:00'!
-> aTF_Operation
-	^ self binaryOp: 'Greater' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:20:07'!
-@* aTF_Operation
-	^ self binaryOp: 'Mul' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:19:17'!
-@/ aTF_Operation
-	^ self binaryOp: 'Div' with: aTF_Operation
-	! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:26:18'!
-\* aTF_Operation
-	^ self
-		binaryOp: 'MatMul'
-		with: aTF_Operation
-		described: [:description |
-			description at: 'transpose_a' putBoolean: true]
-! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 20:01:18'!
-\*\ aTF_Operation
-	^ self
-		binaryOp: 'MatMul'
-		with: aTF_Operation
-		described: [:description |
-			description at: 'transpose_a' putBoolean: true.
-			description at: 'transpose_b' putBoolean: true]
-! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/19/2017 12:52:43'!
-\\ aTF_Operation
-	^ self binaryOp: 'Mod' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/1/2017 01:02:16'!
-assign: aTF_Operation
-	^ self
-		binaryOp: 'Assign'
-		with: aTF_Operation
-		named: self name, '_initializer'! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 02:22:49'!
-binaryOp: aString with: aTF_Operation
-	^ self binaryOp: aString with: aTF_Operation described: [:nothing]
-! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 15:14:52'!
-binaryOp: aString with: aTF_Operation described: oneArgBlock
-	| name |
-	name _ self nameFor: aString.
-	^ self binaryOp: aString with: aTF_Operation named: name described: oneArgBlock! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/29/2017 04:54:08'!
-binaryOp: aString with: aTF_Operation named: name
-	^ self binaryOp: aString with: aTF_Operation named: name described: [:nothing]
-! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 11:26:18'!
-binaryOp: aString with: aTF_Operation named: name described: oneArgBlock
-	^ self op: aString withAll: {aTF_Operation} named: name described: oneArgBlock! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:40:22'!
-castTo: typeInteger
-	^ self unaryOp: 'Cast' described: [:description |
-		description at: 'DstT' putType: typeInteger]! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/11/2017 13:23:34'!
-findMaxOn: aTF_Operation
-	^ self binaryOp: 'ArgMax' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:37:51'!
-findMinOn: aTF_Operation
-	^ self binaryOp: 'ArgMin' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/17/2017 00:45:25'!
-meanOn:  shapeTensorOrOperation
-	^ self binaryOp: 'Mean' with: shapeTensorOrOperation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/19/2017 15:14:55'!
-sizeOn: dimensionInteger
-	^ self shape sliceFrom: {dimensionInteger} asInt32Tensor size: #(1) asInt32Tensor.! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 2/2/2017 02:09:13'!
-sparseSoftmaxCrossEntropyWithLogits: aTF_Operation
-	^ self
-		binaryOp: 'SparseSoftmaxCrossEntropyWithLogits'
-		with: aTF_Operation
-		named: (self nameFor: 'SparseSoftmaxCrossEntropyWithLogits')! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'gera 1/21/2017 03:30:55'!
-sumOn: aTF_Operation
-	^ self binaryOp: 'Sum' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'ops binary' stamp: 'JB 2/17/2017 11:38:27'!
-timesRectifiedGradOf: aTF_Operation
-	^ self binaryOp: 'ReluGrad' with: aTF_Operation! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
-InputsCount
-	^ self library operationNumInputs: self! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:05'!
-device
-	^ self library operationDevice: self! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:35:20'!
-graph
-	^ graph! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 1/19/2017 10:35:14'!
-graph: aTF_Graph
-	graph _ aTF_Graph! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:39:51'!
-input: indexInteger
-	^ TF_Input onOperation: self index: indexInteger! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/28/2016 01:35:51'!
-output: indexInteger
-	^ TF_Output onOperation: self index: indexInteger! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:48'!
-outputsCount
-	^ self library operationNumOutputs: self! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:58:02'!
-type
-	^ self library operationOpType: self! !
-
-!TF_Operation methodsFor: 'accessing' stamp: 'JB 2/9/2017 20:22:33'!
-useOutput: anInteger
-	output _ anInteger! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 12:55:41'!
-abs
-	^ self unaryOp: 'Abs'! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 11:59:40'!
-alias: nameString
-	^ self unaryOp: 'Identity' named: nameString! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 12:58:32'!
-arcCos
-	^ self unaryOp: 'Acos'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:03:06'!
-arcSin
-	^ self unaryOp: 'Asin'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:04:36'!
-arcTan
-	^ self unaryOp: 'Atan'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:18'!
-cos
-	^ self unaryOp: 'Cos'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/23/2017 10:39:24'!
-exp
-	^ self unaryOp: 'Exp'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/23/2017 09:52:07'!
-identity
-	^ self unaryOp: 'Identity'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/21/2017 05:15:34'!
-inverse
-	^ self unaryOp: 'MatrixInverse'! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 11:14:17'!
-negated
-	^ self unaryOp: 'Neg'! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 01:33:48'!
-rectified
-	^ self unaryOp: 'Relu'! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 2/18/2017 19:14:52'!
-shape
-	^ self unaryOp: 'Shape'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'Javier Burroni 1/24/2017 21:36:48'!
-sigmoid
-	^ self unaryOp: 'Sigmoid'! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:09'!
-sin
-	^ self unaryOp: 'Sin'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'JB 2/7/2017 11:32:45'!
-softmax
-	^ self unaryOp: 'Softmax'
-! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'JB 1/25/2017 11:50:16'!
-squared
-	^ self @* self
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/19/2017 13:08:05'!
-tan
-	^ self unaryOp: 'Tan'
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/29/2017 15:14:27'!
-unaryOp: aString
-	| name |
-	name _ self nameFor: aString.
-	^ self unaryOp: aString named: name! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:53:48'!
-unaryOp: aString described: oneArgBlock
-	| name |
-	name _ self nameFor: aString.
-	^ self unaryOp: aString named: name described: oneArgBlock! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 1/31/2017 16:58:06'!
-unaryOp: aString named: name
-	^ self unaryOp: aString named: name described: [:description | ].
-	! !
-
-!TF_Operation methodsFor: 'ops unary' stamp: 'gera 2/19/2017 11:26:59'!
-unaryOp: aString named: name described: oneArgBlock
-	^ self op: aString withAll: {} named: name described: oneArgBlock! !
-
-!TF_Operation methodsFor: 'converting' stamp: 'gera 2/16/2017 22:57:20'!
-asOperationOn: aTF_Graph
-	graph == aTF_Graph
-		ifTrue: [^ self]
-		ifFalse: [^ self error: 'Can''t move an operation to another Graph']! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:57:08'!
-attrMetadata: nameString
-	| status answer |
-	status _ TF_Status create.
-	answer _ self library operation: self getMetadataFor: nameString asAsciiZ status: status.
-	status check.
-	^ answer! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:44:59'!
-boolAt: nameString
-	| value status |
-	status _ TF_Status create.
-	value _ ByteArray new: 1.
-	self library operation: self attr: nameString asAsciiZ getBool: value status: status.
-	status check.
-	^ (value booleanAt: 1) 
-! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/10/2017 10:22:29'!
-floatAt: nameString
-	| value status |
-	status _ TF_Status create.
-	value _ ByteArray new: 8.
-	self library operation: self attr: nameString asAsciiZ getFloat: value status: status.
-	status check.
-	^ value floatAt: 1
-! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 04:49:04'!
-intAt: nameString
-	| value status |
-	status _ TF_Status create.
-	value _ ByteArray new: 8.
-	self library operation: self attr: nameString asAsciiZ getInt64: value status: status.
-	status check.
-	^ value unsignedLongLongAt: 1
-! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/23/2017 09:47:55'!
-shapeAt: nameString
-	| value status size answer |
-	size _ (self attrMetadata: nameString) totalSize.
-	status _ TF_Status create.
-	value _ Int64Array externalNew: size.
-	
-	self library
-		operation: self
-		attr: nameString asAsciiZ
-		getShape: value
-		size: size
-		status: status.
-	status check.
-
-	answer _ (1 to: size) collect: [:i | value at: i].
-	^ answer! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/26/2017 22:59:40'!
-stringAt: nameString
-	| metadata value status |
-	metadata _ self attrMetadata: nameString.
-	status _ TF_Status create.
-	value _ ByteArray new: metadata totalSize .
-	self library
-		operation: self
-		attr: nameString asAsciiZ
-		getString: value
-		size: metadata totalSize 
-		status: status.
-	status check.
-	^ (value upTo: 0) asString
-! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/28/2017 01:11:05'!
-stringsAt: nameString
-	| status pointers sizes spaceRequired storage metadata valuesCount |
-	metadata _ self attrMetadata: nameString.
-	spaceRequired _ metadata totalSize.
-	valuesCount _ metadata listSize.
-	pointers _ ByteArray new: Smalltalk wordSize * valuesCount.
-	sizes _ (Int64Array externalNew: valuesCount) useFinalization.
-	storage _ ExternalAddress gcallocate: spaceRequired.
-	status _ TF_Status create.
-	self library
-		operation: self
-		attr: nameString asAsciiZ 
-		getStrings: pointers
-		sizes: sizes
-		maxCount: valuesCount
-		storage: storage
-		size: spaceRequired
-		status: status.
-	status check.
-	^ (1 to: valuesCount) collect: [:i |
-		| one |
-		one _ pointers pointerAt: i-1*Smalltalk wordSize+1.
-		one _ one structAt: 1 length: (sizes at: i).
-		one asString]! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:00:29'!
-tensorAt: nameString
-	| value status |
-	status _ TF_Status create.
-	value _ ByteArray new: ExternalAddress wordSize.
-	self library operation: self attr: nameString asAsciiZ getTensor: value status: status.
-	status check.
-	^ TF_Tensor fromHandle: (value pointerAt: 1)
-! !
-
-!TF_Operation methodsFor: 'attributes' stamp: 'gera 1/7/2017 04:54:37'!
-typeAt: nameString
-	| value status |
-	status _ TF_Status create.
-	value _ ByteArray new: 8.
-	self library operation: self attr: nameString asAsciiZ getType: value status: status.
-	status check.
-	^ value unsignedLongLongAt: 1
-! !
-
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:37:15'!
-descent: delta rate: learningRate
-	^ self op: 'ApplyGradientDescent' withAll: {learningRate. delta}! !
-
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 1/30/2017 23:39:24'!
-nameFor: namePrefix
-	^ graph nameFor: namePrefix! !
-
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:50'!
-op: aString withAll: aTF_OperationArray
-	^ self op: aString withAll: aTF_OperationArray described: [:nothing]
-! !
-
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:46'!
-op: aString withAll: aTF_OperationArray described: oneArgBlock
-	| name |
-	name _ self nameFor: aString.
-	^ self op: aString withAll: aTF_OperationArray named: name described: oneArgBlock! !
-
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:33:17'!
-op: aString withAll: aTF_OperationArray named: name
-	^ self op: aString withAll: aTF_OperationArray named: name described: [:nothing]
-! !
-
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/25/2017 11:47:40'!
-op: aString withAll: aTF_OperationArray named: name described: oneArgBlock
-	^ graph newOperation: aString named: name described: [:description |
-		description addInput: self output.
-		aTF_OperationArray do: [:each |
-			| input |
-			input _ (each asOperationOn: graph) output.
-			description addInput: input].
-		oneArgBlock value: description].
-	! !
-
-!TF_Operation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:39:00'!
-sliceFrom: begin size: size
-	^ self op: 'Slice' withAll: {begin. size}! !
-
-!TF_Operation methodsFor: 'initialization' stamp: 'gera 2/12/2017 20:10:23'!
-output
-	output ifNil: [output _ 0].
-	^ self output: output	! !
-
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
-add: input
-	self library description: self add: input.! !
-
-!TF_OperationDescription methodsFor: 'accessing' stamp: 'gera 1/19/2017 23:33:39'!
-finish
-	| answer status |
-	status _ TF_Status create.
-	answer _ self library
-		finishOperation: self
-		status: status.
-	handle _ nil.
-	status check.
-	^ answer.! !
-
-!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/22/2017 20:37:18'!
-addControlInput: aTF_OutputOrInput
-	^self library
-		description: self
-		addControlInput: aTF_OutputOrInput! !
-
-!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:32:31'!
-addInput: aTF_OutputOrInput
-	^self library
-		description: self
-		addInput: aTF_OutputOrInput! !
-
-!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 12/28/2016 01:40:51'!
-addInputFromOutput: indexInteger of: aTF_Operation
-	| input |
-	input _ aTF_Operation input: indexInteger.
-	[self library
-		description: self
-		addInput: input
-	] ensure: [input free]! !
-
-!TF_OperationDescription methodsFor: 'inputs' stamp: 'gera 1/13/2017 13:08:59'!
-addInputs: anArrayOfTF_Output
-	| inputs |
-	inputs _ TF_OutputArray externalFromArray: anArrayOfTF_Output.
-	self library
-		description: self
-		addInputs: inputs
-		size: anArrayOfTF_Output size.! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/9/2017 19:53:37'!
-at: attribute putBoolean: value
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toBool: value
-		! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 10:35:19'!
-at: attribute putFloat: value
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toFloat: value asFloat
-		! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:11:24'!
-at: attribute putInt: value
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toInt64: value! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/13/2017 13:09:06'!
-at: attribute putShape: anIntegerArray
-	| status value |
-	value _ Int64Array externalFromArray: anIntegerArray.
-	status _ TF_Status create.
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toShape: value
-		size: anIntegerArray size.
-	status check.! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/10/2017 20:57:22'!
-at: attribute putString: aString
-	| status |
-	status _ TF_Status create.
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toString: aString
-		size: aString size.
-	status check
-	! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/24/2017 23:40:04'!
-at: attribute putStrings: anArrayOfStrings
-	| status sizes strings pointers |
-	sizes _ anArrayOfStrings collect: [:str | str size].
-	sizes _ Int64Array externalFromArray: sizes.
-	sizes useFinalization.
-	strings _ anArrayOfStrings collect: [:each | (self library externalizeString: each) useFinalization].
-	pointers _ ByteArray new: Smalltalk wordSize * strings size.
-	strings withIndexDo: [:each :index |
-		pointers pointerAt: index-1*Smalltalk wordSize+1 put: each].
-	 
-	status _ TF_Status create.
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toStrings: pointers
-		sizes: sizes
-		count: anArrayOfStrings size.
-	status check
-	! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:02'!
-at: attribute putTensor: aTF_Tensor
-	| status |
-	status _ TF_Status create.
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toTensor: aTF_Tensor
-		status: status.
-	status check
-	! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:20'!
-at: attribute putType: value
-	self library
-		description: self
-		set: attribute asAsciiZ
-		toType: value! !
-
-!TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/22/2017 17:58:17'!
-device: aString
-	^self library description: self setDevice: aString! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 20:13:17'!
-index
-	"This method was automatically generated. See TF_Output class>>fields."
-	^handle signedLongAt: 9! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 19:55:17'!
-index: anObject
-	"This method was automatically generated. See TF_Output class>>fields."
-	handle signedLongAt: 9 put: anObject! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
-operation
-	"This method was automatically generated. See TF_Output class>>fields."
-	^TF_Operation fromHandle: (handle longPointerAt: 1)! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:17:53'!
-operation: anObject
-	"This method was automatically generated. See TF_Output class>>fields."
-	handle longPointerAt: 1 put: anObject getHandle.! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'gera 2/17/2017 00:27:15'!
-operationOn: aTF_Graph
-	| answer |
-	answer _ TF_Operation fromHandle: (handle longPointerAt: 1).
-	answer graph: aTF_Graph.
-	^ answer! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
-pad
-	"This method was automatically generated. See TF_Output class>>fields."
-	^handle signedLongAt: 13! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:58:27'!
-pad: anObject
-	"This method was automatically generated. See TF_Output class>>fields."
-	handle signedLongAt: 13 put: anObject! !
-
-!TF_Output methodsFor: 'accessing' stamp: 'gera 12/23/2016 10:26:22'!
-type
-	^ self library operationOutputType: self! !
-
-!TF_Output class methodsFor: 'field definition' stamp: 'JB 4/18/2018 21:58:22'!
-fields
-	"self initialize.
-	self defineFields"
-	^#(
-		(operation 'TF_Operation*')
-		(index 'long')
-		(pad 'long'))
-	! !
-
-!TF_Output class methodsFor: 'instance creation' stamp: 'gera 12/23/2016 10:40:36'!
-onOperation: aTF_Operation index: anInteger
-	^ self externalNew
-		operation: aTF_Operation;
-		index: anInteger! !
-
-!TF_Session methodsFor: 'release' stamp: 'gera 1/3/2017 17:20:55'!
-close
-	| status |
-	status _ TF_Status create.
-	self library closeSession: self status: status.
-	status check! !
-
-!TF_Session methodsFor: 'release' stamp: 'gera 1/21/2017 17:08:08'!
-delete
-	| status |
-	self ignoreFinalization.
-	self isNull ifFalse: [
-		self close.
-		status _ TF_Status create.
-		self library
-			deleteSession: self
-			status: status.
-		status check.
-	].
-	handle _ nil.
-! !
-
-!TF_Session methodsFor: 'release' stamp: 'gera 1/21/2017 17:08:40'!
-finalize
-	[self delete] on: Error do: [
-		Transcript
-			newLine;
-			print: 'Error finalizing ';
-			show: self
-	].! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/3/2017 17:21:29'!
-run
-	| status |
-	status _ TF_Status create.
-	
-	self library
-		runSession: self options: nil
-		inputs: nil values: nil count: 0
-		outputs: nil values: nil count: 0
-		targets: nil count: 0 metadata: nil status: status.
-	
-	status check! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:45:33'!
-runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
-	| inputs invalues outputs outvalues status |
-	status _ TF_Status create.
-	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
-	invalues _ TF_TensorPtrArray externalFromArray: inArrayOfTF_Tensor.
-	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
-	outvalues _ TF_TensorPtrArray new: outArrayOfTF_Outputs size.
-	
-	self library
-		runSession: self options: nil
-		inputs: inputs values: invalues count: inArrayOfTF_Outputs size
-		outputs: outputs values: outvalues count: outArrayOfTF_Outputs size
-		targets: nil count: 0
-		metadata: nil status: status.
-		
-	status check.
-	^ outvalues
-! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 12/29/2016 18:03:48'!
-runOperation: aTF_Operation
-	^self runOperations: (Array with: aTF_Operation)! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:09:21'!
-runOperation: aTF_Operation input: inTF_OutputOrInput value: inTF_Tensor output: outTF_Output
-	| inputs invalues operations outputs outvalues tensor |
-	inputs _ Array with: inTF_OutputOrInput.
-	invalues _ Array with: inTF_Tensor.
-	outputs _ Array with: outTF_Output.
-	operations _ Array with: aTF_Operation.
-	
-	outvalues _ self runOperations: operations inputs: inputs values: invalues outputs: outputs.
-	tensor _ outvalues first.
-	^ tensor
-! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:56:52'!
-runOperation: aTF_Operation output: aTF_Output
-	| operations  answer outputs |
-	operations _ TF_OperationPtrArray externalNew: 1.
-	outputs _ TF_OutputArray externalNew: 1.
-	outputs first: aTF_Output.
-	
-	operations first: aTF_Operation.	
-	answer _ self runOperations: operations outputs: outputs size: 1.
-
-	^ answer first! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:00'!
-runOperations: anArrayOfTF_Operations
-	| status operations |
-	status _ TF_Status create.
-	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTF_Operations.
-	
-	self library
-		runSession: self options: nil
-		inputs: nil values: nil count: 0
-		outputs: nil values: nil count: 0
-		targets: operations count: anArrayOfTF_Operations size
-		metadata: nil status: status.
-	status check
-	! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:39'!
-runOperations: anArrayOfTF_Operations inputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
-	| operations inputs invalues outputs outvalues status |
-	status _ TF_Status create.
-	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTF_Operations.
-	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
-	invalues _ TF_TensorPtrArray externalFromArray: inArrayOfTF_Tensor.
-	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
-	outvalues _ TF_TensorPtrArray new: outArrayOfTF_Outputs size.
-	
-	self library
-		runSession: self options: nil
-		inputs: inputs values: invalues count: inArrayOfTF_Outputs size
-		outputs: outputs values: outvalues count: outArrayOfTF_Outputs size
-		targets: operations count: anArrayOfTF_Operations size
-		metadata: nil status: status.
-		
-	status check.
-	^ outvalues
-! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:54:28'!
-runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
-	| status outvalues |
-	status _ TF_Status create.
-	outvalues _ TF_TensorPtrArray new: anInteger.
-	
-	self library
-		runSession: self options: nil
-		inputs: nil values: nil count: 0
-		outputs: aTF_OutputArray values: outvalues count: anInteger
-		targets: aTF_OperationArray count: 1
-		metadata: nil status: status.
-		
-	status check.
-	^ outvalues! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 22:00:03'!
-runOutput: aTF_Output
-	| results |
-	results _ self runOutputs: {aTF_Output}.
-	^ results first! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:44:06'!
-runOutputs: anArrayOfTF_Outputs
-	| outputs |
-	outputs _ TF_OutputArray externalFromArray: anArrayOfTF_Outputs .
-	
-	^ self runOutputs: outputs size: anArrayOfTF_Outputs size! !
-
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:57:43'!
-runOutputs: aTF_OutputArray size: anInteger
-	| status outvalues |
-	status _ TF_Status create.
-	outvalues _ TF_TensorPtrArray new: anInteger.
-	
-	self library
-		runSession: self options: nil
-		inputs: nil values: nil count: 0
-		outputs: aTF_OutputArray values: outvalues count: anInteger
-		targets: nil count: 0
-		metadata: nil status: status.
-		
-	status check.
-	^ outvalues! !
-
-!TF_Session class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:21:10'!
-on: aTF_Graph
-	| options status answer |
-	options _ TF_SessionOptions create.
-	status _ TF_Status create.
-	answer _ TensorFlowCAPI current newSession: aTF_Graph options: options status: status.
-	status check.
-	answer useFinalization.
-	^ answer! !
-
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:33:06'!
-config: aString
-	| status |
-	status _ TF_Status create.
-	self library sessionOptions: self setConfig: aString configSize: aString size status: status.
-	status check.! !
-
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:12:10'!
-delete
-	self ignoreFinalization.
-	self isNull ifFalse: [
-		self library deleteSessionOptions: self].
-	handle _ nil! !
-
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:12:20'!
-finalize
-	self delete! !
-
-!TF_SessionOptions methodsFor: 'initialize-release' stamp: 'gera 12/21/2016 23:37:00'!
-target: aString
-	" 'local' 'google.com:1234' '192.168.1.1:1234' 'local,example.com:1234' etc.
-	are all valid target strings"
-	self library sessionOptions: self setTarget: (self library externalizeString: aString).
-! !
-
-!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:12:26'!
-create
-	^ TensorFlowCAPI current newSessionOptions useFinalization! !
-
-!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 1/21/2017 17:32:21'!
-fromProtoBuf: aString
-	| answer |
-	answer _ self create.
-	answer config: aString.
-	^ answer! !
-
-!TF_SessionOptions class methodsFor: 'instance creation' stamp: 'gera 12/21/2016 23:47:47'!
-onTarget: aString
-	^ self create target: aString! !
-
-!TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 11:05:49'!
-check
-	self isOk ifFalse: [
-		Error signal: (self codeText, ': ', self message)]! !
-
-!TF_Status methodsFor: 'testing' stamp: 'gera 12/21/2016 10:48:36'!
-isOk
-	^self code == 0! !
-
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 09:59:56'!
-code
-	^self library getCode: self! !
-
-!TF_Status methodsFor: 'accessing' stamp: 'jb 12/26/2016 10:29:57'!
-code: aTF_Code message: aString
-	| externalized |
-	self assert: aTF_Code ~= 0.
-	externalized _ self library externalizeString: aString.
-	self library setStatus: self code: aTF_Code message: externalized
-! !
-
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 11:03:40'!
-codeText
-	^ self codeTexts at: self code + 1! !
-
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 11:02:44'!
-codeTexts
-	"self new codeTexts"
-	^ #(  
-  'OK' "0"
-  'CANCELLED' "1"
-  'UNKNOWN' "2"
-  'INVALID_ARGUMENT' "3"
-  'DEADLINE_EXCEEDED' "4"
-  'NOT_FOUND' "5"
-  'ALREADY_EXISTS' "6"
-  'PERMISSION_DENIED' "7"
-  'RESOURCE_EXHAUSTED' "8"
-  'FAILED_PRECONDITION' "9"
-  'ABORTED' "10"
-  'OUT_OF_RANGE' "11"
-  'UNIMPLEMENTED' "12"
-  'INTERNALt' "13"
-  'UNAVAILABLE' "14"
-  'DATA_LOSS' "15"
-  'UNAUTHENTICATED' "16"
-)! !
-
-!TF_Status methodsFor: 'accessing' stamp: 'gera 12/21/2016 23:50:21'!
-message
-	^ self library message: self! !
-
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/19/2017 09:47:23'!
-delete
-	self ignoreFinalization.
-	self isNull ifFalse: [
-		self library deleteStatus: self].
-	handle _ nil.! !
-
-!TF_Status methodsFor: 'initialize-release' stamp: 'gera 1/21/2017 17:09:37'!
-finalize
-	self delete! !
-
-!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/7/2017 20:20:47'!
-create
-	|answer |
-	answer _ self persistent.
-	answer useFinalization.
-	^ answer! !
-
-!TF_Status class methodsFor: 'instance creation' stamp: 'gera 1/3/2017 09:53:25'!
-persistent
-	^ TensorFlowCAPI current newStatus! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/14/2017 16:12:18'!
-allElements
-	^ self asStream contents! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:20'!
-allFloats
-	^ self allElements! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:27'!
-allInt32s
-	^ self allElements! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/13/2017 23:59:32'!
-allInt64s
-	^ self allElements! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 1/6/2017 14:56:06'!
-allStrings
-	| total answer bytes data |
-	total _ self size.
-	answer _ WriteStream on: (Array new: total).
-	bytes _ self dataBytes.
-	data _ self data getHandle + (8 * total).
-	1 to: total do: [:i |
-		| offset str |
-		offset _ bytes unsignedLongLongAt: i - 1 * 8 + 1.
-		str _ self library stringDecode: data + offset.
-		answer nextPut: str].
-	
-	^ answer contents! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 08:03:16'!
-arrayFromStream: strm shape: shape
-	^ shape isEmpty
-		ifTrue: [strm next]
-		ifFalse: [
-			| first tail |
-			first _ shape first.
-			tail _ shape allButFirst.
-			Array
-				streamContents: [:answer |
-					first timesRepeat: [
-						| next |
-						next _ self arrayFromStream: strm shape: tail.
-						answer nextPut: next]]
-				estimatedSize: first]
-				
-! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 08:04:19'!
-asNumbers
-	^ self arrayFromStream: self asStream shape: self shape! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/17/2017 00:29:42'!
-asOperationOn: aTF_Graph
-	^ aTF_Graph const: self! !
-
-!TF_Tensor methodsFor: 'converting' stamp: 'gera 2/15/2017 01:29:29'!
-asStream
-	| answer |
-	answer _ ReadWriteStream on: (Array new: self size).
-	self elementsDo: [:each | answer nextPut: each].
-	^ answer reset! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:13'!
-byteSize
-	^ self library tensorByteSize: self! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/27/2016 09:18:01'!
-data
-	^self library tensorData: self.! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:30'!
-dataBytes
-	^self data getHandle structAt: 1 length: self byteSize! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
-rank
-	^self library tensorRank: self.! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 12:41:46'!
-shape
-	| answer count |
-	count _ self rank.
-	answer _ WriteStream on: (Array new: count).
-	1 to: count do: [:i |
-		answer nextPut: (self sizeOn: i-1)].
-	^ answer contents! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 1/6/2017 14:37:36'!
-size
-	^ self shape inject: 1 into: [:prev :next | prev * next].! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:10:24'!
-sizeOn: dimension
-	^self library tensor: self sizeOn: dimension.! !
-
-!TF_Tensor methodsFor: 'accessing' stamp: 'gera 12/26/2016 10:50:33'!
-type
-	^self library tensorType: self.! !
-
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:35:27'!
-dataAndOffsetsCollect: twoArgsBlock thenDo: oneArgBlock
-	| data elementSize |
-	elementSize _ self elementSize.
-	data _ self data getHandle.
-	1 to: self size do: [:i |
-		| value |
-		value _ twoArgsBlock value: data value: i-1*elementSize+1.
-		oneArgBlock value: value].
-! !
-
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/15/2017 17:01:13'!
-elementsDo: oneArgBlock
-	self
-		dataAndOffsetsCollect: self getterBlock
-		thenDo: oneArgBlock.
-! !
-
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 18:53:45'!
-floatsDo: oneArgBlock
-	self
-		dataAndOffsetsCollect: [:data :offset | data floatAt: offset]
-		thenDo: oneArgBlock.
-! !
-
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/15/2017 17:01:04'!
-getterBlock
-	^ self class getterBlockFor: self type! !
-
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 18:54:54'!
-int32sDo: oneArgBlock
-	self
-		dataAndOffsetsCollect: [:data :offset | data signedLongAt: offset]
-		thenDo: oneArgBlock.
-! !
-
-!TF_Tensor methodsFor: 'iterating' stamp: 'gera 2/13/2017 23:36:22'!
-int64sDo: oneArgBlock
-	self
-		dataAndOffsetsCollect: [:data :offset | data signedLongLongAt: offset]
-		thenDo: oneArgBlock.
-! !
-
-!TF_Tensor methodsFor: 'release' stamp: 'gera 1/19/2017 09:45:31'!
-delete
-	self ignoreFinalization.
-	self isNull ifFalse: [
-		self library deleteTensor: self].
-	handle _ nil! !
-
-!TF_Tensor methodsFor: 'release' stamp: 'gera 1/13/2017 11:15:56'!
-finalize
-	self delete! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 21:15:40'!
-array: values type: type into: anExternalAddressOrByteArray
-	| size index setter |
-	size _ self sizeForType: type.
-	setter _ self setterBlockFor: type.
-	index _ 0.
-	self elementsOf: values do: [:value |
-		setter value: anExternalAddressOrByteArray value: index*size + 1 value: value.
-		index _ index + 1].
-! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/18/2017 17:01:13'!
-elementsOf: aMultidimensionalTensor
-	| answer |
-	answer _ (Array new: (self sizeOf: aMultidimensionalTensor)) writeStream.
-	self elementsOf: aMultidimensionalTensor do: [:each | answer nextPut: each].
-	^ answer contents! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/18/2017 16:55:42'!
-elementsOf: tensorArray do: oneArgBlock
-	^ (tensorArray isCollection and: [tensorArray isString not])
-		ifTrue: [tensorArray do: [:each |
-				self elementsOf: each do: oneArgBlock]]
-		ifFalse: [oneArgBlock value: tensorArray]! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/15/2017 22:29:58'!
-int64Array: values into: anExternalAddressOrByteArray
-	self array: values type: self typeInt64 into: anExternalAddressOrByteArray.
-! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 19:45:52'!
-rankOf: aMultidimensionalTensor
-	^ aMultidimensionalTensor isCollection
-		ifTrue: [1 + (self rankOf: aMultidimensionalTensor first)]
-		ifFalse: [0].! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:09:32'!
-shapeOf: aMultidimensionalTensor
-	^ aMultidimensionalTensor isCollection
-		ifTrue: [aMultidimensionalTensor isEmpty
-			ifTrue: [#(0)]
-			ifFalse: [{aMultidimensionalTensor size}, (self shapeOf: aMultidimensionalTensor first)]]
-		ifFalse: [#()].! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 2/3/2017 12:06:44'!
-sizeOf: aMultidimensionalTensor
-	^ aMultidimensionalTensor isCollection
-		ifTrue: [
-			aMultidimensionalTensor isEmpty
-				ifTrue: [0]
-				ifFalse: [aMultidimensionalTensor sum: [:each | self sizeOf: each]]]
-		ifFalse: [1].! !
-
-!TF_Tensor class methodsFor: 'utils' stamp: 'gera 1/13/2017 03:17:43'!
-sizeOfString: aString.
-	^ TensorFlowCAPI current stringEncodedSize: aString.! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:36'!
-fromBooleans: values
-	^ self fromNumbers: values type: self typeBoolean
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/19/2017 19:51:38'!
-fromBools: values shape: shape
-	^ self fromNumbers: values type: self typeBoolean shape: shape
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:45:34'!
-fromDoubles: values
-	^ self fromNumbers: values type: self typeDouble
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/17/2017 09:27:42'!
-fromDoubles: values shape: shape
-	^ self fromNumbers: values type: self typeDouble shape: shape
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:35:31'!
-fromFloats: values
-	^ self fromNumbers: values type: self typeFloat
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:38:57'!
-fromFloats: values shape: shape
-	^ self fromNumbers: values type: self typeFloat shape: shape
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/30/2016 12:46:27'!
-fromInt32: value
-	| answer |
-	answer _ self type: self typeInt32 shape: #().
-	answer data getHandle signedLongAt: 1 put: value.
-	^ answer! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:37:53'!
-fromInt32s: values
-	^ self fromNumbers: values type: self typeInt32.
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:39:40'!
-fromInt32s: values shape: shape
-	^ self fromNumbers: values type: self typeInt32 shape: shape
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 12/29/2016 17:53:03'!
-fromInt64: value
-	| answer |
-	answer _ self type: self typeInt64 shape: #().
-	answer data getHandle signedLongLongAt: 1 put: value.
-	^ answer! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:41:15'!
-fromInt64s: values
-	^ self fromNumbers: values type: self typeInt64! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:44:54'!
-fromInt64s: values shape: shape
-	^ self fromNumbers: values type: self typeInt64 shape: shape
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:36:51'!
-fromNumbers: values type: type
-	| shape |
-	shape _ self shapeOf: values.
-	^ self fromNumbers: values type: type shape: shape! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/15/2017 22:36:20'!
-fromNumbers: values type: type shape: shape
-	| answer size count |
-	size _ self sizeOf: values.
-	count _ shape inject: 1 into: [:a :b | a * b].
-	count = size ifFalse: [
-		self error: 'Inferred size and real size don''t match.'].
-		
-	answer _ self type: type shape: shape.
-	self array: values type: type into: answer data getHandle.
-	^ answer! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 03:57:18'!
-fromString: aString
-	| answer bytesize |
-	bytesize _ TensorFlowCAPI current stringEncodedSize: aString.
-	bytesize _ bytesize.
-	answer _ self type: self typeString shape: #() bytesize: bytesize.
-	
-	TensorFlowCAPI current
-		stringEncode: aString
-		to: answer data getHandle
-		size: bytesize.
-	^ answer! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 17:23:33'!
-fromStringArray: aStringArray
-	^ self fromStrings: aStringArray shape: {aStringArray size}! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 16:51:06'!
-fromStringArray: aStringArray shape: shape
-	| answer sizes offsets offsetSize bytesize |
-	sizes _ aStringArray collect: [:each | self sizeOfString: each].
-	offsetSize _ self sizeForType: self typeInt64.
-	bytesize _ offsetSize * aStringArray size + sizes sum.
-	offsets _ OrderedCollection new: sizes size.
-	
-	sizes inject: 0 into: [:prev :each |
-		offsets add: prev.
-		each + prev].
-	
-	answer _ self
-		type: self typeString
-		shape: shape
-		bytesize: bytesize.
-		
-	self int64Array: offsets into: answer data getHandle.	
-	
-	aStringArray withIndexDo: [:each :index |
-		| offset |
-		offset _ offsetSize * aStringArray size + (offsets at: index).
-		TensorFlowCAPI current
-			stringEncode: each
-			to: answer data getHandle + offset
-			size: bytesize - offset].
-	^ answer
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 16:44:22'!
-fromStrings: aStringArray
-	^ self fromStrings: aStringArray shape: (TF_Tensor shapeOf: aStringArray) allButLast.
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 2/18/2017 17:20:48'!
-fromStrings: strings shape: shape
-	| flatten |
-	flatten _ self elementsOf: strings.
-	^ self fromStringArray:  flatten shape: shape.
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/29/2017 23:22:39'!
-pi
-	^ Float pi asTensor! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/23/2017 16:11:51'!
-type: anInteger shape: anIntegerArray
-	" I understand dimenssions are:
-		#()		-> Scalar
-		#(7)		-> Unidimensional array of 7 elements
-		#(7 4)		-> 7x4 elements matrix
-		#(2 5 9)	-> 2x5x9 elements cube
-		etc.
-	"
-		
-	| bytesize elementSize |
-	elementSize _ self sizeForType: anInteger.
-	bytesize _ anIntegerArray inject: elementSize into: [:prev :each | prev * each].
-	^self type: anInteger shape: anIntegerArray bytesize: bytesize
-! !
-
-!TF_Tensor class methodsFor: 'instance creation' stamp: 'gera 1/13/2017 13:10:55'!
-type: anInteger shape: anIntegerArray bytesize: bytesizeInteger
-	" I understand dimenssions are:
-		#()		-> Scalar
-		#(7)		-> Unidimensional array of 7 elements
-		#(7 4)		-> 7x4 elements matrix
-		#(2 5 9)	-> 2x5x9 elements cube
-		etc.
-	"
-		
-	| externalized answer |
-	externalized _ Int64Array externalFromArray: anIntegerArray.
-		
-	answer _ TensorFlowCAPI current
-		allocateTensorType: anInteger
-		shape: externalized
-		rank: anIntegerArray size
-		length: bytesizeInteger.
-	
-	answer useFinalization.
-	^ answer
-! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:41'!
-getterBlockFor: type
-	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset | data signedLongAt: offset]].
-	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset | data signedLongLongAt: offset]].
-	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset | data floatAt: offset]].
-	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset | data doubleAt: offset]].
-	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset | data booleanAt: offset]].
-	^ self shouldBeImplemented ! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:44'!
-setterBlockFor: type
-	TF_Tensor typeInt32 = type ifTrue: [^ [:data :offset :value | data signedLongAt: offset put: value]].
-	TF_Tensor typeInt64 = type ifTrue: [^ [:data :offset :value | data signedLongLongAt: offset put: value]].
-	TF_Tensor typeFloat = type ifTrue: [^ [:data :offset :value | data floatAt: offset put: value]].
-	TF_Tensor typeDouble = type ifTrue: [^ [:data :offset :value | data doubleAt: offset put: value]].
-	TF_Tensor typeBoolean = type ifTrue: [^ [:data :offset :value | data booleanAt: offset put: value]].
-	^ self shouldBeImplemented ! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:47'!
-sizeForType: anInteger
-	self typeFloat = anInteger ifTrue: [^4].
-	self typeInt64 = anInteger ifTrue: [^8].
-	self typeInt32 = anInteger ifTrue: [^4].
-	self typeDouble = anInteger ifTrue: [^8].
-	self typeBoolean = anInteger ifTrue: [^1].
-
-"
-8
-		UInt8 4
-		Int8 6
-		QInt8 11
-		QUInt8 12
-
-16
-		Int16 5
-		BFloat16 14
-		QInt16 15
-		QUInt16 16
-		UInt16 17
-		Half 19
-
-32
-		Float 1
-		Int32 3
-		QInt32 13
-
-64
-		Double 2
-		Complex64 8
-		Int64 9
-
-128
-		Complex128 18
-
-		String 7
-		Resource 20).
-
-		Bool 10
-"
-
-
-	^ self shouldBeImplemented.! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:54'!
-typeBFloat16
-	^14! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 2/19/2017 19:51:24'!
-typeBoolean
-	^10! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:37'!
-typeComplex128
-	^18! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:31'!
-typeComplex64
-	^8! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:29'!
-typeDouble
-	^2! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:41:58'!
-typeFloat
-	^1! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:35'!
-typeHalf
-	^19! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:54'!
-typeInt16
-	^5! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 11:14:05'!
-typeInt32
-	^3! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 12/26/2016 09:42:07'!
-typeInt64
-	^9! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:06'!
-typeInt8
-	^6! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:14'!
-typeQInt16
-	^15! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:30'!
-typeQInt32
-	^13! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:43:00'!
-typeQInt8
-	^11! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:08'!
-typeQUInt16
-	^16! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:50:48'!
-typeQUInt8
-	^12! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:40'!
-typeResource
-	^20! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:42:12'!
-typeString
-	^7! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:44:19'!
-typeUInt16
-	^17! !
-
-!TF_Tensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:40'!
-typeUInt8
-	^4! !
-
 !Object methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/7/2017 20:18:45'!
 ignoreFinalization
 	self finalizationRegistry remove: self ifAbsent: [].
@@ -7452,30 +7452,6 @@ ignoreFinalization
 !Object methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/7/2017 20:18:16'!
 useFinalization
 	self finalizationRegistry add: self! !
-
-!Boolean methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/19/2017 19:48:34'!
-asBooleanTensor
-	^ TF_Tensor fromBooleans: self! !
-
-!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:18:09'!
-asFloatTensor
-	^ TF_Tensor fromFloats: self! !
-
-!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/15/2017 23:12:01'!
-asInt32Tensor
-	^ TF_Tensor fromInt32s: self! !
-
-!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/15/2017 23:12:08'!
-asInt64Tensor
-	^ TF_Tensor fromInt64s: self! !
-
-!Float methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:19:32'!
-asTensor
-	^ TF_Tensor fromFloats: self! !
-
-!Fraction methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:19:41'!
-asTensor
-	^ TF_Tensor fromFloats: self! !
 
 !SequenceableCollection methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/19/2017 19:48:45'!
 asBooleanTensor
@@ -7500,4 +7476,28 @@ asAsciiZ
 !String methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/31/2017 00:46:29'!
 asTensor
 	^ TF_Tensor fromString: self! !
+
+!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:18:09'!
+asFloatTensor
+	^ TF_Tensor fromFloats: self! !
+
+!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/15/2017 23:12:01'!
+asInt32Tensor
+	^ TF_Tensor fromInt32s: self! !
+
+!Number methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/15/2017 23:12:08'!
+asInt64Tensor
+	^ TF_Tensor fromInt64s: self! !
+
+!Float methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:19:32'!
+asTensor
+	^ TF_Tensor fromFloats: self! !
+
+!Fraction methodsFor: '*TensorFlow-Kernel' stamp: 'gera 1/29/2017 23:19:41'!
+asTensor
+	^ TF_Tensor fromFloats: self! !
+
+!Boolean methodsFor: '*TensorFlow-Kernel' stamp: 'gera 2/19/2017 19:48:34'!
+asBooleanTensor
+	^ TF_Tensor fromBooleans: self! !
 TFStructure initialize!
