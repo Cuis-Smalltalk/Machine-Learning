@@ -1,7 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3068] on 29 June 2019 at 1:25:24 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 29 June 2019 at 7:40:16 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 408!
+!provides: 'TensorFlow-Kernel' 1 409!
 !requires: 'FFI' 1 18 nil!
+!requires: 'Statistics' 1 14 nil!
 !classDefinition: #ExternalWordArrayTest category: #'TensorFlow-Kernel'!
 TestCase subclass: #ExternalWordArrayTest
 	instanceVariableNames: 'library'
