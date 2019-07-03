@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 1:10:43 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 3:06:46 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 416!
+!provides: 'TensorFlow-Kernel' 1 417!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -96,14 +96,14 @@ ExternalWordArray subclass: #Int64Array
 Int64Array class
 	instanceVariableNames: ''!
 
-!classDefinition: #TF_OperationPtrArray category: #'TensorFlow-Kernel'!
-ExternalWordArray subclass: #TF_OperationPtrArray
+!classDefinition: #TFOperationPtrArray category: #'TensorFlow-Kernel'!
+ExternalWordArray subclass: #TFOperationPtrArray
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_OperationPtrArray class' category: #'TensorFlow-Kernel'!
-TF_OperationPtrArray class
+!classDefinition: 'TFOperationPtrArray class' category: #'TensorFlow-Kernel'!
+TFOperationPtrArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OutputArray category: #'TensorFlow-Kernel'!
@@ -322,12 +322,12 @@ testArrayAtPutFor: anExternalWordArraySubclass elementSample: anObject
 	]
 	! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 00:47:14'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:06:39'!
 testExternalFromArrayOperation
 	| op1 op2 array |
 	op1 _ TFOperation fromHandle: (ExternalAddress new + 11111).
 	op2 _ TFOperation fromHandle: (ExternalAddress new + 22222).
-	array _ TF_OperationPtrArray externalFromArray: (Array with: op1 with: op2).
+	array _ TFOperationPtrArray externalFromArray: (Array with: op1 with: op2).
 
 	self assert: array first getHandle = op1 getHandle.
 	self assert: (array at: 2) getHandle = op2 getHandle.
@@ -355,18 +355,18 @@ testExternalFromArrayTensor
 	self assert: (array at: 2) getHandle = t2 getHandle.
 	! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 00:34:29'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:06:39'!
 testOperationArrayAtPut
 	| graph sample |
 	graph _ TFGraph create.
 	sample _ graph placeholder: 'var' type: TFTensor typeInt64.
 	
-	self testArrayAtPutFor: TF_OperationPtrArray elementSample: sample.
+	self testArrayAtPutFor: TFOperationPtrArray elementSample: sample.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 00:47:14'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:06:39'!
 testOperationArrayElementsOfRightClass
-	^ self testArray: TF_OperationPtrArray sampleElement: TFOperation new.
+	^ self testArray: TFOperationPtrArray sampleElement: TFOperation new.
 ! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 00:47:14'!
@@ -4887,7 +4887,7 @@ runSession: aTF_Session
 	options: opsTFBuffer
 	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
 	outputs: outTF_OutputArray values: outTF_TensorArrayPtr count: outCount
-	targets: aTF_OperationArray count: targetCount
+	targets: aTFOperationArray count: targetCount
 	metadata: metaTFBuffer
 	status: aTF_Status
 	
@@ -4900,7 +4900,7 @@ runSession: aTF_Session
 		TF_OutputArray*			"outputs"
 		TF_TensorPtrArray*		"outputs values (results)"
 		long						"outputs count"
-		TF_OperationPtrArray*	"target operations array, may be nil"
+		TFOperationPtrArray*	"target operations array, may be nil"
 		long						"taret operations count"
 		TFBuffer*				"RunMetadata"
 		TF_Status*)>
@@ -5427,7 +5427,7 @@ elementAtOffset: offset put: anInteger
 byteSize
 	^ 8! !
 
-!TF_OperationPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 7/3/2019 00:47:14'!
+!TFOperationPtrArray methodsFor: 'as yet unclassified' stamp: 'gera 7/3/2019 00:47:14'!
 elementClass
 	^TFOperation! !
 
@@ -6381,26 +6381,26 @@ nameFor: namePrefix
 	^ graph nameFor: namePrefix! !
 
 !TFOperation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:50'!
-op: aString withAll: aTF_OperationArray
-	^ self op: aString withAll: aTF_OperationArray described: [:nothing]
+op: aString withAll: aTFOperationArray
+	^ self op: aString withAll: aTFOperationArray described: [:nothing]
 ! !
 
 !TFOperation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:32:46'!
-op: aString withAll: aTF_OperationArray described: oneArgBlock
+op: aString withAll: aTFOperationArray described: oneArgBlock
 	| name |
 	name _ self nameFor: aString.
-	^ self op: aString withAll: aTF_OperationArray named: name described: oneArgBlock! !
+	^ self op: aString withAll: aTFOperationArray named: name described: oneArgBlock! !
 
 !TFOperation methodsFor: 'ops other' stamp: 'gera 2/19/2017 11:33:17'!
-op: aString withAll: aTF_OperationArray named: name
-	^ self op: aString withAll: aTF_OperationArray named: name described: [:nothing]
+op: aString withAll: aTFOperationArray named: name
+	^ self op: aString withAll: aTFOperationArray named: name described: [:nothing]
 ! !
 
 !TFOperation methodsFor: 'ops other' stamp: 'gera 2/25/2017 11:47:40'!
-op: aString withAll: aTF_OperationArray named: name described: oneArgBlock
+op: aString withAll: aTFOperationArray named: name described: oneArgBlock
 	^ graph newOperation: aString named: name described: [:description |
 		description addInput: self output.
-		aTF_OperationArray do: [:each |
+		aTFOperationArray do: [:each |
 			| input |
 			input _ (each asOperationOn: graph) output.
 			description addInput: input].
@@ -7227,10 +7227,10 @@ runOperation: aTFOperation input: inTF_OutputOrInput value: inTF_Tensor output: 
 	^ tensor
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:56:52'!
+!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:06:39'!
 runOperation: aTFOperation output: aTF_Output
 	| operations  answer outputs |
-	operations _ TF_OperationPtrArray externalNew: 1.
+	operations _ TFOperationPtrArray externalNew: 1.
 	outputs _ TF_OutputArray externalNew: 1.
 	outputs first: aTF_Output.
 	
@@ -7239,11 +7239,11 @@ runOperation: aTFOperation output: aTF_Output
 
 	^ answer first! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:00'!
+!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:06:39'!
 runOperations: anArrayOfTFOperations
 	| status operations |
 	status _ TF_Status create.
-	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTFOperations.
+	operations _ TFOperationPtrArray externalFromArray: anArrayOfTFOperations.
 	
 	self library
 		runSession: self options: nil
@@ -7254,11 +7254,11 @@ runOperations: anArrayOfTFOperations
 	status check
 	! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:10:39'!
+!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:06:39'!
 runOperations: anArrayOfTFOperations inputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
 	| operations inputs invalues outputs outvalues status |
 	status _ TF_Status create.
-	operations _ TF_OperationPtrArray externalFromArray: anArrayOfTFOperations.
+	operations _ TFOperationPtrArray externalFromArray: anArrayOfTFOperations.
 	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
 	invalues _ TF_TensorPtrArray externalFromArray: inArrayOfTF_Tensor.
 	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
@@ -7276,7 +7276,7 @@ runOperations: anArrayOfTFOperations inputs: inArrayOfTF_Outputs values: inArray
 ! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 21:54:28'!
-runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
+runOperations: aTFOperationArray outputs: aTF_OutputArray size: anInteger
 	| status outvalues |
 	status _ TF_Status create.
 	outvalues _ TF_TensorPtrArray new: anInteger.
@@ -7285,7 +7285,7 @@ runOperations: aTF_OperationArray outputs: aTF_OutputArray size: anInteger
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
 		outputs: aTF_OutputArray values: outvalues count: anInteger
-		targets: aTF_OperationArray count: 1
+		targets: aTFOperationArray count: 1
 		metadata: nil status: status.
 		
 	status check.
