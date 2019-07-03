@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:26:41 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:30:52 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 412!
+!provides: 'TensorFlow-Kernel' 1 413!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -136,6 +136,16 @@ TFStructure subclass: #TFAttrMetadata
 TFAttrMetadata class
 	instanceVariableNames: ''!
 
+!classDefinition: #TFBuffer category: #'TensorFlow-Kernel'!
+TFStructure subclass: #TFBuffer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TFBuffer class' category: #'TensorFlow-Kernel'!
+TFBuffer class
+	instanceVariableNames: ''!
+
 !classDefinition: #TFTensor category: #'TensorFlow-Kernel'!
 TFStructure subclass: #TFTensor
 	instanceVariableNames: ''
@@ -144,16 +154,6 @@ TFStructure subclass: #TFTensor
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TFTensor class' category: #'TensorFlow-Kernel'!
 TFTensor class
-	instanceVariableNames: ''!
-
-!classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
-TFStructure subclass: #TF_Buffer
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_Buffer class' category: #'TensorFlow-Kernel'!
-TF_Buffer class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Graph category: #'TensorFlow-Kernel'!
@@ -256,11 +256,11 @@ printOn: strm
 elementSize
 	^ self class sizeForType: self type! !
 
-!TF_Graph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:50:50'!
+!TF_Graph methodsFor: 'accessing' stamp: 'gera 7/3/2019 00:28:37'!
 definition
 	| buffer status |
 	status _ TF_Status create.
-	buffer _ TF_Buffer new.
+	buffer _ TFBuffer new.
 	self library graph: self toGraphDef: buffer status: status.
 	status check.
 	^ buffer dataBytes asString! !
@@ -3229,11 +3229,11 @@ testGraphRunOutputs
 	self assert: Float pi closeTo: results first asNumbers.
 	self assert: Float pi / 2 closeTo: results second asNumbers.! !
 
-!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 1/29/2017 02:56:35'!
+!TensorFlowCAPITest methodsFor: 'testing graph' stamp: 'gera 7/3/2019 00:28:37'!
 testImportBad
 	| graph buffer |
 	graph _ TF_Graph create.
-	buffer _ TF_Buffer fromString: 'ouch'.
+	buffer _ TFBuffer fromString: 'ouch'.
 	
 	self
 		should: [graph import: buffer]
@@ -3319,11 +3319,11 @@ testWriteDefToFileNamed
 
 	self assert: self constantInt64GraphDef size equals: filedata size.! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:20'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 7/3/2019 00:28:37'!
 testBufferDataBytes
 	| buffer string data |
 	string _ ' hola manola'.
-	buffer _ TF_Buffer fromString: string.
+	buffer _ TFBuffer fromString: string.
 
 	data _ buffer dataBytes.
 	self assert: string equals: data asString.
@@ -3331,11 +3331,11 @@ testBufferDataBytes
 	buffer delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:10:24'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 7/3/2019 00:28:37'!
 testBufferNoNeedExternalize
 	| buffer string data |
 	string _ ' hola manola'.
-	buffer _ TF_Buffer fromString: string.
+	buffer _ TFBuffer fromString: string.
 	
 	string _ string copy.
 	Smalltalk garbageCollect.
@@ -3346,14 +3346,14 @@ testBufferNoNeedExternalize
 	buffer delete.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:14:02'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 7/3/2019 00:28:37'!
 testNewBufferFromFileNamed
 	| buffer string data temporaryFile |
 	string _ ' hola manola'.
 	temporaryFile _ 'temporaryFile.txt'.
 	temporaryFile asFileEntry writeStream nextPutAll: string; close.
 
-	buffer _ TF_Buffer fromFileNamed: temporaryFile.
+	buffer _ TFBuffer fromFileNamed: temporaryFile.
 	temporaryFile asFileEntry delete.
 	
 	self deny: buffer isNull.
@@ -3366,11 +3366,11 @@ testNewBufferFromFileNamed
 	self assert: buffer isNull.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 1/13/2017 10:14:07'!
+!TensorFlowCAPITest methodsFor: 'testing buffer' stamp: 'gera 7/3/2019 00:28:37'!
 testNewBufferFromString
 	| buffer string data |
 	string _ ' hola manola'.
-	buffer _ TF_Buffer fromString: string.
+	buffer _ TFBuffer fromString: string.
 	self deny: buffer isNull.
 	self assert: buffer length equals: string size.
 	
@@ -4884,16 +4884,16 @@ newSession: aTF_Graph options:  aTF_SessionOptions status: aTF_Status
 
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/29/2016 18:19:01'!
 runSession: aTF_Session
-	options: opsTF_Buffer
+	options: opsTFBuffer
 	inputs: inTF_OutputArray values: inTF_TensorArray count: inCount
 	outputs: outTF_OutputArray values: outTF_TensorArrayPtr count: outCount
 	targets: aTF_OperationArray count: targetCount
-	metadata: metaTF_Buffer
+	metadata: metaTFBuffer
 	status: aTF_Status
 	
 	<cdecl: void 'TF_SessionRun' (
 		TF_Session*
-		TF_Buffer*				"RunOptions, may be nil"
+		TFBuffer*				"RunOptions, may be nil"
 		TF_OutputArray*			"inputs"
 		TF_TensorPtrArray*		"inputs' values"
 		long						"inputs count"
@@ -4902,19 +4902,19 @@ runSession: aTF_Session
 		long						"outputs count"
 		TF_OperationPtrArray*	"target operations array, may be nil"
 		long						"taret operations count"
-		TF_Buffer*				"RunMetadata"
+		TFBuffer*				"RunMetadata"
 		TF_Status*)>
 	^ self externalCallFailed
 ! !
 
 !TensorFlowCAPI methodsFor: 'buffer' stamp: 'gera 12/22/2016 00:38:51'!
-deleteBuffer: aTF_Buffer
-	<cdecl: void 'TF_DeleteBuffer' (TF_Buffer*)>
+deleteBuffer: aTFBuffer
+	<cdecl: void 'TF_DeleteBuffer' (TFBuffer*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'buffer' stamp: 'gera 12/22/2016 00:38:18'!
 newBufferFromString: aString size: anInteger
-	<cdecl: TF_Buffer* 'TF_NewBufferFromString' (char* ulong)>
+	<cdecl: TFBuffer* 'TF_NewBufferFromString' (char* ulong)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/21/2016 22:32:51'!
@@ -4954,14 +4954,14 @@ graph: aTF_Graph setShapeOf:  aTF_OutputOrInput to: anInt64Array size: anInteger
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/5/2017 20:47:43'!
-graph: aTF_Graph toGraphDef: aTF_Buffer status: aTF_Status
-	<cdecl: void 'TF_GraphToGraphDef' (TF_Graph* TF_Buffer* TF_Status*)>
+graph: aTF_Graph toGraphDef: aTFBuffer status: aTF_Status
+	<cdecl: void 'TF_GraphToGraphDef' (TF_Graph* TFBuffer* TF_Status*)>
 	^ self externalCallFailed
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
-importGraphDefInto: aTF_Graph from: aTF_Buffer options: aTF_ImportGraphDefOptions status: aTF_Status
-	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TF_Buffer* TF_ImportGraphDefOptions* TF_Status*)>
+importGraphDefInto: aTF_Graph from: aTFBuffer options: aTF_ImportGraphDefOptions status: aTF_Status
+	<cdecl: void 'TF_GraphImportGraphDef' (TF_Graph* TFBuffer* TF_ImportGraphDefOptions* TF_Status*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 2/9/2017 12:59:21'!
@@ -5114,7 +5114,7 @@ externalizeString: aString
 
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/29/2016 23:03:34'!
 getAllOps
-	<cdecl: TF_Buffer* 'TF_GetAllOpList' (void)>
+	<cdecl: TFBuffer* 'TF_GetAllOpList' (void)>
 	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'jb 12/26/2016 11:48:09'!
@@ -5550,6 +5550,68 @@ fields
 		(_type 'ulonglong')
 		(totalSize 'longlong'))
 	! !
+
+!TFBuffer methodsFor: 'accessing' stamp: 'JB 1/18/2017 23:01:10'!
+data
+	"This method was automatically generated. See TFBuffer class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
+
+!TFBuffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:33:21'!
+data: anObject
+	"This method was automatically generated. See TFBuffer class>>fields."
+	handle longPointerAt: 1 put: anObject getHandle.! !
+
+!TFBuffer methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:43:10'!
+dataBytes
+	^ self data getHandle structAt: 1 length: self length! !
+
+!TFBuffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+deallocator
+	"This method was automatically generated. See TFBuffer class>>fields."
+	^ExternalData fromHandle: (handle longPointerAt: 17) type: ExternalType void asPointerType! !
+
+!TFBuffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+deallocator: anObject
+	"This method was automatically generated. See TFBuffer class>>fields."
+	handle longPointerAt: 17 put: anObject getHandle.! !
+
+!TFBuffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+length
+	"This method was automatically generated. See TFBuffer class>>fields."
+	^handle unsignedLongLongAt: 9! !
+
+!TFBuffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
+length: anObject
+	"This method was automatically generated. See TFBuffer class>>fields."
+	handle unsignedLongLongAt: 9 put: anObject! !
+
+!TFBuffer methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:20'!
+delete
+	self isNull ifFalse: [
+		self library deleteBuffer: self].
+	handle _ nil! !
+
+!TFBuffer class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:45:49'!
+fields
+	"self initialize.
+	self defineFields"
+	^#(
+		(data 'void*')
+		(length 'ulonglong')
+		(deallocator 'void*'))
+	! !
+
+!TFBuffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:05:44'!
+fromFileNamed: aString
+	| fileContents |
+	fileContents _ aString asFileEntry readStream contents.
+	^ self fromString: fileContents! !
+
+!TFBuffer class methodsFor: 'instance creation' stamp: 'gera 1/10/2017 21:00:42'!
+fromString: aString
+	| answer |
+	answer _ TensorFlowCAPI current newBufferFromString: aString size: aString size.
+	^ answer! !
 
 !TFTensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:13'!
 byteSize
@@ -6088,68 +6150,6 @@ typeUInt16
 typeUInt8
 	^4! !
 
-!TF_Buffer methodsFor: 'accessing' stamp: 'JB 1/18/2017 23:01:10'!
-data
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	^ExternalData fromHandle: (handle longPointerAt: 1) type: ExternalType void asPointerType! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:33:21'!
-data: anObject
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	handle longPointerAt: 1 put: anObject getHandle.! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:43:10'!
-dataBytes
-	^ self data getHandle structAt: 1 length: self length! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-deallocator
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	^ExternalData fromHandle: (handle longPointerAt: 17) type: ExternalType void asPointerType! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-deallocator: anObject
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	handle longPointerAt: 17 put: anObject getHandle.! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-length
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	^handle unsignedLongLongAt: 9! !
-
-!TF_Buffer methodsFor: 'accessing' stamp: 'gera 12/22/2016 00:34:10'!
-length: anObject
-	"This method was automatically generated. See TF_Buffer class>>fields."
-	handle unsignedLongLongAt: 9 put: anObject! !
-
-!TF_Buffer methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:20'!
-delete
-	self isNull ifFalse: [
-		self library deleteBuffer: self].
-	handle _ nil! !
-
-!TF_Buffer class methodsFor: 'field definition' stamp: 'gera 1/12/2017 18:45:49'!
-fields
-	"self initialize.
-	self defineFields"
-	^#(
-		(data 'void*')
-		(length 'ulonglong')
-		(deallocator 'void*'))
-	! !
-
-!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:05:44'!
-fromFileNamed: aString
-	| fileContents |
-	fileContents _ aString asFileEntry readStream contents.
-	^ self fromString: fileContents! !
-
-!TF_Buffer class methodsFor: 'instance creation' stamp: 'gera 1/10/2017 21:00:42'!
-fromString: aString
-	| answer |
-	answer _ TensorFlowCAPI current newBufferFromString: aString size: aString size.
-	^ answer! !
-
 !TF_Graph methodsFor: 'accessing' stamp: 'gera 1/29/2017 08:15:34'!
 allInitializers
 	^ self operationsSelect: [:op | op type = 'Assign' and: [op name endsWith: '_initializer']]! !
@@ -6381,27 +6381,27 @@ fromBlock: aBlockClosure named: nameString
 	^ self fromBlock: aBlockClosure inputTypes: types named: nameString! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
-import: aTF_Buffer
+import: aTFBuffer
 	| options status |
 	
 	status _ TF_Status create.
 	options _ TF_ImportGraphDefOptions create.
 	
-	self library importGraphDefInto: self from: aTF_Buffer options: options status: status.
+	self library importGraphDefInto: self from: aTFBuffer options: options status: status.
 	
 	options delete.
 	status check.! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:27:24'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 7/3/2019 00:28:37'!
 importFileNamed: aString
 	| buffer |
-	buffer _ TF_Buffer fromFileNamed: aString.
+	buffer _ TFBuffer fromFileNamed: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
-!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 12/22/2016 01:26:59'!
+!TF_Graph methodsFor: 'initialize-release' stamp: 'gera 7/3/2019 00:28:37'!
 importString: aString
 	| buffer |
-	buffer _ TF_Buffer fromString: aString.
+	buffer _ TFBuffer fromString: aString.
 	[self import: buffer] ensure: [buffer delete].! !
 
 !TF_Graph methodsFor: 'initialize-release' stamp: 'gera 2/10/2017 11:26:27'!
