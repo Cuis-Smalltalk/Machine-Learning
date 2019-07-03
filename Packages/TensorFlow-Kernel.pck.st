@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 1:00:46 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 1:10:43 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 415!
+!provides: 'TensorFlow-Kernel' 1 416!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -156,6 +156,16 @@ TFStructure subclass: #TFGraph
 TFGraph class
 	instanceVariableNames: ''!
 
+!classDefinition: #TFImportGraphDefOptions category: #'TensorFlow-Kernel'!
+TFStructure subclass: #TFImportGraphDefOptions
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TFImportGraphDefOptions class' category: #'TensorFlow-Kernel'!
+TFImportGraphDefOptions class
+	instanceVariableNames: ''!
+
 !classDefinition: #TFOperation category: #'TensorFlow-Kernel'!
 TFStructure subclass: #TFOperation
 	instanceVariableNames: 'graph output'
@@ -174,16 +184,6 @@ TFStructure subclass: #TFTensor
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TFTensor class' category: #'TensorFlow-Kernel'!
 TFTensor class
-	instanceVariableNames: ''!
-
-!classDefinition: #TF_ImportGraphDefOptions category: #'TensorFlow-Kernel'!
-TFStructure subclass: #TF_ImportGraphDefOptions
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_ImportGraphDefOptions class' category: #'TensorFlow-Kernel'!
-TF_ImportGraphDefOptions class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_OperationDescription category: #'TensorFlow-Kernel'!
@@ -3390,10 +3390,10 @@ testExternalizeString
 	self assert: (copy byteAt: original size + 1) equals: 0.
 	copy free.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 12/28/2016 00:11:14'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 7/3/2019 01:08:38'!
 testNewImportGraphDefOptions
 	| options |
-	options _ TF_ImportGraphDefOptions create.
+	options _ TFImportGraphDefOptions create.
 	self deny: options isNull.
 	options delete.
 	self assert: options isNull.! !
@@ -4960,8 +4960,8 @@ graph: aTFGraph toGraphDef: aTFBuffer status: aTF_Status
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
-importGraphDefInto: aTFGraph from: aTFBuffer options: aTF_ImportGraphDefOptions status: aTF_Status
-	<cdecl: void 'TF_GraphImportGraphDef' (TFGraph* TFBuffer* TF_ImportGraphDefOptions* TF_Status*)>
+importGraphDefInto: aTFGraph from: aTFBuffer options: aTFImportGraphDefOptions status: aTF_Status
+	<cdecl: void 'TF_GraphImportGraphDef' (TFGraph* TFBuffer* TFImportGraphDefOptions* TF_Status*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 7/3/2019 00:34:29'!
@@ -4977,8 +4977,8 @@ newGraphAsVoid
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:16:37'!
-deleteImportGraphDefOptions: aTF_ImportGraphDefOptions
-	<cdecl: void 'TF_DeleteImportGraphDefOptions' (TF_ImportGraphDefOptions*)>
+deleteImportGraphDefOptions: aTFImportGraphDefOptions
+	<cdecl: void 'TF_DeleteImportGraphDefOptions' (TFImportGraphDefOptions*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:41'!
@@ -4988,7 +4988,7 @@ deleteSessionOptions: aTF_SessionOptions
 
 !TensorFlowCAPI methodsFor: 'options' stamp: 'gera 12/22/2016 01:17:45'!
 newImportGraphDefOptions
-	<cdecl: TF_ImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
+	<cdecl: TFImportGraphDefOptions* 'TF_NewImportGraphDefOptions' (void)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'options' stamp: 'GerardoRicharte 12/18/2016 21:35'!
@@ -5843,12 +5843,12 @@ fromBlock: aBlockClosure named: nameString
 	types atAllPut: TFTensor typeFloat.
 	^ self fromBlock: aBlockClosure inputTypes: types named: nameString! !
 
-!TFGraph methodsFor: 'initialize-release' stamp: 'gera 1/3/2017 17:20:14'!
+!TFGraph methodsFor: 'initialize-release' stamp: 'gera 7/3/2019 01:08:38'!
 import: aTFBuffer
 	| options status |
 	
 	status _ TF_Status create.
-	options _ TF_ImportGraphDefOptions create.
+	options _ TFImportGraphDefOptions create.
 	
 	self library importGraphDefInto: self from: aTFBuffer options: options status: status.
 	
@@ -5977,6 +5977,16 @@ fromFileNamed: aString
 !TFGraph class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 02:18:33'!
 fromString: aString
 	^ self create importString: aString! !
+
+!TFImportGraphDefOptions methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:56'!
+delete
+	self isNull ifFalse: [
+		self library deleteImportGraphDefOptions: self].
+	handle _ nil! !
+
+!TFImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
+create
+	^ TensorFlowCAPI current newImportGraphDefOptions! !
 
 !TFOperation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:57:35'!
 InputsCount
@@ -6942,16 +6952,6 @@ typeUInt16
 !TFTensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:40'!
 typeUInt8
 	^4! !
-
-!TF_ImportGraphDefOptions methodsFor: 'release' stamp: 'gera 1/19/2017 09:46:56'!
-delete
-	self isNull ifFalse: [
-		self library deleteImportGraphDefOptions: self].
-	handle _ nil! !
-
-!TF_ImportGraphDefOptions class methodsFor: 'instance creation' stamp: 'gera 12/22/2016 01:15:16'!
-create
-	^ TensorFlowCAPI current newImportGraphDefOptions! !
 
 !TF_OperationDescription methodsFor: 'accessing' stamp: 'jb 12/26/2016 22:35:53'!
 add: input
