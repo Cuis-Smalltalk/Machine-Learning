@@ -1,10 +1,30 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 30 June 2019 at 10:09:48 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:21:18 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Examples' 1 50!
 !requires: 'WebClient' 1 0 nil!
 !requires: 'TensorFlow-Kernel' 1 411 nil!
 SystemOrganization addCategory: #'TensorFlow-Examples'!
 
+
+!classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
+TensorFlowTestCase subclass: #TensorFlowExamplesSlowTest
+	instanceVariableNames: 'images labels'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesSlowTest class' category: #'TensorFlow-Examples'!
+TensorFlowExamplesSlowTest class
+	instanceVariableNames: ''!
+
+!classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
+TensorFlowTestCase subclass: #TensorFlowExamplesTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
+TensorFlowExamplesTest class
+	instanceVariableNames: ''!
 
 !classDefinition: #BatchTrainer category: #'TensorFlow-Examples'!
 Object subclass: #BatchTrainer
@@ -176,26 +196,6 @@ Object subclass: #SimpleNeuralNetworkExample
 SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
-TensorFlowTestCase subclass: #TensorFlowExamplesSlowTest
-	instanceVariableNames: 'images labels'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Examples'!
-!classDefinition: 'TensorFlowExamplesSlowTest class' category: #'TensorFlow-Examples'!
-TensorFlowExamplesSlowTest class
-	instanceVariableNames: ''!
-
-!classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
-TensorFlowTestCase subclass: #TensorFlowExamplesTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Examples'!
-!classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
-TensorFlowExamplesTest class
-	instanceVariableNames: ''!
-
 
 !MNIST3LayersNNSigmoid commentStamp: '<historical>' prior: 0!
 self new graph writeDefToFileNamed: 'graph.pb'!
@@ -205,6 +205,533 @@ I compute a regression on arbitrary functions.
 Implementation of http://cs.stanford.edu/people/karpathy/convnetjs/demo/regression.html
 
 RegressionNNExample exampleTrainedAndPlot!
+
+!TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:01:05'!
+setUp
+	| imageSet labelSet N|
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	N _ 2.
+	images _ (1 to: N) collect:[:i| imageSet bytesAt: i].
+	labels _ (1 to: N) collect:[:i| labelSet at: i].! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:51'!
+testImages
+	| testing training |
+	testing _ MNISTImageFile testSet.
+	training _ MNISTImageFile trainingSet .
+	
+	self assert: testing count equals: 10000.
+	self assert: training count equals: 60000.
+	self assert: testing rows equals: 28.
+	self assert: testing columns equals: 28.
+	self assert: training rows equals: 28.
+	self assert: training columns equals: 28.
+	self assert: testing asTensor shape equals: {10000. 28*28}.
+	self assert: training asTensor shape equals: {60000. 28*28}.! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:24:00'!
+testLabels
+	| test training |
+	test _ MNISTLabelFile testSet.
+	training _ MNISTLabelFile trainingSet.
+	
+	self assert: test count equals: 10000.
+	self assert: training count equals: 60000.! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 6/27/2019 15:44:37'!
+testMagic
+	| imageSet labelSet |
+	imageSet _ MNISTImageFile testSet.
+	labelSet _ MNISTLabelFile testSet.
+	
+ 	self assert: imageSet magic = MNISTImageFile magic.
+	self assert: labelSet magic = MNISTLabelFile magic.! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/17/2017 19:45:57'!
+testPrediction
+	| loss plan prediction result |
+	plan _ MNISTSoftMaxExamplePlan new.
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers .
+	self deny: loss closeTo: 0.
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: 0 closeTo: loss.
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers first equals: labels first.
+	self assert: prediction asNumbers second equals: labels second! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 6/27/2019 15:46:21'!
+testPredictionMany
+	| loss plan result prediction |
+	
+	plan _ MNISTSoftMaxExamplePlan new.
+
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self deny: loss closeTo: 0.
+	100 timesRepeat: [
+		plan predict: images andLearnFrom: labels].
+	
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: loss closeTo: 0.
+	
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers equals: labels.
+! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/17/2017 22:00:17'!
+testPrediction3Layers
+	|   loss plan result prediction |
+	plan _ MNIST3LayersNNExamplePlan new.
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self deny: loss first closeTo: 0.
+	100 timesRepeat: [ |interval index im lb|
+		interval _ 1 to: images size.
+		index _ interval collect:[:i| interval atRandom].
+		im _ index collect:[:i| images at: i].
+		lb _ index collect:[:i| labels at: i].
+		plan predict: im andLearnFrom: lb].
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self assert: loss first closeTo: 0.
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers first equals: labels first.
+	self assert: prediction asNumbers second equals: labels second! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'gera 2/21/2017 19:41:11'!
+testPrediction3LayersSigmoid
+	|   loss plan result prediction |
+	plan _ MNIST3LayersNNSigmoid new.
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) allFloats.
+	self deny: loss first closeTo: 0.
+	100 timesRepeat: [ |interval index im lb|
+		interval _ 1 to: images size.
+		index _ interval collect:[:i| interval atRandom].
+		im _ index collect:[:i| images at: i].
+		lb _ index collect:[:i| labels at: i].
+		plan predict: im andLearnFrom: lb].
+	result _ plan predict: images andCompareTo: labels.
+	loss _ (result at:2) asNumbers.
+	self assert: (loss < 1).
+	prediction _ plan predict: images.
+	self assert: prediction asNumbers equals: labels.
+! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:14'!
+testSinglePointRegression
+	| function loss net results rnd x y |
+	net _ RegressionNNExample new.
+	function _ RegressionNNExample exampleFunction.
+	rnd _ Random new.
+	x _ rnd next.
+	y _ function value: x.
+	100 timesRepeat:[net predict: {{x}} andLearnFrom:{{y}}].
+	results _ net predict: {{x}} andCompareTo: {{y}}.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
+
+!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:04'!
+testTwoPointsRegression
+	| function loss net results  interval xs ys |
+	net _ RegressionNNExample new.
+	function _ RegressionNNExample exampleFunction.
+	xs _ {{0.1}. {0.6}}.
+	ys _ {{function value: xs first first}. 
+			{function value: xs second first}}.
+	interval _ 1 to: xs size.
+	1000 timesRepeat: [ |index |
+		index _ interval atRandom.
+		net predict: {xs at: index} andLearnFrom:{ys at: index}].
+	results _ net predict: xs andCompareTo: ys.
+	loss _ results numbersAt: 2.
+	self assert: loss first closeTo: 0.
+	! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 6/30/2019 00:45:27'!
+tensorFrom: points
+	| rank transposed |
+	rank _ points first size.
+	transposed _ OrderedCollection new.
+	(1 to: rank) do: [ :i |
+		transposed add: OrderedCollection new ].
+	points do: [ :point |
+		point withIndexDo: [ :value :coordinate |
+			(transposed at: coordinate) add: value ]].
+	^ TFTensor fromFloats: transposed.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
+testNearesNeighbor
+	| plan |
+	plan _ ExampleNearestNeighborPlan new.
+	self testNearesNeighbor: plan.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:09:49'!
+testNearesNeighbor: plan
+	| first second third closest references tensorReference tensors predictor |
+	first _ #(0 0 0 0 0).
+	second _ #(1 1 3 4 2).
+	third _ #(8 1 3 4 2).
+	references _{
+		first.
+		second.
+		third}.
+	tensorReference _ self tensorFrom: references.
+	tensors _ references collect: [ :point |
+		self tensorFrom: {point} ].
+	
+	predictor _ [:unknown | | result | 
+		result _ plan predict: unknown from: tensorReference.
+		result first].
+	
+	closest _ predictor value: tensors first.
+	self assert: closest equals: 1.
+	
+	closest _ predictor value:  tensors second.
+	self assert: closest equals: 2.
+	
+	closest _ predictor value:  tensors third.
+	self assert: closest equals: 3.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/29/2017 05:15:13'!
+testNearesNeighborWithOperations
+	| plan |
+	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations initializeSession.
+	self testNearesNeighbor: plan.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:28'!
+testBackpropagationPlanBackguard
+	| plan inputs rawResult result const graph weights first second sigmoid |
+	plan _ BackpropagationPlan new.
+	
+	inputs _ TFTensor fromFloats: {
+		{0}.
+		{2 ln}
+	}.
+	
+	graph _ plan graph.
+	const _ graph operationNamed: 'weights_initialValue'.
+	weights _ (const tensorAt: 'value') allFloats.
+	
+	sigmoid _ [:x | (x negated exp + 1) reciprocal].
+	first _ sigmoid value: 2 ln * weights second.
+	second _ sigmoid value: 2 ln * weights fourth.
+
+	rawResult _ plan runOn: {inputs}.
+	result _ rawResult allFloats.
+	
+	
+	self
+		assert: result first closeTo: first;
+		assert: result second closeTo: second! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
+testBackpropagationPlanBackguardChangesWeights
+	| plan const graph w0 weights inputs result target |
+	plan _ BackpropagationPlan new.
+	graph _ plan graph.
+	
+	inputs _ TFTensor fromFloats: {{1}. {2 ln}}.
+	target _ TFTensor fromFloats: #((0.5) (0.5)).
+	
+	const _ graph operationNamed: 'weights_initialValue'.
+	w0 _ const tensorAt: 'value'.
+	weights _ plan weights.
+	
+	self assert: w0 shape equals: #(2 2).
+	self assert: weights shape equals: #(2 2).
+	self assert: w0 allFloats equals: weights allFloats.
+
+	result _ plan learn: inputs with: target.
+
+	self assert: weights allFloats equals: result allFloats.
+	self assert: weights shape equals: result shape.
+	self deny: weights allFloats = w0 allFloats
+! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
+testBackpropagationPlanBackguardConverges
+	| plan const graph w0 weights inputs target result |
+	plan _ BackpropagationPlan new.
+	graph _ plan graph.
+	
+	inputs _ TFTensor fromFloats: {{1}. {2 ln}}.
+	target _ TFTensor fromFloats: #((0.5) (0.5)).
+	
+	const _ graph operationNamed: 'weights_initialValue'.
+	w0 _ const tensorAt: 'value'.
+	weights _ plan weights.
+	
+	self assert: w0 shape equals: #(2 2).
+	self assert: weights shape equals: #(2 2).
+	self assert: w0 allFloats equals: weights allFloats.
+
+	200 timesRepeat: [plan learn: inputs with: target].
+
+	self assert: plan delta allFloats squared sum closeTo: 0.
+
+	result _ (plan runOn: {inputs}) allFloats.
+	
+	self assert: result first closeTo: 0.5.
+	self assert: result second closeTo: 0.5.
+! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:28'!
+testBackpropagationPlanForward
+	| plan inputs rawResult result const graph weights first second sigmoid |
+	plan _ BackpropagationPlan basicNew.
+	plan initializeGraph.
+	plan initializeSession.
+	
+	inputs _ TFTensor fromFloats: {
+		{0}.
+		{2 ln}
+	}.
+	
+	graph _ plan graph.
+	const _ graph operationNamed: 'weights_initialValue'.
+	weights _ (const tensorAt: 'value') allFloats.
+	
+	sigmoid _ [:x | (x negated exp + 1) reciprocal].
+	first _ sigmoid value: 2 ln * weights second.
+	second _ sigmoid value: 2 ln * weights fourth.
+
+	rawResult _ plan runOn: {inputs}.
+	result _ rawResult allFloats.
+	
+	
+	self
+		assert: result first closeTo: first;
+		assert: result second closeTo: second! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:58'!
+testBackpropagationPlantInitializeBackguard
+	| bpp |
+	bpp _ BackpropagationPlan basicNew.
+	bpp instVarNamed: 'graph' put: TF_Graph create.
+	bpp initializeVariables.
+	bpp initializeForwardGraph.
+	bpp initializeBackwardGraph.
+	
+	self assert: true description: 'No exception should be raised by this test'! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:33'!
+testBackpropagationPlantInitializeForward
+	| bpp |
+	bpp _ BackpropagationPlan new.
+	bpp instVarNamed: 'graph' put: TF_Graph create.
+	bpp initializeVariables.
+	bpp initializeForwardGraph.
+	
+	self assert: true description: 'No exception should be raised by this test'! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:33:02'!
+testBackpropagationPlantInitializeVariables
+	| bpp graph const weights |
+	bpp _ BackpropagationPlan basicNew.
+	bpp instVarNamed: 'graph' put: TF_Graph create.
+	bpp initializeVariables.
+	
+	graph _ bpp graph.
+	
+	self assert: graph allInitializers size = 1.
+	self assert: graph allVariables size = 1.
+	self assert: graph allVariables first name = 'weights'.
+
+	const _ graph operationNamed: 'weights_initialValue'.
+	weights _ const tensorAt: 'value'.
+	
+	self assert: weights shape equals: #(2 2).
+	weights allFloats do: [:each |
+		self assert: (each between: 0 and: 1)].! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
+testForward
+	| inputs plan rawResult result weights |
+	plan _ BackpropagationForwardPlan new.
+	inputs _ TFTensor fromFloats: {
+		{0}.
+		{2 ln}
+	}.
+	weights _ TFTensor fromFloats: #(
+		(1 1)
+		(1 0)
+	).
+	rawResult _ plan runOn: {inputs. weights}.
+	result _ rawResult allFloats.
+	
+	self assert: result first closeTo: (1 + 0.5) reciprocal;
+		 assert: result second closeTo: 0.5! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:26:22'!
+testMNIST3LayersNNForwardGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist result first second |
+	mnist _ MNIST3LayersNNExamplePlan new.
+	
+	self 
+		shouldnt: [
+			result _ mnist predict: {
+				(ByteArray new: mnist inputSize) + 2.
+				(ByteArray new: mnist inputSize) + 1.
+			}]
+		raise: Error.
+
+	self assert: {2} equals: result shape.
+	first _ result asNumbers first.
+	second _ result asNumbers second.
+	self assert: (0 <= first and: [ first < 10 ]).
+	self assert: (0 <= second and: [ second < 10 ]).! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
+testMNIST3LayersNNInitialization
+	MNIST3LayersNNExamplePlan new.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:32:50'!
+testMNIST3LayersNNLossGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist results first second |
+	mnist _ MNIST3LayersNNExamplePlan new.
+	
+	self 
+		shouldnt: [
+			results _ mnist
+				predict: {
+					ByteArray new: mnist inputSize.
+					(ByteArray new: mnist inputSize) + 1}
+				andCompareTo: #(1 2).
+				]
+		raise: Error.
+
+	self assert: {2} equals: results first shape.
+	first _ results first asNumbers first.
+	second _ results first asNumbers second.
+	self assert: (0 <= first and: [ first < 10 ]).
+	self assert: (0 <= second and: [ second < 10 ]).
+	
+	self assert: #() equals: results second shape.
+	self assert: (results second asNumbers > 0).! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:08:37'!
+testMNISTSoftMaxForwardGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist result |
+	mnist _ MNISTSoftMaxExamplePlan new.
+	
+	self 
+		shouldnt: [
+			result _ mnist predict: {
+				ByteArray new: mnist inputSize.
+				(ByteArray new: mnist inputSize) + 1.
+			}]
+		raise: Error.
+
+	self assert: {2} equals: result shape.
+	self assert: result allInt32s first closeTo: 0.
+	self assert: result allInt32s second closeTo: 0.
+! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:29:28'!
+testMNISTSoftMaxLossGraph
+	" Not sure how to test this better. weights are random, so output is random.
+	I believe that choosing the right input value the output should comply with some statistics,
+	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
+	
+	| mnist results |
+	mnist _ MNISTSoftMaxExamplePlan new.
+	
+	self 
+		shouldnt: [
+			results _ mnist
+				predict: {
+					ByteArray new: mnist inputSize.
+					(ByteArray new: mnist inputSize) + 1}
+				andCompareTo: #(1 2).
+				]
+		raise: Error.
+
+	self assert: {2} equals: results first shape.
+	self assert: results first asNumbers first equals: 0.
+	self assert: results first asNumbers second equals: 0.
+
+	
+	self assert: #() equals: results second shape.
+	self assert: (results second allFloats sum abs > 0).! !
+
+!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:33:39'!
+testMNISTSoftMaxnitialization
+	MNISTSoftMaxExamplePlan new.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:41'!
+testOLS
+	self testOLS: OLSExample new.! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 6/30/2019 00:45:25'!
+testOLS: ols
+	| x y betas |
+	x _ TFTensor fromFloats: #(
+		(1  2   3)
+		(6  7   8)
+		(4  5   6)
+		(9  2   3)
+		(1 10  2)
+	).
+
+	y _ TFTensor fromFloats: #(
+		(14)
+		(44)
+		(32)
+		(22)
+		(27)
+	).
+	
+	betas _ ols regress: x on: y.
+	self assert: betas first closeTo: 1;
+		assert: betas second closeTo: 2;
+		assert: betas third closeTo: 3
+	
+		
+! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/29/2017 05:16:11'!
+testOLSWithOperations
+	self testOLS: OLSExample new initializeWithOperations! !
+
+!TensorFlowExamplesTest methodsFor: 'testing-NeuralNetwork' stamp: 'gera 6/30/2019 00:45:27'!
+testSimpleNeuralNetwork
+	| inputs weights nn prediction target targetValues |
+	inputs _ TFTensor fromFloats: {
+		{1}.
+		{2 ln}
+		}.
+	targetValues _ #(0.5 0.5).
+	target _ TFTensor fromFloats: targetValues.
+	weights _ #(
+		(1 1)
+		(1 0)
+	).
+	nn _ SimpleNeuralNetworkExample new.
+	nn initialWeights: weights;
+	 	learnAll: {inputs} to: {target} steps: 100.
+	prediction _ nn predict: inputs.
+	targetValues with: prediction do:[:real :predicted| 
+		self assert: (real - predicted) abs < 0.1]! !
 
 !BatchTrainer methodsFor: 'initialization' stamp: 'JB 2/18/2017 20:36:29'!
 initialize
@@ -1324,530 +1851,3 @@ predict: sample
 		| result |
 	result _ forward runOn: {sample. weights}.
 	^ result allFloats ! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'initialization' stamp: 'JB 2/17/2017 21:01:05'!
-setUp
-	| imageSet labelSet N|
-	imageSet _ MNISTImageFile testSet.
-	labelSet _ MNISTLabelFile testSet.
-	N _ 2.
-	images _ (1 to: N) collect:[:i| imageSet bytesAt: i].
-	labels _ (1 to: N) collect:[:i| labelSet at: i].! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:23:51'!
-testImages
-	| testing training |
-	testing _ MNISTImageFile testSet.
-	training _ MNISTImageFile trainingSet .
-	
-	self assert: testing count equals: 10000.
-	self assert: training count equals: 60000.
-	self assert: testing rows equals: 28.
-	self assert: testing columns equals: 28.
-	self assert: training rows equals: 28.
-	self assert: training columns equals: 28.
-	self assert: testing asTensor shape equals: {10000. 28*28}.
-	self assert: training asTensor shape equals: {60000. 28*28}.! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 2/12/2017 23:24:00'!
-testLabels
-	| test training |
-	test _ MNISTLabelFile testSet.
-	training _ MNISTLabelFile trainingSet.
-	
-	self assert: test count equals: 10000.
-	self assert: training count equals: 60000.! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST files' stamp: 'gera 6/27/2019 15:44:37'!
-testMagic
-	| imageSet labelSet |
-	imageSet _ MNISTImageFile testSet.
-	labelSet _ MNISTLabelFile testSet.
-	
- 	self assert: imageSet magic = MNISTImageFile magic.
-	self assert: labelSet magic = MNISTLabelFile magic.! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'JB 2/17/2017 19:45:57'!
-testPrediction
-	| loss plan prediction result |
-	plan _ MNISTSoftMaxExamplePlan new.
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) asNumbers .
-	self deny: loss closeTo: 0.
-	100 timesRepeat: [
-		plan predict: images andLearnFrom: labels].
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) asNumbers.
-	self assert: 0 closeTo: loss.
-	prediction _ plan predict: images.
-	self assert: prediction asNumbers first equals: labels first.
-	self assert: prediction asNumbers second equals: labels second! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - SoftMax' stamp: 'gera 6/27/2019 15:46:21'!
-testPredictionMany
-	| loss plan result prediction |
-	
-	plan _ MNISTSoftMaxExamplePlan new.
-
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) asNumbers.
-	self deny: loss closeTo: 0.
-	100 timesRepeat: [
-		plan predict: images andLearnFrom: labels].
-	
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) asNumbers.
-	self assert: loss closeTo: 0.
-	
-	prediction _ plan predict: images.
-	self assert: prediction asNumbers equals: labels.
-! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'JB 2/17/2017 22:00:17'!
-testPrediction3Layers
-	|   loss plan result prediction |
-	plan _ MNIST3LayersNNExamplePlan new.
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) allFloats.
-	self deny: loss first closeTo: 0.
-	100 timesRepeat: [ |interval index im lb|
-		interval _ 1 to: images size.
-		index _ interval collect:[:i| interval atRandom].
-		im _ index collect:[:i| images at: i].
-		lb _ index collect:[:i| labels at: i].
-		plan predict: im andLearnFrom: lb].
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) allFloats.
-	self assert: loss first closeTo: 0.
-	prediction _ plan predict: images.
-	self assert: prediction asNumbers first equals: labels first.
-	self assert: prediction asNumbers second equals: labels second! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - MNIST - 3Layers' stamp: 'gera 2/21/2017 19:41:11'!
-testPrediction3LayersSigmoid
-	|   loss plan result prediction |
-	plan _ MNIST3LayersNNSigmoid new.
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) allFloats.
-	self deny: loss first closeTo: 0.
-	100 timesRepeat: [ |interval index im lb|
-		interval _ 1 to: images size.
-		index _ interval collect:[:i| interval atRandom].
-		im _ index collect:[:i| images at: i].
-		lb _ index collect:[:i| labels at: i].
-		plan predict: im andLearnFrom: lb].
-	result _ plan predict: images andCompareTo: labels.
-	loss _ (result at:2) asNumbers.
-	self assert: (loss < 1).
-	prediction _ plan predict: images.
-	self assert: prediction asNumbers equals: labels.
-! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:14'!
-testSinglePointRegression
-	| function loss net results rnd x y |
-	net _ RegressionNNExample new.
-	function _ RegressionNNExample exampleFunction.
-	rnd _ Random new.
-	x _ rnd next.
-	y _ function value: x.
-	100 timesRepeat:[net predict: {{x}} andLearnFrom:{{y}}].
-	results _ net predict: {{x}} andCompareTo: {{y}}.
-	loss _ results numbersAt: 2.
-	self assert: loss first closeTo: 0.
-	! !
-
-!TensorFlowExamplesSlowTest methodsFor: 'testing - Regression' stamp: 'JB 2/24/2017 23:17:04'!
-testTwoPointsRegression
-	| function loss net results  interval xs ys |
-	net _ RegressionNNExample new.
-	function _ RegressionNNExample exampleFunction.
-	xs _ {{0.1}. {0.6}}.
-	ys _ {{function value: xs first first}. 
-			{function value: xs second first}}.
-	interval _ 1 to: xs size.
-	1000 timesRepeat: [ |index |
-		index _ interval atRandom.
-		net predict: {xs at: index} andLearnFrom:{ys at: index}].
-	results _ net predict: xs andCompareTo: ys.
-	loss _ results numbersAt: 2.
-	self assert: loss first closeTo: 0.
-	! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 6/30/2019 00:45:27'!
-tensorFrom: points
-	| rank transposed |
-	rank _ points first size.
-	transposed _ OrderedCollection new.
-	(1 to: rank) do: [ :i |
-		transposed add: OrderedCollection new ].
-	points do: [ :point |
-		point withIndexDo: [ :value :coordinate |
-			(transposed at: coordinate) add: value ]].
-	^ TFTensor fromFloats: transposed.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:10:31'!
-testNearesNeighbor
-	| plan |
-	plan _ ExampleNearestNeighborPlan new.
-	self testNearesNeighbor: plan.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/21/2017 05:09:49'!
-testNearesNeighbor: plan
-	| first second third closest references tensorReference tensors predictor |
-	first _ #(0 0 0 0 0).
-	second _ #(1 1 3 4 2).
-	third _ #(8 1 3 4 2).
-	references _{
-		first.
-		second.
-		third}.
-	tensorReference _ self tensorFrom: references.
-	tensors _ references collect: [ :point |
-		self tensorFrom: {point} ].
-	
-	predictor _ [:unknown | | result | 
-		result _ plan predict: unknown from: tensorReference.
-		result first].
-	
-	closest _ predictor value: tensors first.
-	self assert: closest equals: 1.
-	
-	closest _ predictor value:  tensors second.
-	self assert: closest equals: 2.
-	
-	closest _ predictor value:  tensors third.
-	self assert: closest equals: 3.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NearesNeighbor' stamp: 'gera 1/29/2017 05:15:13'!
-testNearesNeighborWithOperations
-	| plan |
-	plan _ ExampleNearestNeighborPlan new initializeGraphWithOperations initializeSession.
-	self testNearesNeighbor: plan.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:28'!
-testBackpropagationPlanBackguard
-	| plan inputs rawResult result const graph weights first second sigmoid |
-	plan _ BackpropagationPlan new.
-	
-	inputs _ TFTensor fromFloats: {
-		{0}.
-		{2 ln}
-	}.
-	
-	graph _ plan graph.
-	const _ graph operationNamed: 'weights_initialValue'.
-	weights _ (const tensorAt: 'value') allFloats.
-	
-	sigmoid _ [:x | (x negated exp + 1) reciprocal].
-	first _ sigmoid value: 2 ln * weights second.
-	second _ sigmoid value: 2 ln * weights fourth.
-
-	rawResult _ plan runOn: {inputs}.
-	result _ rawResult allFloats.
-	
-	
-	self
-		assert: result first closeTo: first;
-		assert: result second closeTo: second! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
-testBackpropagationPlanBackguardChangesWeights
-	| plan const graph w0 weights inputs result target |
-	plan _ BackpropagationPlan new.
-	graph _ plan graph.
-	
-	inputs _ TFTensor fromFloats: {{1}. {2 ln}}.
-	target _ TFTensor fromFloats: #((0.5) (0.5)).
-	
-	const _ graph operationNamed: 'weights_initialValue'.
-	w0 _ const tensorAt: 'value'.
-	weights _ plan weights.
-	
-	self assert: w0 shape equals: #(2 2).
-	self assert: weights shape equals: #(2 2).
-	self assert: w0 allFloats equals: weights allFloats.
-
-	result _ plan learn: inputs with: target.
-
-	self assert: weights allFloats equals: result allFloats.
-	self assert: weights shape equals: result shape.
-	self deny: weights allFloats = w0 allFloats
-! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
-testBackpropagationPlanBackguardConverges
-	| plan const graph w0 weights inputs target result |
-	plan _ BackpropagationPlan new.
-	graph _ plan graph.
-	
-	inputs _ TFTensor fromFloats: {{1}. {2 ln}}.
-	target _ TFTensor fromFloats: #((0.5) (0.5)).
-	
-	const _ graph operationNamed: 'weights_initialValue'.
-	w0 _ const tensorAt: 'value'.
-	weights _ plan weights.
-	
-	self assert: w0 shape equals: #(2 2).
-	self assert: weights shape equals: #(2 2).
-	self assert: w0 allFloats equals: weights allFloats.
-
-	200 timesRepeat: [plan learn: inputs with: target].
-
-	self assert: plan delta allFloats squared sum closeTo: 0.
-
-	result _ (plan runOn: {inputs}) allFloats.
-	
-	self assert: result first closeTo: 0.5.
-	self assert: result second closeTo: 0.5.
-! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:28'!
-testBackpropagationPlanForward
-	| plan inputs rawResult result const graph weights first second sigmoid |
-	plan _ BackpropagationPlan basicNew.
-	plan initializeGraph.
-	plan initializeSession.
-	
-	inputs _ TFTensor fromFloats: {
-		{0}.
-		{2 ln}
-	}.
-	
-	graph _ plan graph.
-	const _ graph operationNamed: 'weights_initialValue'.
-	weights _ (const tensorAt: 'value') allFloats.
-	
-	sigmoid _ [:x | (x negated exp + 1) reciprocal].
-	first _ sigmoid value: 2 ln * weights second.
-	second _ sigmoid value: 2 ln * weights fourth.
-
-	rawResult _ plan runOn: {inputs}.
-	result _ rawResult allFloats.
-	
-	
-	self
-		assert: result first closeTo: first;
-		assert: result second closeTo: second! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:58'!
-testBackpropagationPlantInitializeBackguard
-	| bpp |
-	bpp _ BackpropagationPlan basicNew.
-	bpp instVarNamed: 'graph' put: TF_Graph create.
-	bpp initializeVariables.
-	bpp initializeForwardGraph.
-	bpp initializeBackwardGraph.
-	
-	self assert: true description: 'No exception should be raised by this test'! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:33'!
-testBackpropagationPlantInitializeForward
-	| bpp |
-	bpp _ BackpropagationPlan new.
-	bpp instVarNamed: 'graph' put: TF_Graph create.
-	bpp initializeVariables.
-	bpp initializeForwardGraph.
-	
-	self assert: true description: 'No exception should be raised by this test'! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:33:02'!
-testBackpropagationPlantInitializeVariables
-	| bpp graph const weights |
-	bpp _ BackpropagationPlan basicNew.
-	bpp instVarNamed: 'graph' put: TF_Graph create.
-	bpp initializeVariables.
-	
-	graph _ bpp graph.
-	
-	self assert: graph allInitializers size = 1.
-	self assert: graph allVariables size = 1.
-	self assert: graph allVariables first name = 'weights'.
-
-	const _ graph operationNamed: 'weights_initialValue'.
-	weights _ const tensorAt: 'value'.
-	
-	self assert: weights shape equals: #(2 2).
-	weights allFloats do: [:each |
-		self assert: (each between: 0 and: 1)].! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 6/30/2019 00:45:27'!
-testForward
-	| inputs plan rawResult result weights |
-	plan _ BackpropagationForwardPlan new.
-	inputs _ TFTensor fromFloats: {
-		{0}.
-		{2 ln}
-	}.
-	weights _ TFTensor fromFloats: #(
-		(1 1)
-		(1 0)
-	).
-	rawResult _ plan runOn: {inputs. weights}.
-	result _ rawResult allFloats.
-	
-	self assert: result first closeTo: (1 + 0.5) reciprocal;
-		 assert: result second closeTo: 0.5! !
-
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:26:22'!
-testMNIST3LayersNNForwardGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| mnist result first second |
-	mnist _ MNIST3LayersNNExamplePlan new.
-	
-	self 
-		shouldnt: [
-			result _ mnist predict: {
-				(ByteArray new: mnist inputSize) + 2.
-				(ByteArray new: mnist inputSize) + 1.
-			}]
-		raise: Error.
-
-	self assert: {2} equals: result shape.
-	first _ result asNumbers first.
-	second _ result asNumbers second.
-	self assert: (0 <= first and: [ first < 10 ]).
-	self assert: (0 <= second and: [ second < 10 ]).! !
-
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:24:27'!
-testMNIST3LayersNNInitialization
-	MNIST3LayersNNExamplePlan new.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:32:50'!
-testMNIST3LayersNNLossGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| mnist results first second |
-	mnist _ MNIST3LayersNNExamplePlan new.
-	
-	self 
-		shouldnt: [
-			results _ mnist
-				predict: {
-					ByteArray new: mnist inputSize.
-					(ByteArray new: mnist inputSize) + 1}
-				andCompareTo: #(1 2).
-				]
-		raise: Error.
-
-	self assert: {2} equals: results first shape.
-	first _ results first asNumbers first.
-	second _ results first asNumbers second.
-	self assert: (0 <= first and: [ first < 10 ]).
-	self assert: (0 <= second and: [ second < 10 ]).
-	
-	self assert: #() equals: results second shape.
-	self assert: (results second asNumbers > 0).! !
-
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/11/2017 14:08:37'!
-testMNISTSoftMaxForwardGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| mnist result |
-	mnist _ MNISTSoftMaxExamplePlan new.
-	
-	self 
-		shouldnt: [
-			result _ mnist predict: {
-				ByteArray new: mnist inputSize.
-				(ByteArray new: mnist inputSize) + 1.
-			}]
-		raise: Error.
-
-	self assert: {2} equals: result shape.
-	self assert: result allInt32s first closeTo: 0.
-	self assert: result allInt32s second closeTo: 0.
-! !
-
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'JB 2/17/2017 19:29:28'!
-testMNISTSoftMaxLossGraph
-	" Not sure how to test this better. weights are random, so output is random.
-	I believe that choosing the right input value the output should comply with some statistics,
-	however there are only 10 output valus, and I believe that's not enough to have statistical meaning"
-	
-	| mnist results |
-	mnist _ MNISTSoftMaxExamplePlan new.
-	
-	self 
-		shouldnt: [
-			results _ mnist
-				predict: {
-					ByteArray new: mnist inputSize.
-					(ByteArray new: mnist inputSize) + 1}
-				andCompareTo: #(1 2).
-				]
-		raise: Error.
-
-	self assert: {2} equals: results first shape.
-	self assert: results first asNumbers first equals: 0.
-	self assert: results first asNumbers second equals: 0.
-
-	
-	self assert: #() equals: results second shape.
-	self assert: (results second allFloats sum abs > 0).! !
-
-!TensorFlowExamplesTest methodsFor: 'testing MNIST' stamp: 'gera 2/2/2017 19:33:39'!
-testMNISTSoftMaxnitialization
-	MNISTSoftMaxExamplePlan new.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/21/2017 05:18:41'!
-testOLS
-	self testOLS: OLSExample new.! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 6/30/2019 00:45:25'!
-testOLS: ols
-	| x y betas |
-	x _ TFTensor fromFloats: #(
-		(1  2   3)
-		(6  7   8)
-		(4  5   6)
-		(9  2   3)
-		(1 10  2)
-	).
-
-	y _ TFTensor fromFloats: #(
-		(14)
-		(44)
-		(32)
-		(22)
-		(27)
-	).
-	
-	betas _ ols regress: x on: y.
-	self assert: betas first closeTo: 1;
-		assert: betas second closeTo: 2;
-		assert: betas third closeTo: 3
-	
-		
-! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-ols' stamp: 'gera 1/29/2017 05:16:11'!
-testOLSWithOperations
-	self testOLS: OLSExample new initializeWithOperations! !
-
-!TensorFlowExamplesTest methodsFor: 'testing-NeuralNetwork' stamp: 'gera 6/30/2019 00:45:27'!
-testSimpleNeuralNetwork
-	| inputs weights nn prediction target targetValues |
-	inputs _ TFTensor fromFloats: {
-		{1}.
-		{2 ln}
-		}.
-	targetValues _ #(0.5 0.5).
-	target _ TFTensor fromFloats: targetValues.
-	weights _ #(
-		(1 1)
-		(1 0)
-	).
-	nn _ SimpleNeuralNetworkExample new.
-	nn initialWeights: weights;
-	 	learnAll: {inputs} to: {target} steps: 100.
-	prediction _ nn predict: inputs.
-	targetValues with: prediction do:[:real :predicted| 
-		self assert: (real - predicted) abs < 0.1]! !
