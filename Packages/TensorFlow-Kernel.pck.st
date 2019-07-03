@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 3:26:28 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 3:31:02 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 420!
+!provides: 'TensorFlow-Kernel' 1 421!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -106,6 +106,16 @@ ExternalWordArray subclass: #TFOperationPtrArray
 TFOperationPtrArray class
 	instanceVariableNames: ''!
 
+!classDefinition: #TFOutputArray category: #'TensorFlow-Kernel'!
+ExternalWordArray subclass: #TFOutputArray
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TFOutputArray class' category: #'TensorFlow-Kernel'!
+TFOutputArray class
+	instanceVariableNames: ''!
+
 !classDefinition: #TFTensorPtrArray category: #'TensorFlow-Kernel'!
 ExternalWordArray subclass: #TFTensorPtrArray
 	instanceVariableNames: ''
@@ -114,16 +124,6 @@ ExternalWordArray subclass: #TFTensorPtrArray
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TFTensorPtrArray class' category: #'TensorFlow-Kernel'!
 TFTensorPtrArray class
-	instanceVariableNames: ''!
-
-!classDefinition: #TF_OutputArray category: #'TensorFlow-Kernel'!
-ExternalWordArray subclass: #TF_OutputArray
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_OutputArray class' category: #'TensorFlow-Kernel'!
-TF_OutputArray class
 	instanceVariableNames: ''!
 
 !classDefinition: #TFAttrMetadata category: #'TensorFlow-Kernel'!
@@ -333,12 +333,12 @@ testExternalFromArrayOperation
 	self assert: (array at: 2) getHandle = op2 getHandle.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:26:12'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:30:56'!
 testExternalFromArrayOutput
 	| o1 o2 array |
 	o1 _ TFOutput new index: 16r40302010.
 	o2 _ TFOutput new index: 16r76543210.
-	array _ TF_OutputArray externalFromArray: (Array with: o1 with: o2).
+	array _ TFOutputArray externalFromArray: (Array with: o1 with: o2).
 
 	self assert: array first index = o1 index.
 	self assert: (array at: 2) index = o2 index.
@@ -369,11 +369,11 @@ testOperationArrayElementsOfRightClass
 	^ self testArray: TFOperationPtrArray sampleElement: TFOperation new.
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:26:12'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:30:56'!
 testOutputArrayAtPut
 	| array size one other operation |
 	size _ 4.
-	array _ TF_OutputArray externalNew: size.
+	array _ TFOutputArray externalNew: size.
 	operation _ TFOperation fromHandle: ExternalAddress new + 16rF1F2F3F4.
 	
 	one _ TFOutput new.
@@ -401,11 +401,11 @@ testOutputArrayAtPut
 		self assert: one operation = other operation.
 	]! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 15:04:16'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:30:56'!
 testOutputArrayElementsAreAliases
 	| array size one other |
 	size _ 4.
-	array _ TF_OutputArray externalNew: size.
+	array _ TFOutputArray externalNew: size.
 
 	one _ array first.
 	other _ array at: 1.
@@ -431,11 +431,11 @@ testOutputArrayElementsAreAliases
 		self assert: other index = 77222244].
 ! !
 
-!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:26:12'!
+!ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 7/3/2019 03:30:56'!
 testOutputArrayElementsOfRightClass
 	| array size  |
 	size _ 4.
-	array _ TF_OutputArray externalNew: size.
+	array _ TFOutputArray externalNew: size.
 	self assert: (array first isKindOf: TFOutput).
 	1 to: size do: [:index |
 		self assert: ((array at: index) isKindOf: TFOutput)].
@@ -4885,8 +4885,8 @@ newSession: aTFGraph options:  aTF_SessionOptions status: aTF_Status
 !TensorFlowCAPI methodsFor: 'session' stamp: 'gera 12/29/2016 18:19:01'!
 runSession: aTF_Session
 	options: opsTFBuffer
-	inputs: inTF_OutputArray values: inTFTensorArray count: inCount
-	outputs: outTF_OutputArray values: outTFTensorArrayPtr count: outCount
+	inputs: inTFOutputArray values: inTFTensorArray count: inCount
+	outputs: outTFOutputArray values: outTFTensorArrayPtr count: outCount
 	targets: aTFOperationArray count: targetCount
 	metadata: metaTFBuffer
 	status: aTF_Status
@@ -4894,10 +4894,10 @@ runSession: aTF_Session
 	<cdecl: void 'TF_SessionRun' (
 		TF_Session*
 		TFBuffer*				"RunOptions, may be nil"
-		TF_OutputArray*			"inputs"
+		TFOutputArray*			"inputs"
 		TFTensorPtrArray*		"inputs' values"
 		long						"inputs count"
-		TF_OutputArray*			"outputs"
+		TFOutputArray*			"outputs"
 		TFTensorPtrArray*		"outputs values (results)"
 		long						"outputs count"
 		TFOperationPtrArray*	"target operations array, may be nil"
@@ -5043,8 +5043,8 @@ description: aTFOperationDescription addInput: aTFOutput
 	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/2/2017 12:36:00'!
-description: aTFOperationDescription addInputs: aTF_OutputArray size: anInteger
-	<cdecl: void 'TF_AddInputList' (TFOperationDescription* TF_OutputArray* longlong)>
+description: aTFOperationDescription addInputs: aTFOutputArray size: anInteger
+	<cdecl: void 'TF_AddInputList' (TFOperationDescription* TFOutputArray* longlong)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 1/9/2017 19:53:21'!
@@ -5431,6 +5431,39 @@ byteSize
 elementClass
 	^TFOperation! !
 
+!TFOutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:44:00'!
+elementAtOffset: byteOffset
+	^self elementClass fromHandle: (handle + (byteOffset - 1))
+	
+! !
+
+!TFOutputArray methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:26:12'!
+elementAtOffset: byteOffset put: anExternalStructure
+	handle structAt: byteOffset put: anExternalStructure getHandle length: TFOutput byteSize.! !
+
+!TFOutputArray methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:26:12'!
+elementClass
+	^TFOutput! !
+
+!TFOutputArray methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:26:12'!
+template
+	"This method was automatically generated. See TFOutputArray class>>fields."
+	^TFOutput fromHandle: (handle structAt: 1 length: 16)! !
+
+!TFOutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
+template: anObject
+	"This method was automatically generated. See TFOutputArray class>>fields."
+	handle structAt: 1 put: anObject getHandle length: 16.! !
+
+!TFOutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:03'!
+fields
+	"self initialize"
+	^#((template 'TFOutput'))! !
+
+!TFOutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:40'!
+new: unused
+	^ self shouldNotImplement! !
+
 !TFTensorPtrArray methodsFor: 'accessing' stamp: 'gera 6/30/2019 00:45:26'!
 elementClass
 	^TFTensor! !
@@ -5440,39 +5473,6 @@ numbersAt: index
 	| tensor |
 	tensor _ self at: index.
 	^ tensor asNumbers! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 12/29/2016 09:44:00'!
-elementAtOffset: byteOffset
-	^self elementClass fromHandle: (handle + (byteOffset - 1))
-	
-! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:26:12'!
-elementAtOffset: byteOffset put: anExternalStructure
-	handle structAt: byteOffset put: anExternalStructure getHandle length: TFOutput byteSize.! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:26:12'!
-elementClass
-	^TFOutput! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:26:12'!
-template
-	"This method was automatically generated. See TF_OutputArray class>>fields."
-	^TFOutput fromHandle: (handle structAt: 1 length: 16)! !
-
-!TF_OutputArray methodsFor: 'accessing' stamp: 'JB 4/18/2018 21:59:06'!
-template: anObject
-	"This method was automatically generated. See TF_OutputArray class>>fields."
-	handle structAt: 1 put: anObject getHandle length: 16.! !
-
-!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:03'!
-fields
-	"self initialize"
-	^#((template 'TFOutput'))! !
-
-!TF_OutputArray class methodsFor: 'as yet unclassified' stamp: 'gera 12/29/2016 09:39:40'!
-new: unused
-	^ self shouldNotImplement! !
 
 !TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:07'!
 isBoolean
@@ -6452,10 +6452,10 @@ addInputFromOutput: indexInteger of: aTFOperation
 		addInput: input
 	] ensure: [input free]! !
 
-!TFOperationDescription methodsFor: 'inputs' stamp: 'gera 1/13/2017 13:08:59'!
+!TFOperationDescription methodsFor: 'inputs' stamp: 'gera 7/3/2019 03:30:56'!
 addInputs: anArrayOfTFOutput
 	| inputs |
-	inputs _ TF_OutputArray externalFromArray: anArrayOfTFOutput.
+	inputs _ TFOutputArray externalFromArray: anArrayOfTFOutput.
 	self library
 		description: self
 		addInputs: inputs
@@ -7190,13 +7190,13 @@ run
 	
 	status check! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:10:27'!
+!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:30:56'!
 runInputs: inArrayOfTFOutputs values: inArrayOfTFTensor outputs: outArrayOfTFOutputs
 	| inputs invalues outputs outvalues status |
 	status _ TF_Status create.
-	inputs _ TF_OutputArray externalFromArray: inArrayOfTFOutputs.
+	inputs _ TFOutputArray externalFromArray: inArrayOfTFOutputs.
 	invalues _ TFTensorPtrArray externalFromArray: inArrayOfTFTensor.
-	outputs _ TF_OutputArray externalFromArray: outArrayOfTFOutputs.
+	outputs _ TFOutputArray externalFromArray: outArrayOfTFOutputs.
 	outvalues _ TFTensorPtrArray new: outArrayOfTFOutputs size.
 	
 	self library
@@ -7227,11 +7227,11 @@ runOperation: aTFOperation input: inTFOutputOrInput value: inTFTensor output: ou
 	^ tensor
 ! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:06:39'!
+!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:30:56'!
 runOperation: aTFOperation output: aTFOutput
 	| operations  answer outputs |
 	operations _ TFOperationPtrArray externalNew: 1.
-	outputs _ TF_OutputArray externalNew: 1.
+	outputs _ TFOutputArray externalNew: 1.
 	outputs first: aTFOutput.
 	
 	operations first: aTFOperation.	
@@ -7254,14 +7254,14 @@ runOperations: anArrayOfTFOperations
 	status check
 	! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:10:27'!
+!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:30:56'!
 runOperations: anArrayOfTFOperations inputs: inArrayOfTFOutputs values: inArrayOfTFTensor outputs: outArrayOfTFOutputs
 	| operations inputs invalues outputs outvalues status |
 	status _ TF_Status create.
 	operations _ TFOperationPtrArray externalFromArray: anArrayOfTFOperations.
-	inputs _ TF_OutputArray externalFromArray: inArrayOfTFOutputs.
+	inputs _ TFOutputArray externalFromArray: inArrayOfTFOutputs.
 	invalues _ TFTensorPtrArray externalFromArray: inArrayOfTFTensor.
-	outputs _ TF_OutputArray externalFromArray: outArrayOfTFOutputs.
+	outputs _ TFOutputArray externalFromArray: outArrayOfTFOutputs.
 	outvalues _ TFTensorPtrArray new: outArrayOfTFOutputs size.
 	
 	self library
@@ -7276,7 +7276,7 @@ runOperations: anArrayOfTFOperations inputs: inArrayOfTFOutputs values: inArrayO
 ! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:10:27'!
-runOperations: aTFOperationArray outputs: aTF_OutputArray size: anInteger
+runOperations: aTFOperationArray outputs: aTFOutputArray size: anInteger
 	| status outvalues |
 	status _ TF_Status create.
 	outvalues _ TFTensorPtrArray new: anInteger.
@@ -7284,7 +7284,7 @@ runOperations: aTFOperationArray outputs: aTF_OutputArray size: anInteger
 	self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
-		outputs: aTF_OutputArray values: outvalues count: anInteger
+		outputs: aTFOutputArray values: outvalues count: anInteger
 		targets: aTFOperationArray count: 1
 		metadata: nil status: status.
 		
@@ -7297,15 +7297,15 @@ runOutput: aTFOutput
 	results _ self runOutputs: {aTFOutput}.
 	^ results first! !
 
-!TF_Session methodsFor: 'running' stamp: 'gera 1/21/2017 18:44:06'!
+!TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:30:56'!
 runOutputs: anArrayOfTFOutputs
 	| outputs |
-	outputs _ TF_OutputArray externalFromArray: anArrayOfTFOutputs .
+	outputs _ TFOutputArray externalFromArray: anArrayOfTFOutputs .
 	
 	^ self runOutputs: outputs size: anArrayOfTFOutputs size! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:10:27'!
-runOutputs: aTF_OutputArray size: anInteger
+runOutputs: aTFOutputArray size: anInteger
 	| status outvalues |
 	status _ TF_Status create.
 	outvalues _ TFTensorPtrArray new: anInteger.
@@ -7313,7 +7313,7 @@ runOutputs: aTF_OutputArray size: anInteger
 	self library
 		runSession: self options: nil
 		inputs: nil values: nil count: 0
-		outputs: aTF_OutputArray values: outvalues count: anInteger
+		outputs: aTFOutputArray values: outvalues count: anInteger
 		targets: nil count: 0
 		metadata: nil status: status.
 		
