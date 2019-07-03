@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:21:19 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:26:41 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 411!
+!provides: 'TensorFlow-Kernel' 1 412!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -126,6 +126,16 @@ ExternalWordArray subclass: #TF_TensorPtrArray
 TF_TensorPtrArray class
 	instanceVariableNames: ''!
 
+!classDefinition: #TFAttrMetadata category: #'TensorFlow-Kernel'!
+TFStructure subclass: #TFAttrMetadata
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TensorFlow-Kernel'!
+!classDefinition: 'TFAttrMetadata class' category: #'TensorFlow-Kernel'!
+TFAttrMetadata class
+	instanceVariableNames: ''!
+
 !classDefinition: #TFTensor category: #'TensorFlow-Kernel'!
 TFStructure subclass: #TFTensor
 	instanceVariableNames: ''
@@ -134,16 +144,6 @@ TFStructure subclass: #TFTensor
 	category: 'TensorFlow-Kernel'!
 !classDefinition: 'TFTensor class' category: #'TensorFlow-Kernel'!
 TFTensor class
-	instanceVariableNames: ''!
-
-!classDefinition: #TF_AttrMetadata category: #'TensorFlow-Kernel'!
-TFStructure subclass: #TF_AttrMetadata
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TensorFlow-Kernel'!
-!classDefinition: 'TF_AttrMetadata class' category: #'TensorFlow-Kernel'!
-TF_AttrMetadata class
 	instanceVariableNames: ''!
 
 !classDefinition: #TF_Buffer category: #'TensorFlow-Kernel'!
@@ -5205,7 +5205,7 @@ operation: aTF_Operation attr: nameZString getType: valueLongPtr status: status
 
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/11/2017 22:34:01'!
 operation: aTF_Operation getMetadataFor: nameZString status: status
-	<cdecl: TF_AttrMetadata 'TF_OperationGetAttrMetadata' (TF_Operation* char* TF_Status*)>
+	<cdecl: TFAttrMetadata 'TF_OperationGetAttrMetadata' (TF_Operation* char* TF_Status*)>
 	^ self externalCallFailed
 
 ! !
@@ -5473,6 +5473,83 @@ numbersAt: index
 	| tensor |
 	tensor _ self at: index.
 	^ tensor asNumbers! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:07'!
+isBoolean
+	^ self type = 3! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:55'!
+isFloat
+	^ self type = 2! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:15:35'!
+isFunc
+	^ self type = 8! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:31'!
+isInt
+	^ self type = 1! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:54'!
+isPlaceholder
+	^ self type = 7! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:27'!
+isShape
+	^ self type = 5! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:09'!
+isString
+	^ self type = 0
+! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:41'!
+isTensor
+	^ self type = 6! !
+
+!TFAttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:17'!
+isType
+	^ self type = 4! !
+
+!TFAttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:41:49'!
+isList
+	"This method was automatically generated. See TFAttrMetadata class>>fields."
+	^self _isList \\ 256 ~= 0.! !
+
+!TFAttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:36'!
+listSize
+	"This method was automatically generated. See TFAttrMetadata class>>fields."
+	^handle signedLongLongAt: 9! !
+
+!TFAttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:40'!
+totalSize
+	"This method was automatically generated. See TFAttrMetadata class>>fields."
+	^handle signedLongLongAt: 25! !
+
+!TFAttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:42:04'!
+type
+	"This method was automatically generated. See TFAttrMetadata class>>fields."
+	^self _type \\ 256! !
+
+!TFAttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
+_isList
+	"This method was automatically generated. See TFAttrMetadata class>>fields."
+	^handle unsignedLongLongAt: 1! !
+
+!TFAttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
+_type
+	"This method was automatically generated. See TFAttrMetadata class>>fields."
+	^handle unsignedLongLongAt: 17! !
+
+!TFAttrMetadata class methodsFor: 'field definition' stamp: 'gera 1/11/2017 22:43:56'!
+fields
+	"self initialize"
+	^#(
+		(_isList 'ulonglong')
+		(listSize 'longlong')
+		(_type 'ulonglong')
+		(totalSize 'longlong'))
+	! !
 
 !TFTensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:13'!
 byteSize
@@ -6010,83 +6087,6 @@ typeUInt16
 !TFTensor class methodsFor: 'types' stamp: 'gera 1/2/2017 19:41:40'!
 typeUInt8
 	^4! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:07'!
-isBoolean
-	^ self type = 3! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:55'!
-isFloat
-	^ self type = 2! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:15:35'!
-isFunc
-	^ self type = 8! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:31'!
-isInt
-	^ self type = 1! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:54'!
-isPlaceholder
-	^ self type = 7! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:27'!
-isShape
-	^ self type = 5! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:11:09'!
-isString
-	^ self type = 0
-! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:41'!
-isTensor
-	^ self type = 6! !
-
-!TF_AttrMetadata methodsFor: 'types' stamp: 'gera 1/11/2017 23:12:17'!
-isType
-	^ self type = 4! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:41:49'!
-isList
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^self _isList \\ 256 ~= 0.! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:36'!
-listSize
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle signedLongLongAt: 9! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:43:40'!
-totalSize
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle signedLongLongAt: 25! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:42:04'!
-type
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^self _type \\ 256! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
-_isList
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle unsignedLongLongAt: 1! !
-
-!TF_AttrMetadata methodsFor: 'accessing' stamp: 'gera 1/11/2017 22:40:36'!
-_type
-	"This method was automatically generated. See TF_AttrMetadata class>>fields."
-	^handle unsignedLongLongAt: 17! !
-
-!TF_AttrMetadata class methodsFor: 'field definition' stamp: 'gera 1/11/2017 22:43:56'!
-fields
-	"self initialize"
-	^#(
-		(_isList 'ulonglong')
-		(listSize 'longlong')
-		(_type 'ulonglong')
-		(totalSize 'longlong'))
-	! !
 
 !TF_Buffer methodsFor: 'accessing' stamp: 'JB 1/18/2017 23:01:10'!
 data
