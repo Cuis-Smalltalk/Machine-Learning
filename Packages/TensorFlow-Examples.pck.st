@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:34:46 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 3:35:56 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 51!
+!provides: 'TensorFlow-Examples' 1 52!
 !requires: 'WebClient' 1 0 nil!
 !requires: 'TensorFlow-Kernel' 1 411 nil!
 SystemOrganization addCategory: #'TensorFlow-Examples'!
@@ -804,9 +804,9 @@ initializeGraph
 	graph _ TFGraph create
 	! !
 
-!ExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:35'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 7/3/2019 03:35:50'!
 initializeSession
-	session _ TF_Session on: graph.
+	session _ TFSession on: graph.
 	graph initializeOn: session.
 ! !
 
@@ -1145,9 +1145,9 @@ initializeParameters
 			named: 'parameters'
 ! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:41'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 7/3/2019 03:35:50'!
 initializeSession
-	session _ TF_Session on: graph.
+	session _ TFSession on: graph.
 	graph initializeOn: session.! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'running' stamp: 'gera 2/22/2017 00:10:30'!
@@ -1437,9 +1437,9 @@ initializeParameters
 	aux _ graph zerosShaped: {self outputSize}.
 	biases _ graph variable: 'biases' initialValueFrom: aux.! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:44'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 7/3/2019 03:35:50'!
 initializeSession
-	session _ TF_Session on: graph.
+	session _ TFSession on: graph.
 	graph initializeOn: session.! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'accessing' stamp: 'gera 2/2/2017 19:30:14'!
@@ -1477,7 +1477,7 @@ predict: inputs andLearnFrom: label
 		outputs: {loss output. learnWeights output. learnBiases output}.
 	^ results! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 6/30/2019 00:45:28'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 7/3/2019 03:35:50'!
 decodeCSV: csvLines graphRun: description
 	|  graph output records session results values answer |
 		
@@ -1486,7 +1486,7 @@ decodeCSV: csvLines graphRun: description
 	output _ graph operationNamed: 'output'.
 	values _ TFTensor fromStringArray: csvLines.
 	
-	session _ TF_Session on: graph.
+	session _ TFSession on: graph.
 	results _ session
 		runOperations: {output}
 		inputs: {records}
@@ -1752,9 +1752,9 @@ initializeParameters
 		
 ! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 23:02:42'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 7/3/2019 03:35:50'!
 initializeSession
-	session _ TF_Session on: graph.
+	session _ TFSession on: graph.
 	graph initializeOn: session! !
 
 !RegressionNNExample methodsFor: 'running' stamp: 'JB 2/22/2017 22:33:07'!
