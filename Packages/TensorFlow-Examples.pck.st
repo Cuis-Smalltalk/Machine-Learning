@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:21:18 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:34:46 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 50!
+!provides: 'TensorFlow-Examples' 1 51!
 !requires: 'WebClient' 1 0 nil!
 !requires: 'TensorFlow-Kernel' 1 411 nil!
 SystemOrganization addCategory: #'TensorFlow-Examples'!
@@ -511,32 +511,32 @@ testBackpropagationPlanForward
 		assert: result first closeTo: first;
 		assert: result second closeTo: second! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:58'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 7/3/2019 00:34:29'!
 testBackpropagationPlantInitializeBackguard
 	| bpp |
 	bpp _ BackpropagationPlan basicNew.
-	bpp instVarNamed: 'graph' put: TF_Graph create.
+	bpp instVarNamed: 'graph' put: TFGraph create.
 	bpp initializeVariables.
 	bpp initializeForwardGraph.
 	bpp initializeBackwardGraph.
 	
 	self assert: true description: 'No exception should be raised by this test'! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:20:33'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 7/3/2019 00:34:29'!
 testBackpropagationPlantInitializeForward
 	| bpp |
 	bpp _ BackpropagationPlan new.
-	bpp instVarNamed: 'graph' put: TF_Graph create.
+	bpp instVarNamed: 'graph' put: TFGraph create.
 	bpp initializeVariables.
 	bpp initializeForwardGraph.
 	
 	self assert: true description: 'No exception should be raised by this test'! !
 
-!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 1/29/2017 08:33:02'!
+!TensorFlowExamplesTest methodsFor: 'testing-Backpropagation' stamp: 'gera 7/3/2019 00:34:29'!
 testBackpropagationPlantInitializeVariables
 	| bpp graph const weights |
 	bpp _ BackpropagationPlan basicNew.
-	bpp instVarNamed: 'graph' put: TF_Graph create.
+	bpp instVarNamed: 'graph' put: TFGraph create.
 	bpp initializeVariables.
 	
 	graph _ bpp graph.
@@ -799,9 +799,9 @@ initialize
 	self initializeGraph.
 	self initializeSession.! !
 
-!ExamplePlan methodsFor: 'initialization' stamp: 'gera 1/21/2017 05:44:31'!
+!ExamplePlan methodsFor: 'initialization' stamp: 'gera 7/3/2019 00:34:29'!
 initializeGraph
-	graph _ TF_Graph create
+	graph _ TFGraph create
 	! !
 
 !ExamplePlan methodsFor: 'initialization' stamp: 'gera 2/19/2017 16:22:35'!
@@ -946,10 +946,10 @@ initializeGraph
 	outputs _ {prediction output: 0}.
 	inputs _ {training input: 0. testing input: 0}.! !
 
-!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 6/30/2019 00:45:26'!
+!ExampleNearestNeighborPlan methodsFor: 'initialization' stamp: 'gera 7/3/2019 00:34:29'!
 initializeGraphWithOperations
 	| axis distance testing training prediction |
-	graph _ TF_Graph create.
+	graph _ TFGraph create.
 	
 	training _ graph placeholder: 'training' type: TFTensor typeFloat.
 	testing _ graph placeholder: 'testing' type: TFTensor typeFloat.
@@ -1051,9 +1051,9 @@ initialize
 		initializeLearningGraph;
 		initializeSession.! !
 
-!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 1/31/2017 01:08:54'!
+!MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 7/3/2019 00:34:29'!
 initializeGraph
-	graph _ TF_Graph create! !
+	graph _ TFGraph create! !
 
 !MNIST3LayersNNExamplePlan methodsFor: 'initialization' stamp: 'gera 2/22/2017 00:10:23'!
 initializeInferenceGraph
@@ -1392,9 +1392,9 @@ initialize
 		initializeLearningGraph;
 		initializeSession.! !
 
-!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/2/2017 19:27:02'!
+!MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 7/3/2019 00:34:29'!
 initializeGraph
-	graph _ TF_Graph create! !
+	graph _ TFGraph create! !
 
 !MNISTSoftMaxExamplePlan methodsFor: 'initialization' stamp: 'gera 2/12/2017 23:10:20'!
 initializeInferenceGraph
@@ -1504,11 +1504,11 @@ decodeCSV: csvLines graphRun: description
 		(results at: i) allFloats].
 	^ answer add: (results at: 5) allInt64s; yourself.! !
 
-!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 6/30/2019 00:45:28'!
+!NearestNeighbor methodsFor: 'private-csv' stamp: 'gera 7/3/2019 00:34:29'!
 decodeCSVGraphDefaults: anArrayOfTFTensors
 	| graph records defaults |
 	
-	graph _ TF_Graph create.
+	graph _ TFGraph create.
 	records _ (graph placeholder: 'records' type: TFTensor typeString) output: 0.
 	defaults _ Array new: anArrayOfTFTensors size.
 	
@@ -1646,9 +1646,9 @@ initialize
 		initializeLearningGraph;
 		initializeSession.! !
 
-!RegressionNNExample methodsFor: 'initialization' stamp: 'JB 2/22/2017 22:33:07'!
+!RegressionNNExample methodsFor: 'initialization' stamp: 'gera 7/3/2019 00:34:29'!
 initializeGraph
-	graph _ TF_Graph create! !
+	graph _ TFGraph create! !
 
 !RegressionNNExample methodsFor: 'initialization' stamp: 'gera 2/26/2017 12:52:24'!
 initializeInferenceGraph
