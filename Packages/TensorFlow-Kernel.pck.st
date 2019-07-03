@@ -833,14 +833,14 @@ constantInt64GraphFromDef
 	^ TFGraph fromString: self constantInt64GraphDef! !
 
 !TensorFlowCAPITest methodsFor: 'graphs' stamp: 'gera 7/3/2019 00:34:29'!
-decodeCSVGraphDefaults: anArrayOfTF_Tensors
+decodeCSVGraphDefaults: anArrayOfTFTensors
 	| graph records defaults |
 	
 	graph _ TFGraph create.
 	records _ (graph placeholder: 'records' type: TFTensor typeString) output: 0.
-	defaults _ Array new: anArrayOfTF_Tensors size.
+	defaults _ Array new: anArrayOfTFTensors size.
 	
-	anArrayOfTF_Tensors withIndexDo: [:each :index |
+	anArrayOfTFTensors withIndexDo: [:each :index |
 		| one |
 		one _ (graph const: 'default',index printString value: each) output: 0.
 		defaults at: index put: one].
@@ -954,13 +954,13 @@ assertSizeOf: aMultidimensionalTensor is: anInteger
 		description: 'The size is ', size printString, ' and should have been ', anInteger printString! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:00:06'!
-assertTensor: aTF_Tensor elementsEquals: tensorArray
-	self assert: aTF_Tensor allElements equals: tensorArray! !
+assertTensor: aTFTensor elementsEquals: tensorArray
+	self assert: aTFTensor allElements equals: tensorArray! !
 
 !TensorFlowCAPITest methodsFor: 'testing tensor' stamp: 'gera 2/15/2017 01:27:15'!
-assertTensor: aTF_Tensor streamEquals: tensorArray
+assertTensor: aTFTensor streamEquals: tensorArray
 	| strm |
-	strm _ aTF_Tensor asStream.
+	strm _ aTFTensor asStream.
 	tensorArray do: [:each |
 		self assert: each equals: strm next].
 ! !
@@ -4838,32 +4838,32 @@ allocateTensorType: anInteger shape: aLonnLongArray rank: dimCount length: len
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:17'!
-deleteTensor: aTF_Tensor
+deleteTensor: aTFTensor
 	<cdecl: void 'TF_DeleteTensor' (TFTensor*)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:15:05'!
-tensor: aTF_Tensor sizeOn: dimension
+tensor: aTFTensor sizeOn: dimension
 	<cdecl: longlong 'TF_Dim' (TFTensor* ulonglong)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 1/5/2017 23:36:32'!
-tensorByteSize: aTF_Tensor
+tensorByteSize: aTFTensor
 	<cdecl: ulonglong 'TF_TensorByteSize' (TFTensor*)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/27/2016 09:17:49'!
-tensorData: aTF_Tensor
+tensorData: aTFTensor
 	<cdecl: void* 'TF_TensorData' (TFTensor*)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'jb 12/26/2016 12:04:40'!
-tensorRank: aTF_Tensor
+tensorRank: aTFTensor
 	<cdecl: longlong 'TF_NumDims' (TFTensor*)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'tensor' stamp: 'gera 12/23/2016 20:54:40'!
-tensorType: aTF_Tensor
+tensorType: aTFTensor
 	<cdecl: ulonglong 'TF_TensorType' (TFTensor*)>
 	^ self externalCallFailed! !
 
@@ -5078,7 +5078,7 @@ description: aTF_OperationDescription set: aString toStrings: anArrayOfString si
 	^ self externalCallFailed.! !
 
 !TensorFlowCAPI methodsFor: 'operation description' stamp: 'gera 12/28/2016 01:02:26'!
-description: aTF_OperationDescription set: aString toTensor: aTF_Tensor status: aTF_Status
+description: aTF_OperationDescription set: aString toTensor: aTFTensor status: aTF_Status
 	<cdecl: void 'TF_SetAttrTensor' (TF_OperationDescription* char* TFTensor* TF_Status*)>
 	^ self externalCallFailed.! !
 
@@ -5715,19 +5715,19 @@ newOperationDescription: typeString named: aString
 ! !
 
 !TFGraph methodsFor: 'root operations' stamp: 'gera 1/31/2017 15:07:44'!
-const: aTF_Tensor
+const: aTFTensor
 	| name |
 	name _ self nameFor: 'constant'.
-	^ self const: name value: aTF_Tensor! !
+	^ self const: name value: aTFTensor! !
 
 !TFGraph methodsFor: 'root operations' stamp: 'gera 12/28/2016 02:07:25'!
-const: nameString value: aTF_Tensor
+const: nameString value: aTFTensor
 	^ self
 		newOperation: 'Const'
 		named: nameString
 		described: [:description |
-			description at: 'dtype' putType: aTF_Tensor type.
-			description at: 'value' putTensor: aTF_Tensor]! !
+			description at: 'dtype' putType: aTFTensor type.
+			description at: 'value' putTensor: aTFTensor]! !
 
 !TFGraph methodsFor: 'root operations' stamp: 'gera 2/2/2017 19:45:59'!
 inputType: typeInteger
@@ -5763,14 +5763,14 @@ truncatedNormalRandomShaped: shapeArray stddev: aNumber
 	^ random @* (self const: aNumber asTensor)! !
 
 !TFGraph methodsFor: 'root operations' stamp: 'gera 1/29/2017 03:23:14'!
-variable: nameString forTensor: aTF_Tensor
-	^ self variable: nameString type: aTF_Tensor type shape: aTF_Tensor shape! !
+variable: nameString forTensor: aTFTensor
+	^ self variable: nameString type: aTFTensor type shape: aTFTensor shape! !
 
 !TFGraph methodsFor: 'root operations' stamp: 'gera 2/1/2017 01:02:23'!
-variable: nameString initialValue: aTF_Tensor
+variable: nameString initialValue: aTFTensor
 	| const var |
-	var _ self variable: nameString forTensor: aTF_Tensor.
-	const _ self const: nameString, '_initialValue' value: aTF_Tensor.
+	var _ self variable: nameString forTensor: aTFTensor.
+	const _ self const: nameString, '_initialValue' value: aTFTensor.
 	var assign: const.
 	^ var! !
 
@@ -5880,11 +5880,11 @@ initializeOn: aTF_Session
 ! !
 
 !TFGraph methodsFor: 'running' stamp: 'gera 2/19/2017 16:09:28'!
-runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+runInputs: inArrayOfTF_Outputs values: inArrayOfTFTensor outputs: outArrayOfTF_Outputs
 	| session |
 	session _ TF_Session on: self.
 	self initializeOn: session.
-	^ session runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+	^ session runInputs: inArrayOfTF_Outputs values: inArrayOfTFTensor outputs: outArrayOfTF_Outputs
 ! !
 
 !TFGraph methodsFor: 'running' stamp: 'gera 2/19/2017 16:07:15'!
@@ -7067,13 +7067,13 @@ at: attribute putStrings: anArrayOfStrings
 	! !
 
 !TF_OperationDescription methodsFor: 'attributes' stamp: 'gera 1/7/2017 05:12:02'!
-at: attribute putTensor: aTF_Tensor
+at: attribute putTensor: aTFTensor
 	| status |
 	status _ TF_Status create.
 	self library
 		description: self
 		set: attribute asAsciiZ
-		toTensor: aTF_Tensor
+		toTensor: aTFTensor
 		status: status.
 	status check
 	! !
@@ -7191,11 +7191,11 @@ run
 	status check! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:10:27'!
-runInputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+runInputs: inArrayOfTF_Outputs values: inArrayOfTFTensor outputs: outArrayOfTF_Outputs
 	| inputs invalues outputs outvalues status |
 	status _ TF_Status create.
 	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
-	invalues _ TFTensorPtrArray externalFromArray: inArrayOfTF_Tensor.
+	invalues _ TFTensorPtrArray externalFromArray: inArrayOfTFTensor.
 	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
 	outvalues _ TFTensorPtrArray new: outArrayOfTF_Outputs size.
 	
@@ -7215,10 +7215,10 @@ runOperation: aTFOperation
 	^self runOperations: (Array with: aTFOperation)! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 1/13/2017 13:09:21'!
-runOperation: aTFOperation input: inTF_OutputOrInput value: inTF_Tensor output: outTF_Output
+runOperation: aTFOperation input: inTF_OutputOrInput value: inTFTensor output: outTF_Output
 	| inputs invalues operations outputs outvalues tensor |
 	inputs _ Array with: inTF_OutputOrInput.
-	invalues _ Array with: inTF_Tensor.
+	invalues _ Array with: inTFTensor.
 	outputs _ Array with: outTF_Output.
 	operations _ Array with: aTFOperation.
 	
@@ -7255,12 +7255,12 @@ runOperations: anArrayOfTFOperations
 	! !
 
 !TF_Session methodsFor: 'running' stamp: 'gera 7/3/2019 03:10:27'!
-runOperations: anArrayOfTFOperations inputs: inArrayOfTF_Outputs values: inArrayOfTF_Tensor outputs: outArrayOfTF_Outputs
+runOperations: anArrayOfTFOperations inputs: inArrayOfTF_Outputs values: inArrayOfTFTensor outputs: outArrayOfTF_Outputs
 	| operations inputs invalues outputs outvalues status |
 	status _ TF_Status create.
 	operations _ TFOperationPtrArray externalFromArray: anArrayOfTFOperations.
 	inputs _ TF_OutputArray externalFromArray: inArrayOfTF_Outputs.
-	invalues _ TFTensorPtrArray externalFromArray: inArrayOfTF_Tensor.
+	invalues _ TFTensorPtrArray externalFromArray: inArrayOfTFTensor.
 	outputs _ TF_OutputArray externalFromArray: outArrayOfTF_Outputs.
 	outvalues _ TFTensorPtrArray new: outArrayOfTF_Outputs size.
 	
