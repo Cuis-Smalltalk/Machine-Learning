@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 3:39:52 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 3:42:12 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 424!
+!provides: 'TensorFlow-Kernel' 1 425!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -5298,10 +5298,10 @@ current
 moduleName
 	^ 'libtensorflow'! !
 
-!TFStructure methodsFor: 'testing' stamp: 'gera 1/29/2017 03:39:43'!
-= aTF_Structure
-	^ self class = aTF_Structure class
-		and: [handle = aTF_Structure getHandle]! !
+!TFStructure methodsFor: 'testing' stamp: 'gera 7/3/2019 03:42:08'!
+= aTFStructure
+	^ self class = aTFStructure class
+		and: [handle = aTFStructure getHandle]! !
 
 !TFStructure methodsFor: 'private' stamp: 'gera 12/21/2016 02:52:42'!
 library
