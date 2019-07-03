@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:34:48 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 3 July 2019 at 12:45:16 am'!
 'Description Please enter a description for this package'!
 !provides: 'TensorFlow-Kernel' 1 414!
 !requires: 'FFI' 1 18 nil!
@@ -4932,36 +4932,36 @@ graph: aTFGraph getOperationNamed: aString
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/19/2017 23:12:26'!
 graph: aTFGraph getOperationNamedAsVoid: aString
-	<cdecl: void* 'TFGraphOperationByName' (TF_Graph* char*)>
+	<cdecl: void* 'TF_GraphOperationByName' (TFGraph* char*)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:31:00'!
 graph: aTFGraph getRankOf:  aTF_OutputOrInput status: status
-	<cdecl: ulonglong 'TFGraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
+	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TFGraph* TF_Output TF_Status*)>
 	^ self externalCallFailed
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 11:23:19'!
 graph: aTFGraph getShapeOf:  aTF_OutputOrInput into: anInt64Array size: anInteger status: status
-	<cdecl: ulonglong 'TFGraphGetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
+	<cdecl: ulonglong 'TF_GraphGetTensorShape' (TFGraph* TF_Output Int64Array* ulonglong TF_Status*)>
 	^ self externalCallFailed
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/23/2017 15:12:33'!
 graph: aTFGraph setShapeOf:  aTF_OutputOrInput to: anInt64Array size: anInteger status: status
-	<cdecl: void 'TFGraphSetTensorShape' (TF_Graph* TF_Output Int64Array* ulonglong TF_Status*)>
+	<cdecl: void 'TF_GraphSetTensorShape' (TFGraph* TF_Output Int64Array* ulonglong TF_Status*)>
 	^ self externalCallFailed
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 1/5/2017 20:47:43'!
 graph: aTFGraph toGraphDef: aTFBuffer status: aTF_Status
-	<cdecl: void 'TFGraphToGraphDef' (TF_Graph* TFBuffer* TF_Status*)>
+	<cdecl: void 'TF_GraphToGraphDef' (TFGraph* TFBuffer* TF_Status*)>
 	^ self externalCallFailed
 ! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 12/22/2016 01:22:22'!
 importGraphDefInto: aTFGraph from: aTFBuffer options: aTF_ImportGraphDefOptions status: aTF_Status
-	<cdecl: void 'TFGraphImportGraphDef' (TF_Graph* TFBuffer* TF_ImportGraphDefOptions* TF_Status*)>
+	<cdecl: void 'TF_GraphImportGraphDef' (TFGraph* TFBuffer* TF_ImportGraphDefOptions* TF_Status*)>
 	^self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'graph' stamp: 'gera 7/3/2019 00:34:29'!
@@ -5124,7 +5124,7 @@ version
 
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 12/26/2016 13:13:55'!
 forGraph: aTFGraph outputDims: aTF_Output status: aTF_Status
-	<cdecl: ulonglong 'TFGraphGetTensorNumDims' (TF_Graph* TF_Output TF_Status*)>
+	<cdecl: ulonglong 'TF_GraphGetTensorNumDims' (TFGraph* TF_Output TF_Status*)>
 	^ self externalCallFailed! !
 
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:29:16'!
@@ -5137,7 +5137,7 @@ graph: aTFGraph operationAt: contextULongLongPtr
 
 !TensorFlowCAPI methodsFor: 'operation' stamp: 'gera 1/19/2017 23:28:23'!
 graph: aTFGraph operationAtAsVoid: contextULongLongPtr
-	<cdecl: void* 'TFGraphNextOperation' (TF_Graph* ulonglong*)>
+	<cdecl: void* 'TF_GraphNextOperation' (TFGraph* ulonglong*)>
 	^ self externalCallFailed
 ! !
 
