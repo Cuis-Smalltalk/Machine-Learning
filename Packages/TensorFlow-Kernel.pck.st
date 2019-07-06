@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 5 July 2019 at 5:59:43 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 6 July 2019 at 10:41:34 am'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 425!
+!provides: 'TensorFlow-Kernel' 1 427!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -4882,27 +4882,20 @@ newSession: aTFGraph options:  aTFSessionOptions status: aTFStatus
 	<cdecl: TFSession* 'TF_NewSession' (TFGraph* TFSessionOptions* TFStatus*)>
 	^self externalCallFailed! !
 
-!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 7/3/2019 03:39:29'!
-runSession: aTFSession
-	options: opsTFBuffer
+!TensorFlowCAPI methodsFor: 'session' stamp: 'gera 7/6/2019 10:41:22'!
+runSession: aTFSession options: runOptionsTFBufferOrNil
 	inputs: inTFOutputArray values: inTFTensorArray count: inCount
 	outputs: outTFOutputArray values: outTFTensorArrayPtr count: outCount
-	targets: aTFOperationArray count: targetCount
-	metadata: metaTFBuffer
+	targets: targetTFOperationArrayOrNil count: targetCount
+	metadata: metadataTFBuffer
 	status: aTFStatus
 	
 	<cdecl: void 'TF_SessionRun' (
-		TFSession*
-		TFBuffer*				"RunOptions, may be nil"
-		TFOutputArray*			"inputs"
-		TFTensorPtrArray*		"inputs' values"
-		long						"inputs count"
-		TFOutputArray*			"outputs"
-		TFTensorPtrArray*		"outputs values (results)"
-		long						"outputs count"
-		TFOperationPtrArray*	"target operations array, may be nil"
-		long						"taret operations count"
-		TFBuffer*				"RunMetadata"
+		TFSession* TFBuffer*
+		TFOutputArray* TFTensorPtrArray* long
+		TFOutputArray* TFTensorPtrArray* long
+		TFOperationPtrArray* long	
+		TFBuffer*
 		TFStatus*)>
 	^ self externalCallFailed
 ! !
