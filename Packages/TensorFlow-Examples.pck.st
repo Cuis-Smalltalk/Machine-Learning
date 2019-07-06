@@ -379,7 +379,7 @@ testNearesNeighbor: plan
 	first := #(0 0 0 0 0).
 	second := #(1 1 3 4 2).
 	third := #(8 1 3 4 2).
-	references _{
+	references := {
 		first.
 		second.
 		third}.
