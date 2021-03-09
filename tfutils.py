@@ -1,12 +1,13 @@
 import tensorflow as tf
 import numpy as np
+from base64 import b64encode
 from IPython.display import clear_output, Image, display, HTML
 
 def graph_as_HTML(graph_def, baseURL=''):
     # Helper functions for TF Graph visualization
     def _strip_consts(graph_def, max_const_size=32):
         """Strip large constant values from graph_def."""
-        strip_def = tf.GraphDef()
+        strip_def = graph_pb2.GraphDef()
         for n0 in graph_def.node:
             n = strip_def.node.add()
             n.MergeFrom(n0)
@@ -14,7 +15,7 @@ def graph_as_HTML(graph_def, baseURL=''):
                 tensor = n.attr['value'].tensor
                 size = len(tensor.tensor_content)
                 if size > max_const_size:
-                    tensor.tensor_content = "<stripped {} bytes>".format(size).encode()
+                    tensor.tensor_content = "<stripped %d bytes>" % size
         return strip_def
 
     def _rename_nodes(graph_def, rename_func):
@@ -31,24 +32,13 @@ def graph_as_HTML(graph_def, baseURL=''):
         """Visualize TensorFlow graph."""
         if hasattr(graph_def, 'as_graph_def'):
             graph_def = graph_def.as_graph_def()
-        strip_def = _strip_consts(graph_def, max_const_size=max_const_size)
-        code = """
-            <script>
-              function load() {{
-                document.getElementById("{id}").pbtxt = {data};
-              }}
-            </script>
-            <link rel="import" href="{baseURL}/files/tf-graph/tf-graph-basic.build.html" onload=load()>
-            <div style="height:600px">
-              <tf-graph-basic id="{id}"></tf-graph-basic>
-            </div>
-        """.format(data=repr(str(strip_def)), id='graph' + str(np.random.rand()), baseURL=baseURL)
-
-        iframe = """
-            <iframe seamless style="width:800px;height:620px;border:0" srcdoc="{}"></iframe>
-        """.format(code.replace('"', '&quot;'))
-
-        return iframe
+        strip_def = strip_consts(graph_def, max_const_size=max_const_size)
+        data =  b64encode(str(strip_def).encode()).decode()
+        id = str(np.random.rand())
+        page = "https://raw.githack.com/AnotherGroupChat/Machine-Learning/dmadisetti-patch-1/tf-graph/tf-graph-basic.build.html"
+        return f"""
+        <iframe id="frame-graph-{id}" seamless src='{page}#{data}' style="width:100%;height:620px;border:0"></iframe>
+        """
 
     # Visualizing the network graph. Be sure expand the "mixed" nodes to see their
     # internal structure. We are going to visualize "Conv2D" nodes.

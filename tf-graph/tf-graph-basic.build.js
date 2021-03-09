@@ -38447,7 +38447,7 @@ return this.disabled || !this.required || this.required && this.value;
 Polymer({
 is: 'tf-graph-controls',
 ready: function () {
-d3.select(this.$['summary-icon']).attr('xlink:href', '/files/tf-graph/summary-icon.svg');
+d3.select(this.$['summary-icon']).attr('xlink:href', 'summary-icon.svg');
 },
 properties: {
 hasStats: { type: Boolean },
