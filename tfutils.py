@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.core.framework import graph_pb2
 import numpy as np
 from base64 import b64encode
 from IPython.display import clear_output, Image, display, HTML
@@ -15,7 +16,7 @@ def graph_as_HTML(graph_def, baseURL=''):
                 tensor = n.attr['value'].tensor
                 size = len(tensor.tensor_content)
                 if size > max_const_size:
-                    tensor.tensor_content = "<stripped %d bytes>" % size
+                    tensor.tensor_content = "<stripped {} bytes>".format(size).encode()
         return strip_def
 
     def _rename_nodes(graph_def, rename_func):
