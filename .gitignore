@@ -17,3 +17,6 @@ SqueakDebug.log
 /github-cache
 github-*.zip
 Graph-checkpoint.ipynb
+
+#macOS custom attributes
+.DS_Store
