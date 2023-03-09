@@ -1053,4 +1053,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </template>
 </dom-module>
 
-<script src="tf-graph-basic.build.js"></script></body></html>
+<script src="tf-graph-basic.build.js"></script>
+<div style="height:600px">
+  <tf-graph-basic id="custom-graph"></tf-graph-basic>
+</div>
+<script>
+window.onload = (event)=>{
+  document.getElementById("custom-graph").pbtxt = atob(decodeURI(window.location.hash.substr(1)));
+}
+</script>
+</body></html>
