@@ -1,198 +1,198 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 5 July 2019 at 5:59:41 pm'!
+'From Cuis 6.0 [latest update: #5795] on 7 May 2023 at 7:08:46 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Examples' 1 52!
+!provides: 'TensorFlow-Examples' 1 53!
 !requires: 'WebClient' 1 0 nil!
 !requires: 'TensorFlow-Kernel' 1 411 nil!
-SystemOrganization addCategory: #'TensorFlow-Examples'!
+SystemOrganization addCategory: 'TensorFlow-Examples'!
 
 
-!classDefinition: #TensorFlowExamplesSlowTest category: #'TensorFlow-Examples'!
+!classDefinition: #TensorFlowExamplesSlowTest category: 'TensorFlow-Examples'!
 TensorFlowTestCase subclass: #TensorFlowExamplesSlowTest
 	instanceVariableNames: 'images labels'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'TensorFlowExamplesSlowTest class' category: #'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesSlowTest class' category: 'TensorFlow-Examples'!
 TensorFlowExamplesSlowTest class
 	instanceVariableNames: ''!
 
-!classDefinition: #TensorFlowExamplesTest category: #'TensorFlow-Examples'!
+!classDefinition: #TensorFlowExamplesTest category: 'TensorFlow-Examples'!
 TensorFlowTestCase subclass: #TensorFlowExamplesTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'TensorFlowExamplesTest class' category: #'TensorFlow-Examples'!
+!classDefinition: 'TensorFlowExamplesTest class' category: 'TensorFlow-Examples'!
 TensorFlowExamplesTest class
 	instanceVariableNames: ''!
 
-!classDefinition: #BatchTrainer category: #'TensorFlow-Examples'!
+!classDefinition: #BatchTrainer category: 'TensorFlow-Examples'!
 Object subclass: #BatchTrainer
 	instanceVariableNames: 'plan batchSize imageSet labelSet imageTesting labelTesting'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'BatchTrainer class' category: #'TensorFlow-Examples'!
+!classDefinition: 'BatchTrainer class' category: 'TensorFlow-Examples'!
 BatchTrainer class
 	instanceVariableNames: ''!
 
-!classDefinition: #ExamplePlan category: #'TensorFlow-Examples'!
+!classDefinition: #ExamplePlan category: 'TensorFlow-Examples'!
 Object subclass: #ExamplePlan
 	instanceVariableNames: 'graph inputs outputs session'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'ExamplePlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'ExamplePlan class' category: 'TensorFlow-Examples'!
 ExamplePlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #BackpropagationBackwardPlan category: #'TensorFlow-Examples'!
+!classDefinition: #BackpropagationBackwardPlan category: 'TensorFlow-Examples'!
 ExamplePlan subclass: #BackpropagationBackwardPlan
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'BackpropagationBackwardPlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'BackpropagationBackwardPlan class' category: 'TensorFlow-Examples'!
 BackpropagationBackwardPlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #BackpropagationForwardPlan category: #'TensorFlow-Examples'!
+!classDefinition: #BackpropagationForwardPlan category: 'TensorFlow-Examples'!
 ExamplePlan subclass: #BackpropagationForwardPlan
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'BackpropagationForwardPlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'BackpropagationForwardPlan class' category: 'TensorFlow-Examples'!
 BackpropagationForwardPlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #BackpropagationPlan category: #'TensorFlow-Examples'!
+!classDefinition: #BackpropagationPlan category: 'TensorFlow-Examples'!
 ExamplePlan subclass: #BackpropagationPlan
 	instanceVariableNames: 'weights activation target learn delta lastDelta'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'BackpropagationPlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'BackpropagationPlan class' category: 'TensorFlow-Examples'!
 BackpropagationPlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #ExampleNearestNeighborPlan category: #'TensorFlow-Examples'!
+!classDefinition: #ExampleNearestNeighborPlan category: 'TensorFlow-Examples'!
 ExamplePlan subclass: #ExampleNearestNeighborPlan
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'ExampleNearestNeighborPlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'ExampleNearestNeighborPlan class' category: 'TensorFlow-Examples'!
 ExampleNearestNeighborPlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #ExampleOLSPlan category: #'TensorFlow-Examples'!
+!classDefinition: #ExampleOLSPlan category: 'TensorFlow-Examples'!
 ExamplePlan subclass: #ExampleOLSPlan
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'ExampleOLSPlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'ExampleOLSPlan class' category: 'TensorFlow-Examples'!
 ExampleOLSPlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #MNIST3LayersNNExamplePlan category: #'TensorFlow-Examples'!
+!classDefinition: #MNIST3LayersNNExamplePlan category: 'TensorFlow-Examples'!
 Object subclass: #MNIST3LayersNNExamplePlan
 	instanceVariableNames: 'session graph weights1 biases1 weights2 biases2 weights3 biases3 prediction input expectedLabel loss netInput activation hidden2 hidden1 learn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'MNIST3LayersNNExamplePlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'MNIST3LayersNNExamplePlan class' category: 'TensorFlow-Examples'!
 MNIST3LayersNNExamplePlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #MNIST3LayersNNSigmoid category: #'TensorFlow-Examples'!
+!classDefinition: #MNIST3LayersNNSigmoid category: 'TensorFlow-Examples'!
 MNIST3LayersNNExamplePlan subclass: #MNIST3LayersNNSigmoid
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'MNIST3LayersNNSigmoid class' category: #'TensorFlow-Examples'!
+!classDefinition: 'MNIST3LayersNNSigmoid class' category: 'TensorFlow-Examples'!
 MNIST3LayersNNSigmoid class
 	instanceVariableNames: ''!
 
-!classDefinition: #MNISTFile category: #'TensorFlow-Examples'!
+!classDefinition: #MNISTFile category: 'TensorFlow-Examples'!
 Object subclass: #MNISTFile
 	instanceVariableNames: 'magic count items'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'MNISTFile class' category: #'TensorFlow-Examples'!
+!classDefinition: 'MNISTFile class' category: 'TensorFlow-Examples'!
 MNISTFile class
 	instanceVariableNames: ''!
 
-!classDefinition: #MNISTImageFile category: #'TensorFlow-Examples'!
+!classDefinition: #MNISTImageFile category: 'TensorFlow-Examples'!
 MNISTFile subclass: #MNISTImageFile
 	instanceVariableNames: 'rows columns'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'MNISTImageFile class' category: #'TensorFlow-Examples'!
+!classDefinition: 'MNISTImageFile class' category: 'TensorFlow-Examples'!
 MNISTImageFile class
 	instanceVariableNames: ''!
 
-!classDefinition: #MNISTLabelFile category: #'TensorFlow-Examples'!
+!classDefinition: #MNISTLabelFile category: 'TensorFlow-Examples'!
 MNISTFile subclass: #MNISTLabelFile
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'MNISTLabelFile class' category: #'TensorFlow-Examples'!
+!classDefinition: 'MNISTLabelFile class' category: 'TensorFlow-Examples'!
 MNISTLabelFile class
 	instanceVariableNames: ''!
 
-!classDefinition: #MNISTSoftMaxExamplePlan category: #'TensorFlow-Examples'!
+!classDefinition: #MNISTSoftMaxExamplePlan category: 'TensorFlow-Examples'!
 Object subclass: #MNISTSoftMaxExamplePlan
 	instanceVariableNames: 'session graph weights biases prediction netInput input loss expectedLabel learnWeights learnBiases activation'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'MNISTSoftMaxExamplePlan class' category: #'TensorFlow-Examples'!
+!classDefinition: 'MNISTSoftMaxExamplePlan class' category: 'TensorFlow-Examples'!
 MNISTSoftMaxExamplePlan class
 	instanceVariableNames: ''!
 
-!classDefinition: #NearestNeighbor category: #'TensorFlow-Examples'!
+!classDefinition: #NearestNeighbor category: 'TensorFlow-Examples'!
 Object subclass: #NearestNeighbor
 	instanceVariableNames: 'plan'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'NearestNeighbor class' category: #'TensorFlow-Examples'!
+!classDefinition: 'NearestNeighbor class' category: 'TensorFlow-Examples'!
 NearestNeighbor class
 	instanceVariableNames: ''!
 
-!classDefinition: #OLSExample category: #'TensorFlow-Examples'!
+!classDefinition: #OLSExample category: 'TensorFlow-Examples'!
 Object subclass: #OLSExample
 	instanceVariableNames: 'plan'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'OLSExample class' category: #'TensorFlow-Examples'!
+!classDefinition: 'OLSExample class' category: 'TensorFlow-Examples'!
 OLSExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #RegressionNNExample category: #'TensorFlow-Examples'!
+!classDefinition: #RegressionNNExample category: 'TensorFlow-Examples'!
 Object subclass: #RegressionNNExample
 	instanceVariableNames: 'graph input weights1 biases1 weights2 biases2 weights3 biases3 prediction netInput weights4 biases4 hidden1 hidden2 expectedLabel loss session hidden3 learn'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'RegressionNNExample class' category: #'TensorFlow-Examples'!
+!classDefinition: 'RegressionNNExample class' category: 'TensorFlow-Examples'!
 RegressionNNExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #SimpleNeuralNetworkExample category: #'TensorFlow-Examples'!
+!classDefinition: #SimpleNeuralNetworkExample category: 'TensorFlow-Examples'!
 Object subclass: #SimpleNeuralNetworkExample
 	instanceVariableNames: 'forward backward weights'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TensorFlow-Examples'!
-!classDefinition: 'SimpleNeuralNetworkExample class' category: #'TensorFlow-Examples'!
+!classDefinition: 'SimpleNeuralNetworkExample class' category: 'TensorFlow-Examples'!
 SimpleNeuralNetworkExample class
 	instanceVariableNames: ''!
 
@@ -1247,10 +1247,10 @@ items
 magic
 	^ magic! !
 
-!MNISTFile methodsFor: 'initialization' stamp: 'JB 2/5/2017 15:37:24'!
+!MNISTFile methodsFor: 'initialization' stamp: 'jmv 5/7/2023 18:57:06'!
 parse: aStream
-	magic := aStream nextUnsignedInt32BigEndian: true.
-	count :=  aStream nextUnsignedInt32BigEndian: true.
+	magic := aStream nextUint32BigEndian: true.
+	count :=  aStream nextUint32BigEndian: true.
 
 	! !
 
@@ -1332,11 +1332,11 @@ columns
 rows
 	^ rows! !
 
-!MNISTImageFile methodsFor: 'initialization' stamp: 'JB 2/5/2017 15:10:42'!
+!MNISTImageFile methodsFor: 'initialization' stamp: 'jmv 5/7/2023 18:57:11'!
 parse: aStream
 	super parse: aStream.
-	rows := aStream nextUnsignedInt32BigEndian: true.
-	columns := aStream nextUnsignedInt32BigEndian: true.
+	rows := aStream nextUint32BigEndian: true.
+	columns := aStream nextUint32BigEndian: true.
 	items := aStream upToEnd.! !
 
 !MNISTImageFile class methodsFor: 'accessing' stamp: 'JB 2/5/2017 15:09:23'!
