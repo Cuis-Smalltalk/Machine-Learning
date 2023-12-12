@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3795] on 6 July 2019 at 10:41:34 am'!
+'From Cuis6.0 [latest update: #6118] on 12 December 2023 at 12:28:07 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 427!
+!provides: 'TensorFlow-Kernel' 1 428!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -246,48 +246,6 @@ TFStructure subclass: #TFTensor
 TFTensor class
 	instanceVariableNames: ''!
 
-
-!TFStructure methodsFor: 'printing' stamp: 'gera 1/3/2017 10:26:05'!
-printOn: strm
-	super printOn: strm.
-	strm space; print: handle.! !
-
-!TFGraph methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:33:19'!
-definition
-	| buffer status |
-	status := TFStatus create.
-	buffer := TFBuffer new.
-	self library graph: self toGraphDef: buffer status: status.
-	status check.
-	^ buffer dataBytes asString! !
-
-!TFOperation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
-name
-	^ self library operationName: self! !
-
-!TFOperation methodsFor: 'printing' stamp: 'gera 1/13/2017 12:41:03'!
-printOn: strm
-	super printOn: strm.
-	handle isNull ifFalse: [
-		strm
-			space;
-			print: self type;
-			space;
-			print: self name]! !
-
-!TFStatus methodsFor: 'printing' stamp: 'gera 1/9/2017 11:15:35'!
-printOn: strm
-	super printOn: strm.
-	self isNull ifFalse: [
-		strm
-			space;
-			print: self code;
-			space;
-			print: self message]! !
-
-!TFTensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:32:07'!
-elementSize
-	^ self class sizeForType: self type! !
 
 !ExternalWordArrayTest methodsFor: 'testing' stamp: 'gera 12/29/2016 14:51:01'!
 testArray: anExternalWordArraySubclass sampleElement: anObject
@@ -1611,7 +1569,7 @@ testStringAsTensor
 	self assert: tensor dataBytes first equals: template size.
 	self assert: tensor dataBytes allButFirst asString equals: template.! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 7/3/2019 03:33:19'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'jmv 12/8/2023 09:36:12'!
 testStringDecode
 	| size string encoded decoded status |
 	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
@@ -1621,7 +1579,7 @@ testStringDecode
 	status := TFStatus create.
 	size := library stringEncodedSize: string.
 	encoded := ExternalAddress gcallocate: size + 20.
-	encoded byteAt: size + 1 put: $@ asciiValue.
+	encoded ffiUint8At: size + 1 put: $@ asciiValue.
 	library stringEncode: string len: string size destination: encoded len: size + 20 status: status.
 	status check.
 
@@ -1631,7 +1589,7 @@ testStringDecode
 	self assert: decoded equals: string.
 ! !
 
-!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'gera 1/13/2017 10:16:53'!
+!TensorFlowCAPITest methodsFor: 'testing strings' stamp: 'jmv 12/8/2023 09:34:02'!
 testStringEncode
 	| size string encoded encodedSize |
 	" This test assumes the internal representation of a TensorFlow string. May fail if they change it "
@@ -1642,7 +1600,7 @@ testStringEncode
 	encodedSize := library stringEncode: string to: encoded.
 	
 	self assert: encodedSize equals: size.
-	self assert: (encoded byteAt: 1) equals: string size.
+	self assert: (encoded ffiUint8At: 1) equals: string size.
 	self assert: (encoded structAt: 2 length: string size) asString equals: string.
 ! !
 
@@ -3380,14 +3338,14 @@ testNewBufferFromString
 	buffer delete.
 	self assert: buffer isNull.! !
 
-!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 1/13/2017 10:10:56'!
+!TensorFlowCAPITest methodsFor: 'testing options' stamp: 'jmv 12/8/2023 09:33:37'!
 testExternalizeString
 	| original copy |
 	original := 'hola manola'.
 	copy := library externalizeString: original.
 	original withIndexDo: [:each :index |
-		self assert: each asciiValue equals: (copy byteAt: index)].
-	self assert: (copy byteAt: original size + 1) equals: 0.
+		self assert: each asciiValue equals: (copy ffiUint8At: index)].
+	self assert: (copy ffiUint8At: original size + 1) equals: 0.
 	copy free.! !
 
 !TensorFlowCAPITest methodsFor: 'testing options' stamp: 'gera 7/3/2019 01:08:38'!
@@ -5096,13 +5054,13 @@ finishOperationAsVoid: aTFOperationDescription status: aTFStatus
 	<cdecl: void* 'TF_FinishOperation' (TFOperationDescription* TFStatus*)>
 	^ self externalCallFailed.! !
 
-!TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/21/2016 09:56:40'!
+!TensorFlowCAPI methodsFor: 'utils' stamp: 'jmv 12/8/2023 09:36:19'!
 externalizeString: aString
 	| answer |
 	answer := ExternalAddress allocate: aString size + 1.
-	answer byteAt: aString size + 1 put: 0.
+	answer ffiUint8At: aString size + 1 put: 0.
 	aString withIndexDo: [:char :index |
-		answer byteAt:  index put: char asciiValue].
+		answer ffiUint8At:  index put: char asciiValue].
 	^ answer! !
 
 !TensorFlowCAPI methodsFor: 'utils' stamp: 'gera 12/29/2016 23:03:34'!
@@ -5290,6 +5248,11 @@ current
 !TensorFlowCAPI class methodsFor: 'as yet unclassified' stamp: 'GerardoRicharte 12/18/2016 12:18'!
 moduleName
 	^ 'libtensorflow'! !
+
+!TFStructure methodsFor: 'printing' stamp: 'gera 1/3/2017 10:26:05'!
+printOn: strm
+	super printOn: strm.
+	strm space; print: handle.! !
 
 !TFStructure methodsFor: 'testing' stamp: 'gera 7/3/2019 03:42:08'!
 = aTFStructure
@@ -5621,6 +5584,15 @@ allOperations
 !TFGraph methodsFor: 'accessing' stamp: 'gera 1/29/2017 03:34:38'!
 allVariables
 	^ self operationsSelect: [:op | op type = 'Variable']! !
+
+!TFGraph methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:33:19'!
+definition
+	| buffer status |
+	status := TFStatus create.
+	buffer := TFBuffer new.
+	self library graph: self toGraphDef: buffer status: status.
+	status check.
+	^ buffer dataBytes asString! !
 
 !TFGraph methodsFor: 'accessing' stamp: 'gera 1/5/2017 20:20:02'!
 newOperationIteratorContext
@@ -6001,6 +5973,10 @@ graph: aTFGraph
 input: indexInteger
 	^ TFInput onOperation: self index: indexInteger! !
 
+!TFOperation methodsFor: 'accessing' stamp: 'gera 12/22/2016 03:56:55'!
+name
+	^ self library operationName: self! !
+
 !TFOperation methodsFor: 'accessing' stamp: 'gera 7/3/2019 03:26:12'!
 output: indexInteger
 	^ TFOutput onOperation: self index: indexInteger! !
@@ -6016,6 +5992,16 @@ type
 !TFOperation methodsFor: 'accessing' stamp: 'JB 2/9/2017 20:22:33'!
 useOutput: anInteger
 	output := anInteger! !
+
+!TFOperation methodsFor: 'printing' stamp: 'gera 1/13/2017 12:41:03'!
+printOn: strm
+	super printOn: strm.
+	handle isNull ifFalse: [
+		strm
+			space;
+			print: self type;
+			space;
+			print: self name]! !
 
 !TFOperation methodsFor: 'ops binary' stamp: 'gera 1/20/2017 18:22:38'!
 * aTFOperation
@@ -6826,6 +6812,16 @@ fromProtoBuf: aString
 onTarget: aString
 	^ self create target: aString! !
 
+!TFStatus methodsFor: 'printing' stamp: 'gera 1/9/2017 11:15:35'!
+printOn: strm
+	super printOn: strm.
+	self isNull ifFalse: [
+		strm
+			space;
+			print: self code;
+			space;
+			print: self message]! !
+
 !TFStatus methodsFor: 'testing' stamp: 'gera 12/21/2016 11:05:49'!
 check
 	self isOk ifFalse: [
@@ -6911,6 +6907,10 @@ data
 !TFTensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:34:30'!
 dataBytes
 	^self data getHandle structAt: 1 length: self byteSize! !
+
+!TFTensor methodsFor: 'accessing' stamp: 'gera 2/13/2017 23:32:07'!
+elementSize
+	^ self class sizeForType: self type! !
 
 !TFTensor methodsFor: 'accessing' stamp: 'jb 12/26/2016 12:09:58'!
 rank
