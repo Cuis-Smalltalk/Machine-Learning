@@ -1,6 +1,6 @@
 'From Cuis6.0 [latest update: #6118] on 12 December 2023 at 12:28:07 pm'!
 'Description Please enter a description for this package'!
-!provides: 'TensorFlow-Kernel' 1 428!
+!provides: 'TensorFlow-Kernel' 1 429!
 !requires: 'FFI' 1 18 nil!
 !requires: 'Statistics' 1 14 nil!
 SystemOrganization addCategory: #'TensorFlow-Kernel'!
@@ -3247,7 +3247,7 @@ testSessionDeletionDoesntDeleteGraphs
 	session delete.
 
 	" Allocate some external objects using the library, if the graph was released, we expect its space to be reused "
-	allocatedObjects := OrderedCollection new: 10.
+	allocatedObjects := OrderedCollection new.
 	10 timesRepeat: [allocatedObjects add: (TFStatus create)].
 	
 	self
@@ -7216,7 +7216,7 @@ fromStringArray: aStringArray shape: shape
 	sizes := aStringArray collect: [:each | self sizeOfString: each].
 	offsetSize := self sizeForType: self typeInt64.
 	bytesize := offsetSize * aStringArray size + sizes sum.
-	offsets := OrderedCollection new: sizes size.
+	offsets := OrderedCollection new.
 	
 	sizes inject: 0 into: [:prev :each |
 		offsets add: prev.
